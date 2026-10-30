@@ -12,9 +12,26 @@ const FONT: Record<string, string> = {
 
 export type Word = {w: string; s: number; e: number};
 export type Scene = {type: string; narration: string; durationSec: number; words: Word[]; data: any};
+export type TemplateConfig = {
+  id: string;
+  name?: string;
+  backdrop?: string;
+  caption_style?: string;
+  transition?: string;
+  mascot?: boolean;
+};
 export type Plan = {
   book: {title: string; author: string};
-  theme: {colors: {bg1: string; bg2: string; ac: string; tx: string; cd: string}; font: string; layout: string; pattern: string; transition: string; chart: string; format: {name: string; width: number; height: number}};
+  theme: {
+    colors: {bg1: string; bg2: string; ac: string; tx: string; cd: string};
+    font: string;
+    layout: string;
+    pattern: string;
+    transition: string;
+    chart: string;
+    format: {name: string; width: number; height: number};
+  };
+  template?: TemplateConfig;
   scenes: Scene[];
 };
 type SP = {s: Scene; plan: Plan; u: number};
@@ -115,6 +132,22 @@ const Quote: React.FC<SP> = ({s, u}) => {
 import {AnimeParallaxScene} from "./components/scenes/AnimeParallaxScene";
 import {MotionComicScene} from "./components/scenes/MotionComicScene";
 import {StoryScene, CharacterScene} from "./Story";
+import {QuizScene} from "./templates/QuizScene";
+import {KineticBurstScene} from "./templates/KineticBurstScene";
+import {PaperScene} from "./templates/PaperScene";
+import {TerminalScene} from "./templates/TerminalScene";
+import {StickyNotesScene} from "./templates/StickyNotesScene";
+import {ComicPanelsScene} from "./templates/ComicPanelsScene";
+import {ChalkboardScene} from "./templates/ChalkboardScene";
+import {TimelineScene} from "./templates/TimelineScene";
+import {CountdownScene} from "./templates/CountdownScene";
+import {BeforeAfterScene} from "./templates/BeforeAfterScene";
+import {QuotePosterScene} from "./templates/QuotePosterScene";
+import {HabitTrackerScene} from "./templates/HabitTrackerScene";
+import {CyberGlitchScene} from "./templates/CyberGlitchScene";
+import {PaperCutScene} from "./templates/PaperCutScene";
+import {GradientFlowScene} from "./templates/GradientFlowScene";
+import {TemplateBackdrop} from "./templates/Backdrops";
 
 const SCENES: Record<string, React.FC<SP>> = {
   hook: Hook,
@@ -126,34 +159,130 @@ const SCENES: Record<string, React.FC<SP>> = {
   character: CharacterScene,
   animeParallax: AnimeParallaxScene,
   motionComic: MotionComicScene,
+  quiz: QuizScene,
+  kineticBurst: KineticBurstScene,
+  paper: PaperScene,
+  terminal: TerminalScene,
+  stickyNotes: StickyNotesScene,
+  comicPanels: ComicPanelsScene,
+  chalkboard: ChalkboardScene,
+  timeline: TimelineScene,
+  countdown: CountdownScene,
+  beforeAfter: BeforeAfterScene,
+  quotePoster: QuotePosterScene,
+  habitTracker: HabitTrackerScene,
+  cyberGlitch: CyberGlitchScene,
+  paperCut: PaperCutScene,
+  gradientFlow: GradientFlowScene,
 };
 
 const Captions: React.FC<{scene: Scene; plan: Plan; u: number}> = ({scene, plan, u}) => {
-  const f = useCurrentFrame(); const {fps, height} = useVideoConfig(); const c = plan.theme.colors; const t = f / fps;
-  let active = -1; scene.words.forEach((w, i) => {if (t >= w.s) active = i;});
-  const bottom = height * (plan.theme.format.name === "vertical" ? 0.14 : 0.08);
+  const f = useCurrentFrame();
+  const {fps, height} = useVideoConfig();
+  const c = plan.theme.colors;
+  const t = f / fps;
+  let active = -1;
+  scene.words.forEach((w, i) => {if (t >= w.s) active = i;});
+
+  // Strict 9:16 safe area: bottom 14%
+  const bottom = height * 0.14;
+  const capStyle = plan.template?.caption_style || "pill";
+
   return (
-    <div style={{position: "absolute", left: 6 * u, right: 6 * u, bottom, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: `${1.2 * u}px ${1.6 * u}px`, fontSize: 4.6 * u}}>
-      {scene.words.map((w, i) => (
-        <span key={i} style={{padding: `${0.5 * u}px ${1.8 * u}px`, borderRadius: 99, opacity: i === active ? 1 : 0.55, background: i === active ? c.ac : "transparent", color: i === active ? c.bg1 : c.tx, transform: i === active ? "scale(1.12)" : "none"}}>{w.w}</span>
-      ))}
+    <div style={{
+      position: "absolute",
+      left: 6 * u,
+      right: 6 * u,
+      bottom,
+      display: "flex",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      gap: `${1.2 * u}px ${1.6 * u}px`,
+      fontSize: 4.6 * u,
+      zIndex: 20
+    }}>
+      {scene.words.map((w, i) => {
+        const isActive = i === active;
+        let badgeStyle: React.CSSProperties = {
+          padding: `${0.5 * u}px ${1.8 * u}px`,
+          borderRadius: 99,
+          opacity: isActive ? 1 : 0.55,
+          background: isActive ? c.ac : "transparent",
+          color: isActive ? c.bg1 : c.tx,
+          transform: isActive ? "scale(1.12)" : "none",
+          transition: "all 0.15s ease"
+        };
+
+        if (capStyle === "bold") {
+          badgeStyle = {
+            ...badgeStyle,
+            fontWeight: "900",
+            textTransform: "uppercase",
+            background: isActive ? c.ac : "rgba(0,0,0,0.5)",
+            color: isActive ? "#000" : c.tx
+          };
+        } else if (capStyle === "cyber") {
+          badgeStyle = {
+            ...badgeStyle,
+            fontFamily: "monospace",
+            borderRadius: 4,
+            border: isActive ? `1.5px solid ${c.ac}` : "1px solid transparent",
+            color: isActive ? c.ac : c.tx,
+            background: isActive ? "rgba(0,0,0,0.8)" : "transparent"
+          };
+        } else if (capStyle === "chalk") {
+          badgeStyle = {
+            ...badgeStyle,
+            fontFamily: "monospace",
+            border: isActive ? "1.5px dashed #FDE047" : "none",
+            color: isActive ? "#FDE047" : c.tx
+          };
+        } else if (capStyle === "minimal") {
+          badgeStyle = {
+            ...badgeStyle,
+            background: "transparent",
+            color: isActive ? c.ac : c.tx,
+            textDecoration: isActive ? "underline" : "none"
+          };
+        }
+
+        return <span key={i} style={badgeStyle}>{w.w}</span>;
+      })}
     </div>
   );
 };
 
 const SceneWrap: React.FC<{plan: Plan; scene: Scene; index: number}> = ({plan, scene, index}) => {
-  const f = useCurrentFrame(); const u = useU(); const t = plan.theme; const c = t.colors;
+  const f = useCurrentFrame();
+  const u = useU();
+  const t = plan.theme;
+  const c = t.colors;
   const p = index === 0 ? 1 : interpolate(f, [0, TRANS], [0, 1], {extrapolateRight: "clamp", easing: Easing.bezier(0.7, 0, 0.2, 1)});
+  
   let tr: React.CSSProperties;
-  if (t.transition === "wipe") tr = {clipPath: `circle(${p * 150}% at 50% 60%)`};
-  else if (t.transition === "slide") tr = {transform: `translateX(${(1 - p) * 100}%)`};
-  else if (t.transition === "zoom") tr = {transform: `scale(${1.5 - 0.5 * p})`, opacity: p};
+  const transitionType = plan.template?.transition || t.transition;
+  if (transitionType === "wipe") tr = {clipPath: `circle(${p * 150}% at 50% 60%)`};
+  else if (transitionType === "slide") tr = {transform: `translateX(${(1 - p) * 100}%)`};
+  else if (transitionType === "zoom") tr = {transform: `scale(${1.5 - 0.5 * p})`, opacity: p};
   else tr = {transform: `perspective(${120 * u}px) rotateY(${(1 - p) * -90}deg)`, opacity: p > 0 ? 1 : 0};
-  const Comp = SCENES[scene.type] || Hook; const left = t.layout === "left";
+
+  const Comp = SCENES[scene.type] || Hook;
+  const left = t.layout === "left";
+
   return (
     <AbsoluteFill style={{background: `linear-gradient(150deg,${c.bg1},${c.bg2})`, ...tr}}>
       <Pattern p={t.pattern} color={c.tx} u={u} />
-      <AbsoluteFill style={{justifyContent: "center", alignItems: left ? "flex-start" : "center", textAlign: left ? "left" : "center", padding: `0 ${8 * u}px`, gap: 5 * u, color: c.tx, fontFamily: FONT[t.font] || FONT.ArchivoBlack}}>
+      <TemplateBackdrop type={plan.template?.backdrop} colors={c} u={u} />
+      <AbsoluteFill style={{
+        justifyContent: "center",
+        alignItems: left ? "flex-start" : "center",
+        textAlign: left ? "left" : "center",
+        padding: `8% ${8 * u}px 14% ${8 * u}px`,
+        gap: 5 * u,
+        color: c.tx,
+        fontFamily: FONT[t.font] || FONT.ArchivoBlack,
+        boxSizing: "border-box"
+      }}>
         <Comp s={scene} plan={plan} u={u} />
       </AbsoluteFill>
       <Captions scene={scene} plan={plan} u={u} />
@@ -162,7 +291,9 @@ const SceneWrap: React.FC<{plan: Plan; scene: Scene; index: number}> = ({plan, s
 };
 
 export const Main: React.FC<Plan> = (plan) => {
-  const {fps} = useVideoConfig(); let from = 0; const last = plan.scenes.length - 1;
+  const {fps} = useVideoConfig();
+  let from = 0;
+  const last = plan.scenes.length - 1;
   return (
     <AbsoluteFill style={{background: plan.theme.colors.bg1}}>
       {plan.scenes.map((s, i) => {

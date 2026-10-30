@@ -1,0 +1,288 @@
+{
+  "book": {
+    "title": "Atomic Habits",
+    "author": "James Clear"
+  },
+  "theme": {
+    "palette": "Violet Anime",
+    "colors": {
+      "bg1": "#240046",
+      "bg2": "#5A189A",
+      "ac": "#FF9E00",
+      "tx": "#FFFFFF",
+      "cd": "rgba(255,255,255,0.15)"
+    },
+    "font": "ArchivoBlack",
+    "layout": "left",
+    "pattern": "grid",
+    "transition": "wipe",
+    "chart": "area",
+    "formatName": "vertical",
+    "format": {
+      "name": "vertical",
+      "width": 1080,
+      "height": 1920
+    }
+  },
+  "template": {
+    "id": "neon_city_night",
+    "name": "Neon City Night",
+    "backdrop": "city",
+    "caption_style": "cyber",
+    "transition": "wipe",
+    "mascot": false
+  },
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "title": "1% BETTER EVERYDAY",
+        "sub": "Atomic Habits, James Clear"
+      }
+    },
+    {
+      "type": "story",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "setting": "mountains",
+        "text": "Systems dictate your trajectory",
+        "hl": "Systems",
+        "tag": "RULE 1"
+      }
+    },
+    {
+      "type": "dial",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "center": "4 LAWS",
+        "items": [
+          "Obvious",
+          "Attractive",
+          "Easy",
+          "Satisfying"
+        ]
+      }
+    },
+    {
+      "type": "story",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "setting": "mountains",
+        "text": "Systems dictate your trajectory",
+        "hl": "Systems",
+        "tag": "RULE 1"
+      }
+    },
+    {
+      "type": "card",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "lines": [
+          "Tiny changes lead to remarkable results",
+          "Focus on identity instead of outcomes",
+          "Design environment to make good habits default"
+        ]
+      }
+    }
+  ],
+  "youtube": {
+    "title": "Atomic Habits | Neon City Night Shorts",
+    "description": "Master lessons from Atomic Habits with Neon City Night.",
+    "tags": [
+      "shorts",
+      "mindspark",
+      "neon_city_night"
+    ]
+  }
+}

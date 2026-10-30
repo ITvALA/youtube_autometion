@@ -1,3 +1,6 @@
 {
+  "template_mode": "random",
+  "fixed_id": "parallax_dawn",
+  "no_repeat_last": 7,
   "animation_style": "story"
 }

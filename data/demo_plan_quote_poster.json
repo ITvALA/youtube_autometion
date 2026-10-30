@@ -1,0 +1,279 @@
+{
+  "book": {
+    "title": "Atomic Habits",
+    "author": "James Clear"
+  },
+  "theme": {
+    "palette": "Midnight Charcoal",
+    "colors": {
+      "bg1": "#121417",
+      "bg2": "#22272E",
+      "ac": "#FF6B6B",
+      "tx": "#F5F7FA",
+      "cd": "rgba(255,255,255,0.10)"
+    },
+    "font": "Anton",
+    "layout": "center",
+    "pattern": "rays",
+    "transition": "zoom",
+    "chart": "area",
+    "formatName": "vertical",
+    "format": {
+      "name": "vertical",
+      "width": 1080,
+      "height": 1920
+    }
+  },
+  "template": {
+    "id": "quote_poster",
+    "name": "Quote Poster",
+    "backdrop": "poster",
+    "caption_style": "minimal",
+    "transition": "zoom",
+    "mascot": false
+  },
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "title": "1% BETTER EVERYDAY",
+        "sub": "Atomic Habits, James Clear"
+      }
+    },
+    {
+      "type": "quotePoster",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "quote": "You do not rise to the level of your goals. You fall to the level of your systems.",
+        "by": "James Clear"
+      }
+    },
+    {
+      "type": "card",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "lines": [
+          "Tiny changes lead to remarkable results",
+          "Focus on identity instead of outcomes",
+          "Design environment to make good habits default"
+        ]
+      }
+    },
+    {
+      "type": "quotePoster",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "quote": "You do not rise to the level of your goals. You fall to the level of your systems.",
+        "by": "James Clear"
+      }
+    },
+    {
+      "type": "quote",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "quote": "Every action you take is a vote for the type of person you wish to become.",
+        "by": "James Clear"
+      }
+    }
+  ],
+  "youtube": {
+    "title": "Atomic Habits | Quote Poster Shorts",
+    "description": "Master lessons from Atomic Habits with Quote Poster.",
+    "tags": [
+      "shorts",
+      "mindspark",
+      "quote_poster"
+    ]
+  }
+}

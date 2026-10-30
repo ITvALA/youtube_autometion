@@ -1,0 +1,285 @@
+{
+  "book": {
+    "title": "Atomic Habits",
+    "author": "James Clear"
+  },
+  "theme": {
+    "palette": "Ocean Deep",
+    "colors": {
+      "bg1": "#0F4C75",
+      "bg2": "#3282B8",
+      "ac": "#FFD460",
+      "tx": "#FFFFFF",
+      "cd": "rgba(255,255,255,0.12)"
+    },
+    "font": "SpaceGrotesk",
+    "layout": "center",
+    "pattern": "grid",
+    "transition": "slide",
+    "chart": "line",
+    "formatName": "vertical",
+    "format": {
+      "name": "vertical",
+      "width": 1080,
+      "height": 1920
+    }
+  },
+  "template": {
+    "id": "timeline_journey",
+    "name": "Timeline Journey",
+    "backdrop": "grid",
+    "caption_style": "pill",
+    "transition": "slide",
+    "mascot": false
+  },
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "title": "1% BETTER EVERYDAY",
+        "sub": "Atomic Habits, James Clear"
+      }
+    },
+    {
+      "type": "timeline",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "milestones": [
+          "1. Cue Trigger",
+          "2. Craving Desire",
+          "3. Immediate Reward"
+        ]
+      }
+    },
+    {
+      "type": "timeline",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "milestones": [
+          "1. Cue Trigger",
+          "2. Craving Desire",
+          "3. Immediate Reward"
+        ]
+      }
+    },
+    {
+      "type": "card",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "lines": [
+          "Tiny changes lead to remarkable results",
+          "Focus on identity instead of outcomes",
+          "Design environment to make good habits default"
+        ]
+      }
+    },
+    {
+      "type": "quote",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "quote": "Every action you take is a vote for the type of person you wish to become.",
+        "by": "James Clear"
+      }
+    }
+  ],
+  "youtube": {
+    "title": "Atomic Habits | Timeline Journey Shorts",
+    "description": "Master lessons from Atomic Habits with Timeline Journey.",
+    "tags": [
+      "shorts",
+      "mindspark",
+      "timeline_journey"
+    ]
+  }
+}

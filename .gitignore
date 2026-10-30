@@ -13,3 +13,4 @@ __pycache__/
 *.mp4
 .venv/
 venv/
+data/test_renders/

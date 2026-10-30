@@ -1,0 +1,279 @@
+{
+  "book": {
+    "title": "Atomic Habits",
+    "author": "James Clear"
+  },
+  "theme": {
+    "palette": "Cyberpunk Cyan",
+    "colors": {
+      "bg1": "#0D0221",
+      "bg2": "#0F084B",
+      "ac": "#00F0FF",
+      "tx": "#FFFFFF",
+      "cd": "rgba(255,255,255,0.12)"
+    },
+    "font": "ArchivoBlack",
+    "layout": "left",
+    "pattern": "grid",
+    "transition": "wipe",
+    "chart": "line",
+    "formatName": "vertical",
+    "format": {
+      "name": "vertical",
+      "width": 1080,
+      "height": 1920
+    }
+  },
+  "template": {
+    "id": "cyber_glitch",
+    "name": "Neon Glitch Cyber",
+    "backdrop": "cyber",
+    "caption_style": "cyber",
+    "transition": "wipe",
+    "mascot": false
+  },
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "title": "1% BETTER EVERYDAY",
+        "sub": "Atomic Habits, James Clear"
+      }
+    },
+    {
+      "type": "cyberGlitch",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "text": "HACK YOUR ENVIRONMENT",
+        "tag": "IDENTITY"
+      }
+    },
+    {
+      "type": "cyberGlitch",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "text": "HACK YOUR ENVIRONMENT",
+        "tag": "IDENTITY"
+      }
+    },
+    {
+      "type": "card",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "lines": [
+          "Tiny changes lead to remarkable results",
+          "Focus on identity instead of outcomes",
+          "Design environment to make good habits default"
+        ]
+      }
+    },
+    {
+      "type": "quote",
+      "narration": "Ye ek atomic habits ka powerful lesson hai jo aapki zindagi badal dega.",
+      "durationSec": 2.5,
+      "words": [
+        {
+          "w": "This",
+          "s": 0.0,
+          "e": 0.4
+        },
+        {
+          "w": "is",
+          "s": 0.4,
+          "e": 0.8
+        },
+        {
+          "w": "a",
+          "s": 0.8,
+          "e": 1.2000000000000002
+        },
+        {
+          "w": "demo",
+          "s": 1.2000000000000002,
+          "e": 1.6
+        },
+        {
+          "w": "caption",
+          "s": 1.6,
+          "e": 2.0
+        },
+        {
+          "w": "for",
+          "s": 2.0,
+          "e": 2.4000000000000004
+        },
+        {
+          "w": "testing",
+          "s": 2.4000000000000004,
+          "e": 2.8000000000000003
+        }
+      ],
+      "data": {
+        "quote": "Every action you take is a vote for the type of person you wish to become.",
+        "by": "James Clear"
+      }
+    }
+  ],
+  "youtube": {
+    "title": "Atomic Habits | Neon Glitch Cyber Shorts",
+    "description": "Master lessons from Atomic Habits with Neon Glitch Cyber.",
+    "tags": [
+      "shorts",
+      "mindspark",
+      "cyber_glitch"
+    ]
+  }
+}
