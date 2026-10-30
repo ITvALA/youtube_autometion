@@ -241,3 +241,4 @@ export const AnimeCharacter: React.FC<AnimeCharacterProps> = ({
     </div>
   );
 };
+

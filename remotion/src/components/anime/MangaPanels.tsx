@@ -117,3 +117,4 @@ export const MangaPanels: React.FC<MangaPanelsProps> = ({
     </div>
   );
 };
+

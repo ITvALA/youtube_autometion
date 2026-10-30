@@ -1,0 +1,397 @@
+{
+ "book": {
+  "title": "Atomic Habits",
+  "author": "James Clear"
+ },
+ "theme": {
+  "palette": "Neon Night",
+  "colors": {
+   "bg1": "#0B1020",
+   "bg2": "#1B1464",
+   "ac": "#00F5A0",
+   "tx": "#FFFFFF",
+   "cd": "rgba(255,255,255,0.10)"
+  },
+  "font": "Anton",
+  "layout": "left",
+  "pattern": "dots",
+  "transition": "flip",
+  "chart": "bars",
+  "formatName": "vertical",
+  "format": {
+   "name": "vertical",
+   "width": 1080,
+   "height": 1920
+  }
+ },
+ "scenes": [
+  {
+   "type": "hook",
+   "narration": "Roz sirf ek percent behtar, aur saal bhar me bada fark.",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Roz",
+     "s": 0.3,
+     "e": 0.65
+    },
+    {
+     "w": "sirf",
+     "s": 0.7,
+     "e": 1.05
+    },
+    {
+     "w": "ek",
+     "s": 1.1,
+     "e": 1.45
+    },
+    {
+     "w": "percent",
+     "s": 1.5,
+     "e": 1.85
+    },
+    {
+     "w": "behtar,",
+     "s": 1.9,
+     "e": 2.25
+    },
+    {
+     "w": "aur",
+     "s": 2.3,
+     "e": 2.65
+    },
+    {
+     "w": "saal",
+     "s": 2.7,
+     "e": 3.05
+    },
+    {
+     "w": "bhar",
+     "s": 3.1,
+     "e": 3.45
+    },
+    {
+     "w": "me",
+     "s": 3.5,
+     "e": 3.85
+    },
+    {
+     "w": "bada",
+     "s": 3.9,
+     "e": 4.25
+    },
+    {
+     "w": "fark.",
+     "s": 4.3,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "title": "1% BEHTAR ROZ",
+    "sub": "Atomic Habits, James Clear"
+   }
+  },
+  {
+   "type": "story",
+   "narration": "Chhote kadam bade badlav laate hain, bas shuru karo.",
+   "durationSec": 6,
+   "words": [
+    {
+     "w": "Chhote",
+     "s": 0.3,
+     "e": 0.85
+    },
+    {
+     "w": "kadam",
+     "s": 0.9,
+     "e": 1.45
+    },
+    {
+     "w": "bade",
+     "s": 1.5,
+     "e": 2.05
+    },
+    {
+     "w": "badlav",
+     "s": 2.1,
+     "e": 2.65
+    },
+    {
+     "w": "laate",
+     "s": 2.7,
+     "e": 3.25
+    },
+    {
+     "w": "hain,",
+     "s": 3.3,
+     "e": 3.85
+    },
+    {
+     "w": "bas",
+     "s": 3.9,
+     "e": 4.45
+    },
+    {
+     "w": "shuru",
+     "s": 4.5,
+     "e": 5.05
+    },
+    {
+     "w": "karo.",
+     "s": 5.1,
+     "e": 5.65
+    }
+   ],
+   "data": {
+    "setting": "mountains",
+    "text": "Chhote kadam, bade badlav",
+    "hl": "badlav",
+    "tag": "LESSON 1"
+   }
+  },
+  {
+   "type": "character",
+   "narration": "Pehle apni identity badlo, phir habits apne aap badal jayengi.",
+   "durationSec": 6,
+   "words": [
+    {
+     "w": "Pehle",
+     "s": 0.3,
+     "e": 0.79
+    },
+    {
+     "w": "apni",
+     "s": 0.84,
+     "e": 1.33
+    },
+    {
+     "w": "identity",
+     "s": 1.38,
+     "e": 1.87
+    },
+    {
+     "w": "badlo,",
+     "s": 1.92,
+     "e": 2.41
+    },
+    {
+     "w": "phir",
+     "s": 2.46,
+     "e": 2.95
+    },
+    {
+     "w": "habits",
+     "s": 3.0,
+     "e": 3.49
+    },
+    {
+     "w": "apne",
+     "s": 3.54,
+     "e": 4.03
+    },
+    {
+     "w": "aap",
+     "s": 4.08,
+     "e": 4.57
+    },
+    {
+     "w": "badal",
+     "s": 4.62,
+     "e": 5.11
+    },
+    {
+     "w": "jayengi.",
+     "s": 5.16,
+     "e": 5.65
+    }
+   ],
+   "data": {
+    "mood": "thinking",
+    "prop": "book",
+    "text": "Pehle identity badlo, habits badlengi"
+   }
+  },
+  {
+   "type": "story",
+   "narration": "Maahol badlo to aadat banana aasan ho jata hai.",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Maahol",
+     "s": 0.3,
+     "e": 0.74
+    },
+    {
+     "w": "badlo",
+     "s": 0.79,
+     "e": 1.23
+    },
+    {
+     "w": "to",
+     "s": 1.28,
+     "e": 1.72
+    },
+    {
+     "w": "aadat",
+     "s": 1.77,
+     "e": 2.21
+    },
+    {
+     "w": "banana",
+     "s": 2.26,
+     "e": 2.69
+    },
+    {
+     "w": "aasan",
+     "s": 2.74,
+     "e": 3.18
+    },
+    {
+     "w": "ho",
+     "s": 3.23,
+     "e": 3.67
+    },
+    {
+     "w": "jata",
+     "s": 3.72,
+     "e": 4.16
+    },
+    {
+     "w": "hai.",
+     "s": 4.21,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "setting": "city",
+    "text": "Maahol badlo, aadat banegi"
+   }
+  },
+  {
+   "type": "character",
+   "narration": "Aaj hi ek chhoti habit shuru karo, kal ka wait mat karo.",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Aaj",
+     "s": 0.3,
+     "e": 0.62
+    },
+    {
+     "w": "hi",
+     "s": 0.67,
+     "e": 0.98
+    },
+    {
+     "w": "ek",
+     "s": 1.03,
+     "e": 1.35
+    },
+    {
+     "w": "chhoti",
+     "s": 1.4,
+     "e": 1.72
+    },
+    {
+     "w": "habit",
+     "s": 1.77,
+     "e": 2.08
+    },
+    {
+     "w": "shuru",
+     "s": 2.13,
+     "e": 2.45
+    },
+    {
+     "w": "karo,",
+     "s": 2.5,
+     "e": 2.82
+    },
+    {
+     "w": "kal",
+     "s": 2.87,
+     "e": 3.18
+    },
+    {
+     "w": "ka",
+     "s": 3.23,
+     "e": 3.55
+    },
+    {
+     "w": "wait",
+     "s": 3.6,
+     "e": 3.92
+    },
+    {
+     "w": "mat",
+     "s": 3.97,
+     "e": 4.28
+    },
+    {
+     "w": "karo.",
+     "s": 4.33,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "mood": "determined",
+    "prop": "bulb",
+    "text": "Aaj hi shuru karo!"
+   }
+  },
+  {
+   "type": "card",
+   "narration": "Yaad rakho, system goals se bada hota hai.",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Yaad",
+     "s": 0.3,
+     "e": 0.8
+    },
+    {
+     "w": "rakho,",
+     "s": 0.85,
+     "e": 1.35
+    },
+    {
+     "w": "system",
+     "s": 1.4,
+     "e": 1.9
+    },
+    {
+     "w": "goals",
+     "s": 1.95,
+     "e": 2.45
+    },
+    {
+     "w": "se",
+     "s": 2.5,
+     "e": 3.0
+    },
+    {
+     "w": "bada",
+     "s": 3.05,
+     "e": 3.55
+    },
+    {
+     "w": "hota",
+     "s": 3.6,
+     "e": 4.1
+    },
+    {
+     "w": "hai.",
+     "s": 4.15,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "lines": [
+     "Chhoti habits",
+     "Roz ka system",
+     "Bade results"
+    ]
+   }
+  }
+ ]
+}

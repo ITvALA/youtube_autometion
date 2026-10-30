@@ -23,10 +23,15 @@ def test_pick_book_selection():
 def test_anime_and_motion_comic_scene_validation():
     assert "animeParallax" in TYPES
     assert "motionComic" in TYPES
+    assert "story" in TYPES
+    assert "character" in TYPES
     assert "emotion" in NEED["animeParallax"]
     assert "panel1Title" in NEED["motionComic"]
+    assert "setting" in NEED["story"]
+    assert "mood" in NEED["character"]
 
-    valid_plan = {
+    # Test anime plan with style="anime"
+    valid_anime_plan = {
         "youtube": {"title": "Master Your Focus in 3 Steps"},
         "scenes": [
             {"type": "hook", "narration": "Yeh video dekho.", "data": {"title": "STOP PROCRASTINATING"}},
@@ -35,8 +40,33 @@ def test_anime_and_motion_comic_scene_validation():
             {"type": "quote", "narration": "Deep work is superpower.", "data": {"quote": "Focus is power"}}
         ]
     }
-    err = validate(valid_plan)
+    err = validate(valid_anime_plan, style="anime")
     assert err is None
+
+def test_story_style_validation():
+    valid_story_plan = {
+        "youtube": {"title": "Atomic Habits Story"},
+        "scenes": [
+            {"type": "hook", "narration": "Hook line.", "data": {"title": "TINY CHANGES"}},
+            {"type": "story", "narration": "First story scene.", "data": {"setting": "mountains", "text": "Small steps"}},
+            {"type": "story", "narration": "Second story scene.", "data": {"setting": "city", "text": "Huge compound"}},
+            {"type": "card", "narration": "Final takeaway.", "data": {"lines": ["1% better every day"]}}
+        ]
+    }
+    # Should pass for style="story"
+    assert validate(valid_story_plan, style="story") is None
+
+    # Should fail if style="story" has character scenes
+    invalid_story_plan = dict(valid_story_plan)
+    invalid_story_plan["scenes"] = [
+        {"type": "hook", "narration": "Hook line.", "data": {"title": "TINY CHANGES"}},
+        {"type": "story", "narration": "First story scene.", "data": {"setting": "mountains", "text": "Small steps"}},
+        {"type": "character", "narration": "Character scene.", "data": {"mood": "happy", "text": "Hello"}},
+        {"type": "card", "narration": "Final takeaway.", "data": {"lines": ["1% better every day"]}}
+    ]
+    err = validate(invalid_story_plan, style="story")
+    assert err is not None
+    assert "need at least 2 story scenes and no character scene" in err
 
 def test_theme_engine_selection():
     theme = pick_theme("Deep Work", False, [])

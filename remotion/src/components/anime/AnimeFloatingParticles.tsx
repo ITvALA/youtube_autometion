@@ -58,3 +58,4 @@ export const AnimeFloatingParticles: React.FC<AnimeParticlesProps> = ({
     </AbsoluteFill>
   );
 };
+

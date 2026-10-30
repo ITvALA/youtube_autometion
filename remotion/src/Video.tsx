@@ -114,6 +114,7 @@ const Quote: React.FC<SP> = ({s, u}) => {
 
 import {AnimeParallaxScene} from "./components/scenes/AnimeParallaxScene";
 import {MotionComicScene} from "./components/scenes/MotionComicScene";
+import {StoryScene, CharacterScene} from "./Story";
 
 const SCENES: Record<string, React.FC<SP>> = {
   hook: Hook,
@@ -121,6 +122,8 @@ const SCENES: Record<string, React.FC<SP>> = {
   dial: Dial,
   card: Card,
   quote: Quote,
+  story: StoryScene,
+  character: CharacterScene,
   animeParallax: AnimeParallaxScene,
   motionComic: MotionComicScene,
 };
