@@ -229,5 +229,38 @@
       "motionComic",
       "quote"
     ]
+  },
+  {
+    "book": "The Lean Startup",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Midnight Charcoal",
+      "colors": {
+        "bg1": "#121417",
+        "bg2": "#22272E",
+        "ac": "#FF6B6B",
+        "tx": "#F5F7FA",
+        "cd": "rgba(255,255,255,0.10)"
+      },
+      "font": "Anton",
+      "layout": "left",
+      "pattern": "grid",
+      "transition": "wipe",
+      "chart": "line",
+      "formatName": "vertical",
+      "format": {
+        "name": "vertical",
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    "sceneTypes": [
+      "hook",
+      "story",
+      "animeParallax",
+      "story",
+      "dial",
+      "quote"
+    ]
   }
 ]
