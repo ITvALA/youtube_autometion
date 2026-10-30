@@ -328,5 +328,39 @@
       "paperCut",
       "quote"
     ]
+  },
+  {
+    "book": "The Alchemist",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Sunset Pop",
+      "colors": {
+        "bg1": "#FF5F6D",
+        "bg2": "#FFC371",
+        "ac": "#1B1B3A",
+        "tx": "#1B1B3A",
+        "cd": "rgba(255,255,255,0.35)"
+      },
+      "font": "ArchivoBlack",
+      "layout": "center",
+      "pattern": "grid",
+      "transition": "wipe",
+      "chart": "line",
+      "formatName": "vertical",
+      "format": {
+        "name": "vertical",
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    "template_id": "before_after",
+    "sceneTypes": [
+      "hook",
+      "beforeAfter",
+      "beforeAfter",
+      "beforeAfter",
+      "card",
+      "quote"
+    ]
   }
 ]

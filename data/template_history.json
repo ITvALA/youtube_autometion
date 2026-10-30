@@ -12,5 +12,12 @@
     "palette": "Forest Emerald",
     "book": "Hooked",
     "date": "2026-10-30"
+  },
+  {
+    "template_id": "before_after",
+    "template_name": "Before vs After",
+    "palette": "Sunset Pop",
+    "book": "The Alchemist",
+    "date": "2026-10-30"
   }
 ]
