@@ -90,7 +90,8 @@ def main():
         theme = template_engine._enrich_template(template, theme_history, random.Random())["theme"]
         plan = llm.make_plan(book, recent_sequences=recent_seqs, template=template)
 
-    key = f"{datetime.date.today()}_{slug(book['title'])}"
+    unique_ts = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    key = f"{unique_ts}_{slug(book['title'])}"
     work, out = ROOT / "data" / "work" / key, ROOT / "data" / "output" / key
     out.mkdir(parents=True, exist_ok=True)
     work.mkdir(parents=True, exist_ok=True)
@@ -172,7 +173,7 @@ def main():
         f"🎨 Template: *{template['name']}* (`{template['id']}`)\n"
         f"✨ Palette: {theme['palette']} / {theme['transition']} / 9:16 Vertical"
     )
-    notify.send(final, caption)
+    notify.send(final, caption, video_dir=out)
     print("DONE:", final)
 
 if __name__ == "__main__":

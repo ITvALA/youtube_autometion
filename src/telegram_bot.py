@@ -1,10 +1,10 @@
 """Interactive Telegram Bot for MindSpark Studio:
 - Receives video directly as streamable MP4 (no zip!)
-- Automatically downloads video if generated in cloud (GitHub Actions)
-- Tap 'PASS' or text 'pass' to upload immediately to YouTube
+- Automatically pre-downloads pending video in background as soon as it arrives
+- Tap 'PASS' or text 'pass' to upload immediately to YouTube with zero delay
 - Real-time status notifications
 """
-import os, sys, time, json, pathlib, requests
+import os, sys, time, json, pathlib, requests, threading, subprocess
 from pathlib import Path
 
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
@@ -28,6 +28,7 @@ TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 ALLOWED_CHAT = str(os.environ.get("TELEGRAM_CHAT_ID", ""))
 BASE_URL = f"https://api.telegram.org/bot{TOKEN}"
 OUT_DIR = ROOT / "data" / "output"
+PENDING_FILE = ROOT / "data" / "pending_video.json"
 
 def send_msg(chat_id, text, reply_markup=None):
     data = {"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}
@@ -64,13 +65,55 @@ def download_video_from_telegram(file_id, target_dir):
                     f.write(chunk)
     return True
 
+def background_video_sync():
+    """Background worker that continuously pulls git updates and pre-downloads pending videos into data/output/."""
+    last_git_pull = 0
+    while True:
+        try:
+            now = time.time()
+            # 1. Sync git updates every 45s to get pending_video.json from GitHub Actions
+            if now - last_git_pull > 45:
+                last_git_pull = now
+                try:
+                    subprocess.run(
+                        ["git", "pull", "--rebase", "-X", "ours", "origin", "main"],
+                        cwd=ROOT,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=30
+                    )
+                except Exception:
+                    pass
+
+            # 2. Check pending_video.json
+            if PENDING_FILE.exists():
+                pending = jload(PENDING_FILE, {})
+                dir_name = pending.get("dir_name")
+                file_id = pending.get("file_id")
+                meta = pending.get("meta", {})
+
+                if dir_name and file_id:
+                    target_dir = OUT_DIR / dir_name
+                    target_file = target_dir / "final.mp4"
+                    if not target_file.exists() or target_file.stat().st_size < 100000:
+                        print(f"⚡ [AUTO-PRELOAD] Pre-downloading video for '{dir_name}' into output...")
+                        target_dir.mkdir(parents=True, exist_ok=True)
+                        download_video_from_telegram(file_id, target_dir)
+                        if meta and not (target_dir / "meta.json").exists():
+                            jsave(target_dir / "meta.json", meta)
+                        print(f"✅ [AUTO-PRELOAD] '{dir_name}' is ready in output! PASS will upload immediately.")
+        except Exception as e:
+            # Ignore transient errors in background thread
+            pass
+        time.sleep(10)
+
 def handle_pass(chat_id, target_dir_name=None, message_obj=None):
     if target_dir_name:
         target_dir = OUT_DIR / target_dir_name
     else:
         target_dir = get_latest_output_dir()
     
-    # If not found locally on disk, download directly from Telegram message!
+    # If not found locally on disk, download directly from Telegram message or pending_video.json
     if not target_dir or not (target_dir / "final.mp4").exists():
         video_obj = None
         caption_text = ""
@@ -81,18 +124,26 @@ def handle_pass(chat_id, target_dir_name=None, message_obj=None):
                 video_obj = message_obj["reply_to_message"].get("video")
                 caption_text = message_obj["reply_to_message"].get("caption", "")
 
-        if video_obj and video_obj.get("file_id"):
+        file_id_to_use = video_obj.get("file_id") if video_obj else None
+        
+        # Check pending_video.json if file_id not in message
+        if not file_id_to_use and PENDING_FILE.exists():
+            pending = jload(PENDING_FILE, {})
+            if not target_dir_name or pending.get("dir_name") == target_dir_name:
+                file_id_to_use = pending.get("file_id")
+                target_dir_name = target_dir_name or pending.get("dir_name")
+
+        if file_id_to_use:
             dir_name = target_dir_name or f"reel_{int(time.time())}"
             target_dir = OUT_DIR / dir_name
-            send_msg(chat_id, "⏳ *Fetching cloud video from Telegram...*")
+            send_msg(chat_id, "⏳ *Fetching video from Telegram...*")
             try:
-                download_video_from_telegram(video_obj["file_id"], target_dir)
+                download_video_from_telegram(file_id_to_use, target_dir)
                 
                 # Build metadata from caption if meta.json doesn't exist
                 if not (target_dir / "meta.json").exists():
                     lines = [l.strip() for l in caption_text.split("\n") if l.strip() and not l.startswith("🎬") and not l.startswith("👉")]
                     raw_title = lines[0] if lines else dir_name.replace("-", " ").title()
-                    # Clean title
                     clean_title = raw_title.replace("*", "").strip()[:90]
                     meta = {
                         "book": clean_title,
@@ -111,7 +162,7 @@ def handle_pass(chat_id, target_dir_name=None, message_obj=None):
 
     meta = jload(target_dir / "meta.json", {})
     title = meta.get("title", target_dir.name)
-    send_msg(chat_id, f"⏳ *Uploading to YouTube...*\n📌 *Title:* {title}\nPlease wait ~30-60 seconds.")
+    send_msg(chat_id, f"🚀 *Uploading to YouTube...*\n📁 Video: `{target_dir.name}`\n📌 *Title:* {title}\nPlease wait ~15-30 seconds.")
     
     try:
         vid_id = youtube_upload.upload(target_dir)
@@ -130,6 +181,12 @@ def start_bot():
         sys.exit(1)
         
     print("🚀 MindSpark Telegram Bot is online and listening!")
+    
+    # Start background pre-loader thread
+    sync_thread = threading.Thread(target=background_video_sync, daemon=True)
+    sync_thread.start()
+    print("⚡ Auto-preload background sync active: videos save to output automatically on arrival.")
+
     offset = 0
     while True:
         try:
@@ -189,7 +246,7 @@ def start_bot():
                         meta = jload(target_dir / "meta.json", {})
                         send_msg(sender_chat, f"📹 *Latest Local Video:* {meta.get('title', target_dir.name)}\n📁 Folder: `{target_dir.name}`\n👉 Tap PASS on the video to upload.")
                     else:
-                        send_msg(sender_chat, "ℹ️ No local video found. Tap PASS on any video in chat to upload it to YouTube!")
+                        send_msg(sender_chat, "ℹ️ No local video found in output. Tap PASS on any video in chat to upload it to YouTube!")
         except Exception as e:
             time.sleep(2)
 

@@ -1,5 +1,5 @@
 """Sends video directly to Telegram as streamable MP4 with 1-click PASS / REJECT buttons."""
-import os, json, requests
+import os, time, json, requests
 from pathlib import Path
 
 def send(video, caption, video_dir=None):
@@ -44,7 +44,7 @@ def send(video, caption, video_dir=None):
             if not r.ok:
                 # If markdown fails due to special chars, send as plain text
                 f.seek(0)
-                requests.post(
+                r = requests.post(
                     f"https://api.telegram.org/bot{t}/sendVideo",
                     timeout=300,
                     data={
@@ -55,5 +55,42 @@ def send(video, caption, video_dir=None):
                     },
                     files={"video": f}
                 )
+
+            # Record pending video info so telegram_bot can pre-load or instant PASS
+            if r.ok:
+                resp_data = r.json()
+                res = resp_data.get("result", {})
+                file_id = res.get("video", {}).get("file_id")
+                file_unique_id = res.get("video", {}).get("file_unique_id")
+                msg_id = res.get("message_id")
+                
+                # Check for meta.json
+                target_video_dir = Path(video_dir) if video_dir else video_path.parent
+                meta_path = target_video_dir / "meta.json"
+                meta_data = {}
+                if meta_path.exists():
+                    try:
+                        with open(meta_path, "r", encoding="utf-8") as mf:
+                            meta_data = json.load(mf)
+                    except Exception:
+                        pass
+                
+                pending_info = {
+                    "dir_name": dir_name,
+                    "file_id": file_id,
+                    "file_unique_id": file_unique_id,
+                    "message_id": msg_id,
+                    "caption": full_caption,
+                    "meta": meta_data,
+                    "timestamp": int(time.time()),
+                    "status": "pending_review"
+                }
+                
+                root_data = Path(__file__).resolve().parent.parent / "data"
+                root_data.mkdir(exist_ok=True)
+                with open(root_data / "pending_video.json", "w", encoding="utf-8") as pf:
+                    json.dump(pending_info, pf, indent=2)
+                print(f"[Telegram Notify] Video sent. Saved data/pending_video.json for dir '{dir_name}'")
+
         except Exception as e:
             print(f"[Telegram Notify] Error sending video: {e}")
