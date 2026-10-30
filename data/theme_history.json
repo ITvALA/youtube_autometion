@@ -163,5 +163,38 @@
       "motionComic",
       "quote"
     ]
+  },
+  {
+    "book": "Deep Work",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Electric Cobalt",
+      "colors": {
+        "bg1": "#03045E",
+        "bg2": "#0077B6",
+        "ac": "#90E0EF",
+        "tx": "#FFFFFF",
+        "cd": "rgba(255,255,255,0.14)"
+      },
+      "font": "SpaceGrotesk",
+      "layout": "center",
+      "pattern": "rays",
+      "transition": "flip",
+      "chart": "area",
+      "formatName": "vertical",
+      "format": {
+        "name": "vertical",
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    "sceneTypes": [
+      "hook",
+      "story",
+      "animeParallax",
+      "story",
+      "motionComic",
+      "quote"
+    ]
   }
 ]
