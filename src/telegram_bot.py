@@ -47,7 +47,7 @@ def download_video_from_telegram(file_id, target_dir):
     """Downloads video directly from Telegram servers into local target_dir."""
     target_dir.mkdir(parents=True, exist_ok=True)
     out_file = target_dir / "final.mp4"
-    if out_file.exists() and out_file.stat().st_size > 100000:
+    if out_file.exists() and out_file.stat().st_size > 500000:
         return True
     
     file_info = requests.get(f"{BASE_URL}/getFile?file_id={file_id}", timeout=30).json()
@@ -57,10 +57,10 @@ def download_video_from_telegram(file_id, target_dir):
     file_path = file_info["result"]["file_path"]
     download_url = f"https://api.telegram.org/file/bot{TOKEN}/{file_path}"
     
-    with requests.get(download_url, stream=True, timeout=300) as r:
+    with requests.get(download_url, stream=True, timeout=120) as r:
         r.raise_for_status()
         with open(out_file, "wb") as f:
-            for chunk in r.iter_content(chunk_size=131072):
+            for chunk in r.iter_content(chunk_size=262144):
                 if chunk:
                     f.write(chunk)
     return True
@@ -136,7 +136,6 @@ def handle_pass(chat_id, target_dir_name=None, message_obj=None):
         if file_id_to_use:
             dir_name = target_dir_name or f"reel_{int(time.time())}"
             target_dir = OUT_DIR / dir_name
-            send_msg(chat_id, "⏳ *Fetching video from Telegram...*")
             try:
                 download_video_from_telegram(file_id_to_use, target_dir)
                 
@@ -162,7 +161,7 @@ def handle_pass(chat_id, target_dir_name=None, message_obj=None):
 
     meta = jload(target_dir / "meta.json", {})
     title = meta.get("title", target_dir.name)
-    send_msg(chat_id, f"🚀 *Uploading to YouTube...*\n📁 Video: `{target_dir.name}`\n📌 *Title:* {title}\nPlease wait ~15-30 seconds.")
+    send_msg(chat_id, f"🚀 *Uploading to YouTube...*\n📁 Output: `{target_dir.name}`\n📌 *Title:* {title}\nPlease wait ~15-30 seconds.")
     
     try:
         vid_id = youtube_upload.upload(target_dir)
