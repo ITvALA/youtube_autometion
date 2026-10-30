@@ -1,0 +1,55 @@
+name: Daily studio
+on:
+  schedule:
+    - cron: "30 8 * * *"      # 08:30 UTC = 2:00 PM India
+  workflow_dispatch:           # manual run button
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+jobs:
+  make-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: pip install -r requirements.txt
+      - run: npm install --no-audit --no-fund
+        working-directory: remotion
+      - run: npx remotion browser ensure
+        working-directory: remotion
+      - name: Make video
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          LLM_API_STYLE: ${{ secrets.LLM_API_STYLE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python src/daily_pipeline.py --headless
+      - uses: actions/upload-artifact@v4
+        with:
+          name: video
+          path: data/output
+          retention-days: 7
+      - name: Build Mobile Review Website
+        run: python src/review_app/build_pages_site.py ${{ github.run_id }}
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: Remember theme history
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/theme_history.json
+          git diff --cached --quiet || (git commit -m "theme history" && git push)
