@@ -97,5 +97,38 @@
       "card",
       "quote"
     ]
+  },
+  {
+    "book": "The Psychology of Money",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Sunset Pop",
+      "colors": {
+        "bg1": "#FF5F6D",
+        "bg2": "#FFC371",
+        "ac": "#1B1B3A",
+        "tx": "#1B1B3A",
+        "cd": "rgba(255,255,255,0.35)"
+      },
+      "font": "Anton",
+      "layout": "center",
+      "pattern": "dots",
+      "transition": "wipe",
+      "chart": "line",
+      "formatName": "portrait",
+      "format": {
+        "name": "portrait",
+        "width": 1080,
+        "height": 1350
+      }
+    },
+    "sceneTypes": [
+      "hook",
+      "story",
+      "animeParallax",
+      "story",
+      "motionComic",
+      "quote"
+    ]
   }
 ]
