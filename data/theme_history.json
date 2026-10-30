@@ -262,5 +262,38 @@
       "dial",
       "quote"
     ]
+  },
+  {
+    "book": "Essentialism",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Midnight Charcoal",
+      "colors": {
+        "bg1": "#121417",
+        "bg2": "#22272E",
+        "ac": "#FF6B6B",
+        "tx": "#F5F7FA",
+        "cd": "rgba(255,255,255,0.10)"
+      },
+      "font": "SpaceGrotesk",
+      "layout": "left",
+      "pattern": "grid",
+      "transition": "slide",
+      "chart": "area",
+      "formatName": "vertical",
+      "format": {
+        "name": "vertical",
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    "template_id": "retro_terminal",
+    "sceneTypes": [
+      "hook",
+      "terminal",
+      "dial",
+      "terminal",
+      "card"
+    ]
   }
 ]
