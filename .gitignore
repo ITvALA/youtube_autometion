@@ -9,6 +9,7 @@ node_modules/
 remotion/out/
 remotion/.remotion/
 __pycache__/
+.pytest_cache/
 *.mp4
 .venv/
 venv/
