@@ -109,22 +109,18 @@ export const TemplateBackdrop: React.FC<{
   if (type === "terminal") {
     return (
       <AbsoluteFill style={{overflow: "hidden", pointerEvents: "none"}}>
+        {/* Subtle scanline CRT effect */}
         <div style={{
           position: "absolute",
           inset: 0,
-          backgroundImage: "repeating-linear-gradient(0deg, rgba(0,0,0,0.3) 0px, rgba(0,0,0,0.3) 2px, transparent 2px, transparent 4px)",
-          opacity: 0.6
+          backgroundImage: "repeating-linear-gradient(0deg, rgba(0,0,0,0.4) 0px, rgba(0,0,0,0.4) 2px, transparent 2px, transparent 4px)",
+          opacity: 0.5
         }} />
+        {/* Soft radial glow in center */}
         <div style={{
           position: "absolute",
-          top: "4%",
-          left: "6%",
-          right: "6%",
-          bottom: "10%",
-          border: `2px solid ${c.ac}`,
-          borderRadius: 16,
-          opacity: 0.25,
-          pointerEvents: "none"
+          inset: 0,
+          background: `radial-gradient(circle at 50% 45%, ${c.ac}15 0%, transparent 70%)`
         }} />
       </AbsoluteFill>
     );
@@ -135,10 +131,8 @@ export const TemplateBackdrop: React.FC<{
       <AbsoluteFill style={{overflow: "hidden", pointerEvents: "none"}}>
         <div style={{
           position: "absolute",
-          inset: 16 * u,
-          border: `3px dashed ${c.tx}`,
-          borderRadius: 24,
-          opacity: 0.2
+          inset: 0,
+          background: "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 80%)"
         }} />
       </AbsoluteFill>
     );
@@ -149,23 +143,8 @@ export const TemplateBackdrop: React.FC<{
       <AbsoluteFill style={{overflow: "hidden", pointerEvents: "none"}}>
         <div style={{
           position: "absolute",
-          top: 8 * u,
-          left: 6 * u,
-          right: 6 * u,
-          bottom: 12 * u,
-          border: `2px solid ${c.ac}`,
-          boxSizing: "border-box",
-          opacity: 0.4
-        }} />
-        <div style={{
-          position: "absolute",
-          top: 9.5 * u,
-          left: 7.5 * u,
-          right: 7.5 * u,
-          bottom: 13.5 * u,
-          border: `1px solid ${c.tx}`,
-          boxSizing: "border-box",
-          opacity: 0.25
+          inset: 0,
+          background: `radial-gradient(circle at 50% 40%, ${c.ac}18 0%, transparent 75%)`
         }} />
       </AbsoluteFill>
     );

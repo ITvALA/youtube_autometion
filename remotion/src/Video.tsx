@@ -188,29 +188,40 @@ const Captions: React.FC<{scene: Scene; plan: Plan; u: number}> = ({scene, plan,
   const bottom = height * 0.14;
   const capStyle = plan.template?.caption_style || "pill";
 
+  // Modern dynamic 4-5 word sliding window (prevents caption clutter)
+  const windowSize = 5;
+  const safeActive = active < 0 ? 0 : active;
+  const startIdx = Math.max(0, Math.min(Math.max(0, scene.words.length - windowSize), safeActive - 2));
+  const visibleWords = scene.words.length <= windowSize 
+    ? scene.words.map((w, i) => ({...w, origIdx: i}))
+    : scene.words.slice(startIdx, startIdx + windowSize).map((w, i) => ({...w, origIdx: startIdx + i}));
+
   return (
     <div style={{
       position: "absolute",
-      left: 6 * u,
-      right: 6 * u,
+      left: 8 * u,
+      right: 8 * u,
       bottom,
       display: "flex",
       flexWrap: "wrap",
       justifyContent: "center",
-      gap: `${1.2 * u}px ${1.6 * u}px`,
-      fontSize: 4.6 * u,
+      alignItems: "center",
+      gap: `${1.2 * u}px ${1.8 * u}px`,
+      fontSize: 5.2 * u,
       zIndex: 20
     }}>
-      {scene.words.map((w, i) => {
-        const isActive = i === active;
+      {visibleWords.map((w) => {
+        const isActive = w.origIdx === active;
         let badgeStyle: React.CSSProperties = {
-          padding: `${0.5 * u}px ${1.8 * u}px`,
+          padding: `${0.6 * u}px ${2.2 * u}px`,
           borderRadius: 99,
-          opacity: isActive ? 1 : 0.55,
-          background: isActive ? c.ac : "transparent",
-          color: isActive ? c.bg1 : c.tx,
-          transform: isActive ? "scale(1.12)" : "none",
-          transition: "all 0.15s ease"
+          opacity: isActive ? 1 : 0.6,
+          background: isActive ? c.ac : "rgba(0,0,0,0.4)",
+          color: isActive ? c.bg1 : "#F8FAFC",
+          transform: isActive ? "scale(1.14)" : "none",
+          fontWeight: isActive ? 800 : 600,
+          boxShadow: isActive ? `0 4px 20px ${c.ac}44` : "none",
+          transition: "all 0.12s ease"
         };
 
         if (capStyle === "bold") {
@@ -218,35 +229,35 @@ const Captions: React.FC<{scene: Scene; plan: Plan; u: number}> = ({scene, plan,
             ...badgeStyle,
             fontWeight: "900",
             textTransform: "uppercase",
-            background: isActive ? c.ac : "rgba(0,0,0,0.5)",
-            color: isActive ? "#000" : c.tx
+            background: isActive ? c.ac : "rgba(0,0,0,0.6)",
+            color: isActive ? "#000" : "#FFF"
           };
         } else if (capStyle === "cyber") {
           badgeStyle = {
             ...badgeStyle,
-            fontFamily: "monospace",
-            borderRadius: 4,
-            border: isActive ? `1.5px solid ${c.ac}` : "1px solid transparent",
-            color: isActive ? c.ac : c.tx,
-            background: isActive ? "rgba(0,0,0,0.8)" : "transparent"
+            fontFamily: "'JetBrains Mono', monospace",
+            borderRadius: 6,
+            border: isActive ? `2px solid ${c.ac}` : "1px solid rgba(255,255,255,0.15)",
+            color: isActive ? c.ac : "#E2E8F0",
+            background: isActive ? "rgba(0,0,0,0.85)" : "rgba(0,0,0,0.4)"
           };
         } else if (capStyle === "chalk") {
           badgeStyle = {
             ...badgeStyle,
             fontFamily: "monospace",
-            border: isActive ? "1.5px dashed #FDE047" : "none",
-            color: isActive ? "#FDE047" : c.tx
+            border: isActive ? "2px dashed #FDE047" : "none",
+            color: isActive ? "#FDE047" : "#FFF"
           };
         } else if (capStyle === "minimal") {
           badgeStyle = {
             ...badgeStyle,
             background: "transparent",
-            color: isActive ? c.ac : c.tx,
+            color: isActive ? c.ac : "#E2E8F0",
             textDecoration: isActive ? "underline" : "none"
           };
         }
 
-        return <span key={i} style={badgeStyle}>{w.w}</span>;
+        return <span key={w.origIdx} style={badgeStyle}>{w.w}</span>;
       })}
     </div>
   );

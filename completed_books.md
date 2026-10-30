@@ -9,3 +9,4 @@
 | 3 | 2026-10-30 | Deep Work | Unknown | Self Improvement | https://youtu.be/IhicdVvxS8s |
 | 4 | 2026-10-30 | Atomic Habits | Unknown | Self Improvement | https://youtu.be/IKXmTnGZoFo |
 | 5 | 2026-10-30 | 2026-10-30_the-lean-startup | Unknown | Self Improvement | https://youtu.be/8N38I3RaQZc |
+| 6 | 2026-10-30 | 2026-10-30_155440_essentialism | Unknown | Self Improvement | https://youtu.be/HZBnQZMlzxM |
