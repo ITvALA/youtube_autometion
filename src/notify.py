@@ -15,7 +15,7 @@ def send(video, caption, video_dir=None):
     reply_markup = {
         "inline_keyboard": [
             [
-                {"text": "🚀 PASS & UPLOAD TO YOUTUBE", "callback_data": f"pass:{dir_name}"},
+                {"text": "🚀 PASS ", "callback_data": f"pass:{dir_name}"},
                 {"text": "❌ REJECT", "callback_data": f"reject:{dir_name}"}
             ]
         ]
@@ -24,7 +24,7 @@ def send(video, caption, video_dir=None):
     full_caption = (
         f"🎬 *New Reel Ready for Review!*\n\n"
         f"{caption}\n\n"
-        f"👉 Tap *PASS* below or reply with *pass* to upload immediately to YouTube!"
+        f"👉 Tap *PASS* button  to upload immediately to YouTube!"
     )[:1000]
 
     with open(video_path, "rb") as f:

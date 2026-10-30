@@ -174,7 +174,6 @@ def start_bot():
                 if cmd in ("/start", "/help"):
                     send_msg(sender_chat, (
                         "👋 *Welcome to MindSpark Studio Bot!*\n\n"
-                        "Har roz naya 9:16 vertical Reel video yahan send hoga.\n\n"
                         "*Commands:*\n"
                         "• Tap *PASS* button — Turant YouTube par video upload karein.\n"
                         "• Tap *REJECT* button — Video ko discard karein.\n"
