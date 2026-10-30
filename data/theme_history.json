@@ -295,5 +295,38 @@
       "terminal",
       "card"
     ]
+  },
+  {
+    "book": "Hooked",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Forest Emerald",
+      "colors": {
+        "bg1": "#0B3D2E",
+        "bg2": "#1F7A5A",
+        "ac": "#F4D35E",
+        "tx": "#F1FAEE",
+        "cd": "rgba(255,255,255,0.12)"
+      },
+      "font": "SpaceGrotesk",
+      "layout": "center",
+      "pattern": "dots",
+      "transition": "zoom",
+      "chart": "line",
+      "formatName": "vertical",
+      "format": {
+        "name": "vertical",
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    "template_id": "paper_cut_layers",
+    "sceneTypes": [
+      "hook",
+      "paperCut",
+      "card",
+      "paperCut",
+      "quote"
+    ]
   }
 ]
