@@ -163,5 +163,38 @@
       "motionComic",
       "quote"
     ]
+  },
+  {
+    "book": "Influence",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Forest",
+      "colors": {
+        "bg1": "#0B3D2E",
+        "bg2": "#1F7A5A",
+        "ac": "#F4D35E",
+        "tx": "#F1FAEE",
+        "cd": "rgba(255,255,255,0.12)"
+      },
+      "font": "SpaceGrotesk",
+      "layout": "center",
+      "pattern": "rays",
+      "transition": "flip",
+      "chart": "area",
+      "formatName": "vertical",
+      "format": {
+        "name": "vertical",
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    "sceneTypes": [
+      "hook",
+      "story",
+      "animeParallax",
+      "story",
+      "motionComic",
+      "quote"
+    ]
   }
 ]
