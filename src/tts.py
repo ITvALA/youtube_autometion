@@ -42,7 +42,9 @@ def _synth_elevenlabs(text, voice_id, api_key, out):
     return parse_elevenlabs_alignment(data.get("alignment", {}))
 
 async def _synth_edge(text, cfg, out):
-    voice = cfg.get("voice") or cfg.get("voice_model", "en-IN-PrabhatNeural")
+    voice = cfg.get("voice_model") or cfg.get("voice") or "en-IN-PrabhatNeural"
+    if not voice.startswith(("en-", "hi-", "Microsoft")):
+        voice = "en-IN-PrabhatNeural"
     kw = dict(rate=cfg.get("rate", "+0%"), pitch=cfg.get("pitch", "+0Hz"))
     try:
         comm = edge_tts.Communicate(text, voice, boundary="WordBoundary", **kw)

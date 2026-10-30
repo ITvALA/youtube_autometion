@@ -5,3 +5,4 @@
 | No. | Date | Book Title (किताब का नाम) | Author (लेखक) | Core Concept / Category | YouTube Video URL |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | 1 | 2026-10-29 | Chanakya Neeti (चाणक्य नीति) | Acharya Chanakya | Strategy & Sovereign Power | Archived |
+| 2 | 2026-10-30 | The Psychology of Money | Unknown | Productivity & Wisdom | https://youtu.be/SNni3ICVfhs |
