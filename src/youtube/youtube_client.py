@@ -91,7 +91,8 @@ class YouTubeUploader:
         tags: Optional[list] = None,
         privacy_status: str = "private",
         thumbnail_path: Optional[str] = None,
-        dry_run: bool = False
+        dry_run: bool = False,
+        progress_callback: Optional[Any] = None
     ) -> Dict[str, Any]:
         """
         Uploads an MP4 video to YouTube Data API v3.
@@ -145,7 +146,7 @@ class YouTubeUploader:
                 video_path,
                 mimetype="video/mp4",
                 resumable=True,
-                chunksize=1024 * 1024 * 5  # 5MB chunks
+                chunksize=1024 * 1024 * 1  # 1MB chunks for smooth live progress
             )
 
             request = youtube.videos().insert(
@@ -158,7 +159,13 @@ class YouTubeUploader:
             while response is None:
                 status, response = request.next_chunk()
                 if status:
-                    logger.info(f"Uploaded {int(status.progress() * 100)}%")
+                    pct = int(status.progress() * 100)
+                    logger.info(f"Uploaded {pct}%")
+                    if progress_callback:
+                        try:
+                            progress_callback(pct)
+                        except Exception:
+                            pass
 
             video_id = response.get("id")
             video_url = f"https://youtu.be/{video_id}"

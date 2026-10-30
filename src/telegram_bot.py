@@ -1,8 +1,8 @@
 """Interactive Telegram Bot for MindSpark Studio:
-- Receives video directly as streamable MP4 (no zip!)
-- Automatically pre-downloads pending video in background as soon as it arrives
-- Tap 'PASS' or text 'pass' to upload immediately to YouTube with zero delay
-- Real-time status notifications
+- Instant feedback on PASS button click with live progress bar animation
+- Live status updates during YouTube upload
+- Auto-preloads pending videos in background into data/output/
+- Zero-delay, multithreaded operation
 """
 import os, sys, time, json, pathlib, requests, threading, subprocess
 from pathlib import Path
@@ -35,9 +35,36 @@ def send_msg(chat_id, text, reply_markup=None):
     if reply_markup:
         data["reply_markup"] = json.dumps(reply_markup)
     try:
-        requests.post(f"{BASE_URL}/sendMessage", data=data, timeout=20)
+        r = requests.post(f"{BASE_URL}/sendMessage", data=data, timeout=20)
+        return r.json().get("result", {})
     except Exception as e:
         print(f"Error sending msg: {e}")
+        return {}
+
+def edit_msg(chat_id, message_id, text, reply_markup=None):
+    data = {"chat_id": chat_id, "message_id": message_id, "text": text, "parse_mode": "Markdown"}
+    if reply_markup:
+        data["reply_markup"] = json.dumps(reply_markup)
+    try:
+        requests.post(f"{BASE_URL}/editMessageText", data=data, timeout=15)
+    except Exception:
+        pass
+
+def edit_reply_markup(chat_id, message_id, reply_markup):
+    try:
+        requests.post(f"{BASE_URL}/editMessageReplyMarkup", json={
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "reply_markup": reply_markup
+        }, timeout=15)
+    except Exception:
+        pass
+
+def get_progress_bar(percent):
+    clamped = max(0, min(100, int(percent)))
+    filled = clamped // 10
+    empty = 10 - filled
+    return "▓" * filled + "░" * empty
 
 def get_latest_output_dir():
     dirs = sorted([d for d in OUT_DIR.glob("*") if d.is_dir() and (d / "final.mp4").exists()], key=os.path.getmtime)
@@ -71,7 +98,6 @@ def background_video_sync():
     while True:
         try:
             now = time.time()
-            # 1. Sync git updates every 45s to get pending_video.json from GitHub Actions
             if now - last_git_pull > 45:
                 last_git_pull = now
                 try:
@@ -85,7 +111,6 @@ def background_video_sync():
                 except Exception:
                     pass
 
-            # 2. Check pending_video.json
             if PENDING_FILE.exists():
                 pending = jload(PENDING_FILE, {})
                 dir_name = pending.get("dir_name")
@@ -95,24 +120,29 @@ def background_video_sync():
                 if dir_name and file_id:
                     target_dir = OUT_DIR / dir_name
                     target_file = target_dir / "final.mp4"
-                    if not target_file.exists() or target_file.stat().st_size < 100000:
-                        print(f"⚡ [AUTO-PRELOAD] Pre-downloading video for '{dir_name}' into output...")
+                    if not target_file.exists() or target_file.stat().st_size < 500000:
                         target_dir.mkdir(parents=True, exist_ok=True)
                         download_video_from_telegram(file_id, target_dir)
                         if meta and not (target_dir / "meta.json").exists():
                             jsave(target_dir / "meta.json", meta)
-                        print(f"✅ [AUTO-PRELOAD] '{dir_name}' is ready in output! PASS will upload immediately.")
-        except Exception as e:
-            # Ignore transient errors in background thread
+        except Exception:
             pass
         time.sleep(10)
 
-def handle_pass(chat_id, target_dir_name=None, message_obj=None):
+def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
+    """Handles upload in background thread with live animated progress bar."""
     if target_dir_name:
         target_dir = OUT_DIR / target_dir_name
     else:
         target_dir = get_latest_output_dir()
     
+    # 1. Immediate visual feedback: Update original video button
+    orig_msg_id = message_obj.get("message_id") if message_obj else None
+    if orig_msg_id:
+        edit_reply_markup(chat_id, orig_msg_id, {
+            "inline_keyboard": [[{"text": "⏳ Work in progress... ⚙️", "callback_data": "noop"}]]
+        })
+
     # If not found locally on disk, download directly from Telegram message or pending_video.json
     if not target_dir or not (target_dir / "final.mp4").exists():
         video_obj = None
@@ -126,7 +156,6 @@ def handle_pass(chat_id, target_dir_name=None, message_obj=None):
 
         file_id_to_use = video_obj.get("file_id") if video_obj else None
         
-        # Check pending_video.json if file_id not in message
         if not file_id_to_use and PENDING_FILE.exists():
             pending = jload(PENDING_FILE, {})
             if not target_dir_name or pending.get("dir_name") == target_dir_name:
@@ -138,8 +167,6 @@ def handle_pass(chat_id, target_dir_name=None, message_obj=None):
             target_dir = OUT_DIR / dir_name
             try:
                 download_video_from_telegram(file_id_to_use, target_dir)
-                
-                # Build metadata from caption if meta.json doesn't exist
                 if not (target_dir / "meta.json").exists():
                     lines = [l.strip() for l in caption_text.split("\n") if l.strip() and not l.startswith("🎬") and not l.startswith("👉")]
                     raw_title = lines[0] if lines else dir_name.replace("-", " ").title()
@@ -161,17 +188,75 @@ def handle_pass(chat_id, target_dir_name=None, message_obj=None):
 
     meta = jload(target_dir / "meta.json", {})
     title = meta.get("title", target_dir.name)
-    send_msg(chat_id, f"🚀 *Uploading to YouTube...*\n📁 Output: `{target_dir.name}`\n📌 *Title:* {title}\nPlease wait ~15-30 seconds.")
-    
+
+    # 2. Send Live Animated Progress Status Message
+    status_text = (
+        f"⚙️ *WORK IN PROGRESS: Uploading to YouTube*\n\n"
+        f"📌 *Video:* `{target_dir.name}`\n"
+        f"🎬 *Title:* {title}\n\n"
+        f"📊 *Progress:* `[{get_progress_bar(10)}] 10%`\n"
+        f"💬 *Status:* Connecting to YouTube Studio API..."
+    )
+    status_msg = send_msg(chat_id, status_text)
+    status_msg_id = status_msg.get("message_id")
+
+    # 3. Live Progress Callback (throttled to 1.5s to respect Telegram limits)
+    last_update = [time.time()]
+    def on_progress(pct):
+        now = time.time()
+        if (now - last_update[0] < 1.5) and pct < 100:
+            return
+        last_update[0] = now
+        stage = "Uploading video chunks..." if pct < 85 else "Finalizing metadata & processing..."
+        bar = get_progress_bar(pct)
+        updated_text = (
+            f"⚙️ *WORK IN PROGRESS: Uploading to YouTube*\n\n"
+            f"📌 *Video:* `{target_dir.name}`\n"
+            f"🎬 *Title:* {title}\n\n"
+            f"📊 *Progress:* `[{bar}] {pct}%`\n"
+            f"💬 *Status:* {stage}"
+        )
+        if status_msg_id:
+            edit_msg(chat_id, status_msg_id, updated_text)
+
+    # 4. Execute YouTube Upload
     try:
-        vid_id = youtube_upload.upload(target_dir)
+        on_progress(25)
+        vid_id = youtube_upload.upload(target_dir, progress_callback=on_progress)
+        on_progress(100)
+        
         yt_url = f"https://youtu.be/{vid_id}" if vid_id and vid_id != "dry_run_video_id" else "Uploaded (Draft)"
         youtube_upload.append_completed_book(meta.get("book", target_dir.name), "", "Self Improvement", yt_url)
-        send_msg(chat_id, f"🎉 *SUCCESS! Video is LIVE on YouTube!*\n\n🎬 *Watch:* {yt_url}\n📌 *Title:* {title}")
-    except Exception as e:
-        send_msg(chat_id, f"❌ *Upload Failed:*\n`{str(e)}`")
+        
+        final_success_text = (
+            f"🎉 *SUCCESS! Video is LIVE on YouTube!*\n\n"
+            f"🎬 *Watch:* {yt_url}\n"
+            f"📌 *Title:* {title}\n"
+            f"📊 *Progress:* `[{get_progress_bar(100)}] 100% Complete` ✅"
+        )
+        if status_msg_id:
+            edit_msg(chat_id, status_msg_id, final_success_text)
+        else:
+            send_msg(chat_id, final_success_text)
 
-def handle_reject(chat_id, target_dir_name=None):
+        # Update original video button with direct YouTube link
+        if orig_msg_id and yt_url.startswith("http"):
+            edit_reply_markup(chat_id, orig_msg_id, {
+                "inline_keyboard": [[{"text": "🎬 Watch on YouTube ↗", "url": yt_url}]]
+            })
+
+    except Exception as e:
+        err_text = f"❌ *Upload Failed:*\n`{str(e)}`"
+        if status_msg_id:
+            edit_msg(chat_id, status_msg_id, err_text)
+        else:
+            send_msg(chat_id, err_text)
+
+def handle_reject(chat_id, target_dir_name=None, message_obj=None):
+    if message_obj and message_obj.get("message_id"):
+        edit_reply_markup(chat_id, message_obj["message_id"], {
+            "inline_keyboard": [[{"text": "❌ REJECTED", "callback_data": "noop"}]]
+        })
     send_msg(chat_id, "❌ *Video marked as rejected.* It will not be uploaded to YouTube.")
 
 def start_bot():
@@ -206,14 +291,31 @@ def start_bot():
                     if ALLOWED_CHAT and sender_chat != ALLOWED_CHAT:
                         continue
                         
-                    requests.post(f"{BASE_URL}/answerCallbackQuery", json={"callback_query_id": cb["id"]})
-                    
+                    # Immediate instant feedback via toast notification
                     if cb_data.startswith("pass"):
+                        requests.post(f"{BASE_URL}/answerCallbackQuery", json={
+                            "callback_query_id": cb["id"],
+                            "text": "🚀 Upload shuru ho gaya! Work in progress..."
+                        })
                         dir_name = cb_data.split(":", 1)[1] if ":" in cb_data else None
-                        handle_pass(sender_chat, dir_name, message_obj=cb.get("message"))
+                        threading.Thread(
+                            target=handle_pass_async,
+                            args=(sender_chat, dir_name, cb.get("message")),
+                            daemon=True
+                        ).start()
                     elif cb_data.startswith("reject"):
+                        requests.post(f"{BASE_URL}/answerCallbackQuery", json={
+                            "callback_query_id": cb["id"],
+                            "text": "❌ Video rejected."
+                        })
                         dir_name = cb_data.split(":", 1)[1] if ":" in cb_data else None
-                        handle_reject(sender_chat, dir_name)
+                        threading.Thread(
+                            target=handle_reject,
+                            args=(sender_chat, dir_name, cb.get("message")),
+                            daemon=True
+                        ).start()
+                    else:
+                        requests.post(f"{BASE_URL}/answerCallbackQuery", json={"callback_query_id": cb["id"]})
                     continue
 
                 # 2. Handle Text Messages
@@ -236,9 +338,9 @@ def start_bot():
                         "• Send `pass` or `/pass` — Latest video ko upload karein."
                     ))
                 elif cmd in ("/pass", "pass", "upload", "y", "yes"):
-                    handle_pass(sender_chat, message_obj=msg)
+                    threading.Thread(target=handle_pass_async, args=(sender_chat, None, msg), daemon=True).start()
                 elif cmd in ("/reject", "reject", "no", "n"):
-                    handle_reject(sender_chat)
+                    threading.Thread(target=handle_reject, args=(sender_chat, None, msg), daemon=True).start()
                 elif cmd in ("/status", "status"):
                     target_dir = get_latest_output_dir()
                     if target_dir:

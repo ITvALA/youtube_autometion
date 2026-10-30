@@ -12,7 +12,7 @@ def append_completed_book(title, author="", category="Self Improvement", video_u
     with open(cp, "a", encoding="utf-8") as f:
         f.write(new_row)
 
-def upload(d, dry_run=False):
+def upload(d, dry_run=False, progress_callback=None):
     d = pathlib.Path(d)
     meta = jload(d / "meta.json", {})
     video_path = str(d / "final.mp4")
@@ -24,6 +24,8 @@ def upload(d, dry_run=False):
     # If dry_run is set via flag or env var
     if dry_run or os.environ.get("DRY_RUN", "").lower() in ("1", "true"):
         print(f"[DRY RUN] Simulating upload for '{title}' (privacy: {privacy})")
+        if progress_callback:
+            progress_callback(100)
         return "dry_run_video_id"
 
     # Try local OAuth client first (from old project)
@@ -39,7 +41,8 @@ def upload(d, dry_run=False):
                 description=description,
                 tags=tags,
                 privacy_status=privacy,
-                dry_run=False
+                dry_run=False,
+                progress_callback=progress_callback
             )
             return res.get("video_id", "uploaded")
         except Exception as e:
@@ -55,10 +58,15 @@ def upload(d, dry_run=False):
     yt = build("youtube", "v3", credentials=creds)
     body = {"snippet": {"title": title, "description": description, "tags": tags, "categoryId": "27"},
             "status": {"privacyStatus": privacy, "selfDeclaredMadeForKids": False}}
-    req = yt.videos().insert(part="snippet,status", body=body, media_body=MediaFileUpload(video_path, chunksize=-1, resumable=True))
+    req = yt.videos().insert(part="snippet,status", body=body, media_body=MediaFileUpload(video_path, chunksize=1024*1024, resumable=True))
     resp = None
     while resp is None:
-        _, resp = req.next_chunk()
+        status, resp = req.next_chunk()
+        if status and progress_callback:
+            try:
+                progress_callback(int(status.progress() * 100))
+            except Exception:
+                pass
     return resp["id"]
 
 def approve(d, dry_run=False):
