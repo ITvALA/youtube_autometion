@@ -130,5 +130,38 @@
       "motionComic",
       "quote"
     ]
+  },
+  {
+    "book": "Man's Search for Meaning",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Candy",
+      "colors": {
+        "bg1": "#FFB3C6",
+        "bg2": "#FFE5EC",
+        "ac": "#6A0572",
+        "tx": "#3B0A45",
+        "cd": "rgba(255,255,255,0.55)"
+      },
+      "font": "ArchivoBlack",
+      "layout": "left",
+      "pattern": "grid",
+      "transition": "slide",
+      "chart": "bars",
+      "formatName": "square",
+      "format": {
+        "name": "square",
+        "width": 1080,
+        "height": 1080
+      }
+    },
+    "sceneTypes": [
+      "hook",
+      "story",
+      "dial",
+      "story",
+      "motionComic",
+      "quote"
+    ]
   }
 ]
