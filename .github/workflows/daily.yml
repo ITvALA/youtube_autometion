@@ -1,12 +1,14 @@
-name: Daily studio
+name: Hourly Studio Reels
 on:
   schedule:
-    - cron: "30 8 * * *"      # 08:30 UTC = 2:00 PM India
-  workflow_dispatch:           # manual run button
+    - cron: "0 * * * *"      # Every hour (at minute 0)
+  workflow_dispatch:           # manual trigger button anytime
+
 permissions:
   contents: write
   pages: write
   id-token: write
+
 jobs:
   make-video:
     runs-on: ubuntu-latest
@@ -23,7 +25,7 @@ jobs:
         working-directory: remotion
       - run: npx remotion browser ensure
         working-directory: remotion
-      - name: Make video
+      - name: Make Reel Video
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
@@ -31,6 +33,9 @@ jobs:
           LLM_API_STYLE: ${{ secrets.LLM_API_STYLE }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: python src/daily_pipeline.py --headless
       - uses: actions/upload-artifact@v4
         with:

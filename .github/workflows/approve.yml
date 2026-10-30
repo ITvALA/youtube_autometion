@@ -3,11 +3,14 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: "Run ID of the Daily studio run to approve"
-        required: true
+        description: "Run ID of the Studio run (leave empty to pick latest)"
+        required: false
+        default: ""
+
 permissions:
   contents: write
   actions: read
+
 jobs:
   upload:
     runs-on: ubuntu-latest
@@ -18,7 +21,14 @@ jobs:
       - run: pip install google-api-python-client google-auth
       - name: Download video
         env: { GH_TOKEN: "${{ github.token }}" }
-        run: gh run download ${{ inputs.run_id }} -n video -D data/output
+        run: |
+          RUN_ID="${{ inputs.run_id }}"
+          if [ -z "$RUN_ID" ]; then
+            echo "No run_id specified. Finding latest Hourly Studio Reels run..."
+            RUN_ID=$(gh run list --workflow="daily.yml" --status="success" --limit 1 --json databaseId --jq '.[0].databaseId')
+          fi
+          echo "Downloading artifact from run ID: $RUN_ID"
+          gh run download "$RUN_ID" -n video -D data/output
       - name: Upload to YouTube
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
