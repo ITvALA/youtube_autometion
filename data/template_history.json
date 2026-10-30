@@ -26,5 +26,12 @@
     "palette": "Neon Night",
     "book": "Zero to One",
     "date": "2026-10-30"
+  },
+  {
+    "template_id": "spark_talk",
+    "template_name": "Spark Talk",
+    "palette": "Candy Pop",
+    "book": "The 7 Habits of Highly Effective People",
+    "date": "2026-10-30"
   }
 ]

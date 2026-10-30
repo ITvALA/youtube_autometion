@@ -395,5 +395,38 @@
       "card",
       "quote"
     ]
+  },
+  {
+    "book": "The 7 Habits of Highly Effective People",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Candy Pop",
+      "colors": {
+        "bg1": "#FFB3C6",
+        "bg2": "#FFE5EC",
+        "ac": "#6A0572",
+        "tx": "#3B0A45",
+        "cd": "rgba(255,255,255,0.55)"
+      },
+      "font": "ArchivoBlack",
+      "layout": "center",
+      "pattern": "grid",
+      "transition": "flip",
+      "chart": "line",
+      "formatName": "vertical",
+      "format": {
+        "name": "vertical",
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    "template_id": "spark_talk",
+    "sceneTypes": [
+      "hook",
+      "character",
+      "countdown",
+      "character",
+      "quote"
+    ]
   }
 ]
