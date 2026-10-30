@@ -2,8 +2,16 @@
 import os, json, requests
 
 SYSTEM = "You are the script writer of a Hinglish book-lessons YouTube Shorts studio. Reply with ONE JSON object only. No markdown, no explanation."
-TYPES = {"hook", "curve", "dial", "card", "quote"}
-NEED = {"hook": ["title"], "curve": ["up", "down", "label"], "dial": ["center", "items"], "card": ["lines"], "quote": ["quote"]}
+TYPES = {"hook", "curve", "dial", "card", "quote", "animeParallax", "motionComic"}
+NEED = {
+    "hook": ["title"],
+    "curve": ["up", "down", "label"],
+    "dial": ["center", "items"],
+    "card": ["lines"],
+    "quote": ["quote"],
+    "animeParallax": ["title", "emotion"],
+    "motionComic": ["panel1Title", "panel2Title"],
+}
 
 def _call(prompt):
     base = os.environ.get("LLM_BASE_URL", "https://api.llmsrelay.com").rstrip("/")
@@ -42,6 +50,8 @@ Make a 25-35 second vertical video plan about its 3-4 most powerful lessons.
 Return JSON: {{"scenes":[{{"type":..., "narration":..., "data":{{...}}}}], "youtube":{{"title":..., "description":..., "tags":[...]}}}}
 Scene types and their data:
 - hook:  {{"title":"max 4 words, CAPS", "sub":"{book['title']}, {book['author']}"}}
+- animeParallax: 2.5D Japanese anime character scene with dynamic action speed lines. {{"title":"PUNCHY TITLE", "subtitle":"insight", "emotion":"focus"|"thinking"|"triumph"|"warning", "badge":"ANIME SHIFT", "speedLines":true}}
+- motionComic: Split manga comic strip scene with 2 panels. {{"panel1Title":"OLD WAY", "panel1Subtitle":"bad habit", "panel2Title":"1% SHIFT", "panel2Subtitle":"exponential result", "badgeText":"PROTOCOL", "emotion":"focus"|"triumph"}}
 - curve: growth chart. {{"up":1.01,"down":0.99,"label":"37x","labelDown":"0.03x"}} (only if the book has a compounding or growth idea)
 - dial:  {{"center":"max 9 chars","items":["2 to 6 short items"]}} (steps, rules, pillars)
 - card:  {{"lines":["3 short lines"]}} (key takeaways)

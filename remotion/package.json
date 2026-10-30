@@ -4,6 +4,7 @@
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "demo": "remotion render src/index.ts Main out/demo.mp4 --props=../data/demo_plan.json",
+    "demo:anime": "remotion render src/index.ts Main out/demo_anime.mp4 --props=../data/demo_anime_plan.json",
     "check": "tsc --noEmit"
   },
   "dependencies": {

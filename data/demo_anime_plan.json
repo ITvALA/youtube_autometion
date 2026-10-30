@@ -1,0 +1,133 @@
+{
+  "book": {
+    "title": "Atomic Habits",
+    "author": "James Clear"
+  },
+  "theme": {
+    "palette": "Neon Night",
+    "colors": {
+      "bg1": "#0B1020",
+      "bg2": "#1B1464",
+      "ac": "#00F5A0",
+      "tx": "#FFFFFF",
+      "cd": "rgba(255,255,255,0.12)"
+    },
+    "font": "Anton",
+    "layout": "center",
+    "pattern": "rays",
+    "transition": "zoom",
+    "chart": "area",
+    "formatName": "vertical",
+    "format": {
+      "name": "vertical",
+      "width": 1080,
+      "height": 1920
+    }
+  },
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Agar zindagi badalni hai, to bade goals nahi, chhote system badlo.",
+      "durationSec": 4.5,
+      "words": [
+        {"w": "Agar", "s": 0.0, "e": 0.5},
+        {"w": "zindagi", "s": 0.5, "e": 1.1},
+        {"w": "badalni", "s": 1.1, "e": 1.7},
+        {"w": "hai,", "s": 1.7, "e": 2.2},
+        {"w": "chhote", "s": 2.2, "e": 3.0},
+        {"w": "system", "s": 3.0, "e": 3.7},
+        {"w": "badlo.", "s": 3.7, "e": 4.5}
+      ],
+      "data": {
+        "title": "SYSTEM VS GOALS",
+        "sub": "Atomic Habits by James Clear"
+      }
+    },
+    {
+      "type": "animeParallax",
+      "narration": "Har roz sirf ek percent behtar bano, anime level focus ke sath.",
+      "durationSec": 5.0,
+      "words": [
+        {"w": "Har", "s": 0.0, "e": 0.6},
+        {"w": "roz", "s": 0.6, "e": 1.1},
+        {"w": "1%", "s": 1.1, "e": 1.8},
+        {"w": "behtar", "s": 1.8, "e": 2.6},
+        {"w": "bano,", "s": 2.6, "e": 3.2},
+        {"w": "anime", "s": 3.2, "e": 4.0},
+        {"w": "focus.", "s": 4.0, "e": 5.0}
+      ],
+      "data": {
+        "title": "THE 1% FOCUS",
+        "subtitle": "Daily Compounding Superpower",
+        "badge": "ANIME PROTOCOL",
+        "emotion": "focus",
+        "speedLines": true
+      }
+    },
+    {
+      "type": "motionComic",
+      "narration": "Manga comic strip me dekho: purani aadat vs naya 2 minute rule.",
+      "durationSec": 5.2,
+      "words": [
+        {"w": "Manga", "s": 0.0, "e": 0.7},
+        {"w": "comic", "s": 0.7, "e": 1.4},
+        {"w": "panel:", "s": 1.4, "e": 2.2},
+        {"w": "purani", "s": 2.2, "e": 3.0},
+        {"w": "aadat", "s": 3.0, "e": 3.8},
+        {"w": "vs", "s": 3.8, "e": 4.3},
+        {"w": "rule.", "s": 4.3, "e": 5.2}
+      ],
+      "data": {
+        "panel1Title": "OVERTHINKING TRAP",
+        "panel1Subtitle": "Waiting for motivation (Zero progress)",
+        "panel2Title": "2-MINUTE SHIFT",
+        "panel2Subtitle": "Action first, dopamine follows immediately",
+        "badgeText": "COMIC BREAKDOWN",
+        "emotion": "triumph"
+      }
+    },
+    {
+      "type": "curve",
+      "narration": "Ek saal me 37 guna exponential growth unlock hoti hai.",
+      "durationSec": 4.8,
+      "words": [
+        {"w": "Ek", "s": 0.0, "e": 0.5},
+        {"w": "saal", "s": 0.5, "e": 1.2},
+        {"w": "me", "s": 1.2, "e": 1.7},
+        {"w": "37X", "s": 1.7, "e": 2.5},
+        {"w": "growth", "s": 2.5, "e": 3.4},
+        {"w": "unlock", "s": 3.4, "e": 4.1},
+        {"w": "hogi.", "s": 4.1, "e": 4.8}
+      ],
+      "data": {
+        "up": 1.01,
+        "down": 0.99,
+        "label": "+37x Growth",
+        "labelDown": "0.03x"
+      }
+    },
+    {
+      "type": "quote",
+      "narration": "Aap apne lakshya ke level par nahi girte, balki apne system ke level par aate hain.",
+      "durationSec": 5.0,
+      "words": [
+        {"w": "You", "s": 0.0, "e": 0.6},
+        {"w": "fall", "s": 0.6, "e": 1.3},
+        {"w": "to", "s": 1.3, "e": 1.8},
+        {"w": "the", "s": 1.8, "e": 2.3},
+        {"w": "level", "s": 2.3, "e": 3.1},
+        {"w": "of", "s": 3.1, "e": 3.8},
+        {"w": "systems.", "s": 3.8, "e": 5.0}
+      ],
+      "data": {
+        "quote": "You do not rise to the level of your goals. You fall to the level of your systems.",
+        "by": "James Clear"
+      }
+    }
+  ],
+  "youtube": {
+    "title": "Atomic Habits: Anime 2.5D Motion Comic Breakdown",
+    "description": "How 1% daily shift changes your entire identity #AtomicHabits #Anime #MotionComic #Shorts",
+    "tags": ["AtomicHabits", "Anime", "MotionComic", "Shorts", "SelfImprovement"]
+  }
+}

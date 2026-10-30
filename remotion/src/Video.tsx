@@ -112,7 +112,18 @@ const Quote: React.FC<SP> = ({s, u}) => {
   </>);
 };
 
-const SCENES: Record<string, React.FC<SP>> = {hook: Hook, curve: Curve, dial: Dial, card: Card, quote: Quote};
+import {AnimeParallaxScene} from "./components/scenes/AnimeParallaxScene";
+import {MotionComicScene} from "./components/scenes/MotionComicScene";
+
+const SCENES: Record<string, React.FC<SP>> = {
+  hook: Hook,
+  curve: Curve,
+  dial: Dial,
+  card: Card,
+  quote: Quote,
+  animeParallax: AnimeParallaxScene,
+  motionComic: MotionComicScene,
+};
 
 const Captions: React.FC<{scene: Scene; plan: Plan; u: number}> = ({scene, plan, u}) => {
   const f = useCurrentFrame(); const {fps, height} = useVideoConfig(); const c = plan.theme.colors; const t = f / fps;
