@@ -5,6 +5,8 @@ on:
   workflow_dispatch:           # manual run button
 permissions:
   contents: write
+  pages: write
+  id-token: write
 jobs:
   make-video:
     runs-on: ubuntu-latest
@@ -35,6 +37,16 @@ jobs:
           name: video
           path: data/output
           retention-days: 7
+      - name: Build Mobile Review Website
+        run: python src/review_app/build_pages_site.py ${{ github.run_id }}
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
       - name: Remember theme history
         run: |
           git config user.name "studio-bot"
