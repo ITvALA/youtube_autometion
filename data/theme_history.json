@@ -1,0 +1,101 @@
+[
+  {
+    "book": "Deep Work",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Mint Paper",
+      "colors": {
+        "bg1": "#D4F5E9",
+        "bg2": "#8FE3C4",
+        "ac": "#E4572E",
+        "tx": "#0B3D2E",
+        "cd": "rgba(255,255,255,0.50)"
+      },
+      "font": "Anton",
+      "layout": "left",
+      "pattern": "dots",
+      "transition": "slide",
+      "chart": "line",
+      "formatName": "portrait",
+      "format": {
+        "name": "portrait",
+        "width": 1080,
+        "height": 1350
+      }
+    },
+    "sceneTypes": [
+      "hook",
+      "dial",
+      "card",
+      "card",
+      "card",
+      "quote"
+    ]
+  },
+  {
+    "book": "Atomic Habits",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Graphite",
+      "colors": {
+        "bg1": "#1F2933",
+        "bg2": "#3E4C59",
+        "ac": "#FF6B6B",
+        "tx": "#F5F7FA",
+        "cd": "rgba(255,255,255,0.10)"
+      },
+      "font": "ArchivoBlack",
+      "layout": "center",
+      "pattern": "grid",
+      "transition": "flip",
+      "chart": "bars",
+      "formatName": "vertical",
+      "format": {
+        "name": "vertical",
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    "sceneTypes": [
+      "hook",
+      "curve",
+      "dial",
+      "card",
+      "card",
+      "quote"
+    ]
+  },
+  {
+    "book": "The Psychology of Money",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Neon Night",
+      "colors": {
+        "bg1": "#0B1020",
+        "bg2": "#1B1464",
+        "ac": "#00F5A0",
+        "tx": "#FFFFFF",
+        "cd": "rgba(255,255,255,0.10)"
+      },
+      "font": "SpaceGrotesk",
+      "layout": "left",
+      "pattern": "rays",
+      "transition": "zoom",
+      "chart": "area",
+      "formatName": "square",
+      "format": {
+        "name": "square",
+        "width": 1080,
+        "height": 1080
+      }
+    },
+    "sceneTypes": [
+      "hook",
+      "card",
+      "dial",
+      "card",
+      "card",
+      "quote"
+    ]
+  }
+]

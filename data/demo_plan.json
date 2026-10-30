@@ -1,0 +1,288 @@
+{
+ "book": {
+  "title": "Atomic Habits",
+  "author": "James Clear"
+ },
+ "theme": {
+  "palette": "Neon Night",
+  "colors": {
+   "bg1": "#0B1020",
+   "bg2": "#1B1464",
+   "ac": "#00F5A0",
+   "tx": "#FFFFFF",
+   "cd": "rgba(255,255,255,0.10)"
+  },
+  "font": "Anton",
+  "layout": "left",
+  "pattern": "dots",
+  "transition": "flip",
+  "chart": "bars",
+  "formatName": "vertical",
+  "format": {
+   "name": "vertical",
+   "width": 1080,
+   "height": 1920
+  }
+ },
+ "scenes": [
+  {
+   "type": "hook",
+   "narration": "Roz sirf 1 percent behtar, aur saal bhar me 37 guna fark.",
+   "durationSec": 5.01,
+   "words": [
+    {
+     "w": "Roz",
+     "s": 0.0,
+     "e": 0.38
+    },
+    {
+     "w": "sirf",
+     "s": 0.38,
+     "e": 0.76
+    },
+    {
+     "w": "1",
+     "s": 0.76,
+     "e": 1.14
+    },
+    {
+     "w": "percent",
+     "s": 1.14,
+     "e": 1.52
+    },
+    {
+     "w": "behtar,",
+     "s": 1.52,
+     "e": 1.9
+    },
+    {
+     "w": "aur",
+     "s": 1.9,
+     "e": 2.28
+    },
+    {
+     "w": "saal",
+     "s": 2.28,
+     "e": 2.66
+    },
+    {
+     "w": "bhar",
+     "s": 2.66,
+     "e": 3.04
+    },
+    {
+     "w": "me",
+     "s": 3.04,
+     "e": 3.42
+    },
+    {
+     "w": "37",
+     "s": 3.42,
+     "e": 3.8
+    },
+    {
+     "w": "guna",
+     "s": 3.8,
+     "e": 4.18
+    },
+    {
+     "w": "fark.",
+     "s": 4.18,
+     "e": 4.56
+    }
+   ],
+   "data": {
+    "title": "1% BEHTAR ROZ",
+    "sub": "Atomic Habits, James Clear"
+   }
+  },
+  {
+   "type": "curve",
+   "narration": "Chhoti aadatein compound hoti hain, ulta bhi utna hi sach hai.",
+   "durationSec": 4.63,
+   "words": [
+    {
+     "w": "Chhoti",
+     "s": 0.0,
+     "e": 0.38
+    },
+    {
+     "w": "aadatein",
+     "s": 0.38,
+     "e": 0.76
+    },
+    {
+     "w": "compound",
+     "s": 0.76,
+     "e": 1.14
+    },
+    {
+     "w": "hoti",
+     "s": 1.14,
+     "e": 1.52
+    },
+    {
+     "w": "hain,",
+     "s": 1.52,
+     "e": 1.9
+    },
+    {
+     "w": "ulta",
+     "s": 1.9,
+     "e": 2.28
+    },
+    {
+     "w": "bhi",
+     "s": 2.28,
+     "e": 2.66
+    },
+    {
+     "w": "utna",
+     "s": 2.66,
+     "e": 3.04
+    },
+    {
+     "w": "hi",
+     "s": 3.04,
+     "e": 3.42
+    },
+    {
+     "w": "sach",
+     "s": 3.42,
+     "e": 3.8
+    },
+    {
+     "w": "hai.",
+     "s": 3.8,
+     "e": 4.18
+    }
+   ],
+   "data": {
+    "up": 1.01,
+    "down": 0.99,
+    "label": "37x",
+    "labelDown": "0.03x"
+   }
+  },
+  {
+   "type": "dial",
+   "narration": "Aadat ke chaar niyam: dikhao, chaho, aasan karo, maza do.",
+   "durationSec": 4.25,
+   "words": [
+    {
+     "w": "Aadat",
+     "s": 0.0,
+     "e": 0.38
+    },
+    {
+     "w": "ke",
+     "s": 0.38,
+     "e": 0.76
+    },
+    {
+     "w": "chaar",
+     "s": 0.76,
+     "e": 1.14
+    },
+    {
+     "w": "niyam:",
+     "s": 1.14,
+     "e": 1.52
+    },
+    {
+     "w": "dikhao,",
+     "s": 1.52,
+     "e": 1.9
+    },
+    {
+     "w": "chaho,",
+     "s": 1.9,
+     "e": 2.28
+    },
+    {
+     "w": "aasan",
+     "s": 2.28,
+     "e": 2.66
+    },
+    {
+     "w": "karo,",
+     "s": 2.66,
+     "e": 3.04
+    },
+    {
+     "w": "maza",
+     "s": 3.04,
+     "e": 3.42
+    },
+    {
+     "w": "do.",
+     "s": 3.42,
+     "e": 3.8
+    }
+   ],
+   "data": {
+    "center": "4 niyam",
+    "items": [
+     "Dikhao",
+     "Chaho",
+     "Aasan karo",
+     "Maza do"
+    ]
+   }
+  },
+  {
+   "type": "card",
+   "narration": "Goal nahi, system banao. Pehchan badlo, result nahi.",
+   "durationSec": 3.49,
+   "words": [
+    {
+     "w": "Goal",
+     "s": 0.0,
+     "e": 0.38
+    },
+    {
+     "w": "nahi,",
+     "s": 0.38,
+     "e": 0.76
+    },
+    {
+     "w": "system",
+     "s": 0.76,
+     "e": 1.14
+    },
+    {
+     "w": "banao.",
+     "s": 1.14,
+     "e": 1.52
+    },
+    {
+     "w": "Pehchan",
+     "s": 1.52,
+     "e": 1.9
+    },
+    {
+     "w": "badlo,",
+     "s": 1.9,
+     "e": 2.28
+    },
+    {
+     "w": "result",
+     "s": 2.28,
+     "e": 2.66
+    },
+    {
+     "w": "nahi.",
+     "s": 2.66,
+     "e": 3.04
+    }
+   ],
+   "data": {
+    "lines": [
+     "Result nahi, pehchan badlo",
+     "Goal nahi, system banao",
+     "Roz ki chhoti jeet"
+    ]
+   }
+  }
+ ]
+}

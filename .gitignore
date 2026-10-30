@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+config/client_secrets.json
+config/youtube_token.json
+data/work/
+data/output/
+node_modules/
+remotion/out/
+remotion/.remotion/
+__pycache__/
+*.mp4
+.venv/
+venv/

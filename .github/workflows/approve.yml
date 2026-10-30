@@ -1,0 +1,33 @@
+name: Approve and upload (PASS)
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Run ID of the Daily studio run to approve"
+        required: true
+permissions:
+  contents: write
+  actions: read
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install google-api-python-client google-auth
+      - name: Download video
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh run download ${{ inputs.run_id }} -n video -D data/output
+      - name: Upload to YouTube
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: python src/youtube_upload.py data/output/*/
+      - name: Save completed book
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add completed_books.md
+          git diff --cached --quiet || (git commit -m "completed book" && git push)

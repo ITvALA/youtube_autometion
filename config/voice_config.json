@@ -1,0 +1,11 @@
+{
+  "selected_voice_id": "voice_5_prabhat_tech",
+  "selected_voice_name": "5. Prabhat (Modern Tech & Hinglish Male)",
+  "voice_model": "en-IN-PrabhatNeural",
+  "voice": "en-IN-PrabhatNeural",
+  "pitch": "-2Hz",
+  "rate": "+0%",
+  "locked": true,
+  "allow_wide": false,
+  "description": "User Finalized Voice: Modern Indian Tech Male - Energetic, clear, podcast/explainer tone."
+}
