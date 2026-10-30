@@ -19,5 +19,12 @@
     "palette": "Sunset Pop",
     "book": "The Alchemist",
     "date": "2026-10-30"
+  },
+  {
+    "template_id": "cyber_glitch",
+    "template_name": "Neon Glitch Cyber",
+    "palette": "Neon Night",
+    "book": "Zero to One",
+    "date": "2026-10-30"
   }
 ]

@@ -362,5 +362,38 @@
       "card",
       "quote"
     ]
+  },
+  {
+    "book": "Zero to One",
+    "date": "2026-10-30",
+    "theme": {
+      "palette": "Neon Night",
+      "colors": {
+        "bg1": "#0B1020",
+        "bg2": "#1B1464",
+        "ac": "#00F5A0",
+        "tx": "#FFFFFF",
+        "cd": "rgba(255,255,255,0.10)"
+      },
+      "font": "ArchivoBlack",
+      "layout": "left",
+      "pattern": "grid",
+      "transition": "wipe",
+      "chart": "bars",
+      "formatName": "vertical",
+      "format": {
+        "name": "vertical",
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    "template_id": "cyber_glitch",
+    "sceneTypes": [
+      "hook",
+      "cyberGlitch",
+      "cyberGlitch",
+      "card",
+      "quote"
+    ]
   }
 ]
