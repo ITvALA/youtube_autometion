@@ -7,6 +7,15 @@ import {loadFont as mono} from "@remotion/google-fonts/ShareTechMono";
 import {loadFont as inter} from "@remotion/google-fonts/Inter";
 import {loadFont as rubik} from "@remotion/google-fonts/Rubik";
 import type {Plan, Scene} from "../Video";
+import {
+  SHORT_STYLES,
+  THINKING_STYLES,
+  type ShortStyle,
+  getStyleById as getShortStyleById,
+  pickStyle as pickShortStyle,
+  StyledCaption,
+  StyledScene as NewStyledScene,
+} from "./mindspark-styles-200";
 
 /*
  * MINDSPARK STYLE ENGINE
@@ -77,6 +86,9 @@ export const STYLES: Def[] = [
     {bg: "#14060A", bg2: "#240B10", fg: "#FFF0F2", a: "#E63946", b: "#FFB4A2", c: "#D4AF37"}]},
 ];
 export const STYLE_IDS = STYLES.map((s) => s.id);
+export const NEW_STYLE_IDS = SHORT_STYLES.map((s) => s.id);
+export const ALL_STYLE_IDS = [...STYLE_IDS, ...NEW_STYLE_IDS];
+export { SHORT_STYLES, THINKING_STYLES, type ShortStyle, getShortStyleById, pickShortStyle, StyledCaption, NewStyledScene };
 
 /* ---------- helpers ---------- */
 const cl = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -583,6 +595,17 @@ const Caps: React.FC<{scene: Scene; id: string; pal: Pal; u: number; f: number; 
 
 /* ---------- the scene renderer Video.tsx calls ---------- */
 export const StyleScene: React.FC<{plan: Plan; scene: Scene; index: number}> = ({plan, scene, index}) => {
+  const shortStyle = getShortStyleById(plan.style?.id || "");
+  if (shortStyle) {
+    const text = scene.narration || (scene.data && (scene.data.title || scene.data.label)) || "";
+    const effectiveStyle = typeof plan.style?.variant === "number" ? { ...shortStyle, variant: Math.abs(plan.style.variant) % 5 } : shortStyle;
+    return (
+      <AbsoluteFill style={{background: effectiveStyle.palette.bg}}>
+        <effectiveStyle.Background p={effectiveStyle.palette} />
+        <StyledCaption text={text} style={effectiveStyle} />
+      </AbsoluteFill>
+    );
+  }
   const f = useCurrentFrame(); const {fps, width: w, height: h} = useVideoConfig();
   const u = Math.min(w, h * 0.7) / 100; const {def, pal, seed} = resolve(plan);
   const R_ = RENDER[def.id] || SW; const c = extract(scene);

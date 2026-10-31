@@ -125,5 +125,5 @@ jobs:
         run: |
           git config user.name "studio-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add data/theme_history.json data/template_history.json data/pending_video.json data/style_history.json
-          git diff --cached --quiet || (git commit -m "theme, template, style and pending video [skip ci]" && git push)
+          git add data/theme_history.json data/template_history.json data/pending_video.json data/style_history.json state/recent-styles.json
+          git diff --cached --quiet || (git pull --rebase origin main && git commit -m "theme, template, style and pending video [skip ci]" && git push origin main)
