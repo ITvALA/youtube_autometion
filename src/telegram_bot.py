@@ -158,11 +158,10 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
     global active_uploads
     with upload_lock:
         active_uploads += 1
-    try:
-        if target_dir_name:
-            target_dir = OUT_DIR / target_dir_name
-        else:
-            target_dir = get_latest_output_dir()
+    if target_dir_name:
+        target_dir = OUT_DIR / target_dir_name
+    else:
+        target_dir = get_latest_output_dir()
     
     # 1. Immediate visual feedback: Update original video button
     orig_msg_id = message_obj.get("message_id") if message_obj else None
