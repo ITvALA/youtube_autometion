@@ -89,5 +89,12 @@
     "date": "2026-10-31",
     "book": "The Obstacle Is the Way",
     "seed": 211678716
+  },
+  {
+    "style_id": "s015",
+    "variant": 2,
+    "date": "2026-10-31",
+    "book": "Can't Hurt Me",
+    "seed": 801081996
   }
 ]
