@@ -82,5 +82,12 @@
     "date": "2026-10-31",
     "book": "Grit",
     "seed": 275443655
+  },
+  {
+    "style_id": "s035",
+    "variant": 4,
+    "date": "2026-10-31",
+    "book": "The Obstacle Is the Way",
+    "seed": 211678716
   }
 ]
