@@ -306,7 +306,23 @@ def narrate(scenes, workdir, cfg, pad=0.45):
         raw, padded = workdir / f"s{i}_raw.mp3", workdir / f"s{i}.mp3"
         # 1. Voice audio: Use tts_text (Devanagari Hindi) if provided for 100% natural pronunciation
         voice_text = s.get("tts_text") or s["narration"]
-        synth_speech(voice_text, cfg, raw)
+        scene_cfg = dict(cfg)
+        # Hybrid Architecture: Hook (scene 0) & Outro (last scene) use Madhur Neural
+        is_hybrid = scene_cfg.get("provider") in ("hybrid", "hybrid_studio") or "hook_outro_voice" in scene_cfg
+        if is_hybrid and (i == 0 or i == len(scenes) - 1):
+            scene_cfg["provider"] = "edge-tts"
+            scene_cfg["voice"] = scene_cfg.get("hook_outro_voice", "hi-IN-MadhurNeural")
+        elif is_hybrid:
+            scene_cfg["provider"] = "kokoro"
+            scene_cfg["voice"] = scene_cfg.get("body_voice", "hm_omega")
+            scene_cfg["fallback_voice"] = "hi-IN-MadhurNeural"
+
+        try:
+            synth_speech(voice_text, scene_cfg, raw)
+        except Exception as e:
+            print(f"[TTS] Scene {i} synthesis fallback to MadhurNeural due to: {e}")
+            fallback_cfg = {"provider": "edge-tts", "voice": "hi-IN-MadhurNeural", "speed": 1.0, "rate": "+0%"}
+            synth_speech(voice_text, fallback_cfg, raw)
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-af", f"apad=pad_dur={pad}", "-ar", "44100", "-ac", "2", padded], check=True)
         s["durationSec"] = round(dur(padded), 3)
 

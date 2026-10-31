@@ -1,13 +1,13 @@
 {
-  "provider": "kokoro",
-  "selected_voice_id": "kokoro_hm_omega",
-  "selected_voice_name": "Kokoro-82M (hm_omega - Hindi Male)",
-  "voice_model": "hexgrad/Kokoro-82M",
-  "voice": "hm_omega",
-  "language": "hi",
+  "provider": "hybrid_studio",
+  "selected_voice_id": "hybrid_madhur_omega",
+  "selected_voice_name": "Hybrid Studio (Madhur Hook/Outro + Kokoro Omega Body)",
+  "hook_outro_voice": "hi-IN-MadhurNeural",
+  "body_voice": "hm_omega",
   "fallback_voice": "hi-IN-MadhurNeural",
+  "language": "hi",
   "speed": 1.0,
   "pitch": "+0Hz",
   "rate": "+0%",
-  "description": "Kokoro-82M ONNX native clean Hindi voice without artificial filters."
+  "description": "Madhur Neural for powerful Hook & Outro, Kokoro hm_omega for body scenes with Madhur fallback for any complex words."
 }

@@ -40,5 +40,12 @@
     "date": "2026-10-31",
     "book": "Ego Is the Enemy",
     "seed": 575319996
+  },
+  {
+    "style_id": "perspective_3d",
+    "variant": 0,
+    "date": "2026-10-31",
+    "book": "Meditations",
+    "seed": 260039551
   }
 ]
