@@ -1,7 +1,7 @@
 """Asks Claude (claude-sonnet-5 via your relay) for a VIDEO PLAN as JSON.
 Supports 22 templates with recipe matching, deep normalization, and 9:16 vertical enforcement.
 """
-import os, sys, json, requests
+import os, sys, json, requests, re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -247,7 +247,7 @@ STYLE MODE REQUIREMENTS:
 7. At least 3 different scene types.
 8. Narration: natural Hinglish (Roman Hindi + English), 12-22 words per scene, high attention hook, no emojis.
 9. BRANDING MANDATES:
-   - First scene narration MUST start by explicitly saying the book name "{book['title']}".
+   - First scene narration MUST start directly with "{book['title']} hume sikhati hai..." (NO greetings like 'Namaste dosto', NO 'Kitab' prefix, start directly with the book title).
    - Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...aise aur powerful insights ke liye MindSpark ko subscribe karein!").
 
 Available Scene types in Style Mode and their data:
@@ -310,7 +310,7 @@ Available Scene types and their data:
 Rules: 5 or 6 scenes. First scene = hook. Last scene = card, quote, or quotePoster. At least 3 different scene types.
 Narration: natural Hinglish (Roman Hindi + English), 12-22 words per scene, high attention hook, no emojis.
 BRANDING MANDATES:
-- First scene narration MUST start by explicitly saying the book name "{book['title']}".
+- First scene narration MUST start directly with "{book['title']} hume sikhati hai..." (NO greetings like 'Namaste dosto', NO 'Kitab' prefix, start directly with the book title).
 - Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...aise aur powerful insights ke liye MindSpark ko subscribe karein!").
 Avoid these recent scene sequences: {json.dumps(recent_sequences or [])}.
 youtube.title under 70 chars, description 2 short lines + hashtags."""
@@ -327,12 +327,17 @@ youtube.title under 70 chars, description 2 short lines + hashtags."""
                 first_s = plan["scenes"][0]
                 last_s = plan["scenes"][-1]
                 b_title = book.get("title", "").replace(",", "").strip()
-                f_narr = first_s.get("narration", "")
-                if b_title.lower() not in f_narr.lower():
-                    first_s["narration"] = f"Kitab {b_title}: " + f_narr
+                f_narr = first_s.get("narration", "").strip()
+                # Strip out any greetings like "Namaste dosto", "Kitab", etc.
+                f_narr = re.sub(r'^(?:namaste\s*(?:dosto)?[\s!,.]*|kitab\s+|dosto[\s!,.]*)+', '', f_narr, flags=re.IGNORECASE).strip()
+                if not f_narr.lower().startswith(b_title.lower()):
+                    first_s["narration"] = f"{b_title} hume sikhati hai: " + f_narr
+                else:
+                    first_s["narration"] = f_narr
+
                 l_narr = last_s.get("narration", "")
                 if "mindspark" not in l_narr.lower():
-                    last_s["narration"] = l_narr.rstrip(".! ") + ". Aur aisi life-changing insights ke liye MindSpark ko follow karein!"
+                    last_s["narration"] = l_narr.rstrip(".! ") + ". Aur aisi life-changing insights ke liye MindSpark ko subscribe karein!"
 
             err = validate(plan, template=template, style=style, style_mode=style_mode)
             if not err:
