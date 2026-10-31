@@ -246,15 +246,20 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
         if status_msg_id:
             edit_msg(chat_id, status_msg_id, updated_text)
 
-    # 4. Execute YouTube Upload
+    # 4. Independent Upload Execution (YouTube & Instagram decoupled)
+    yt_url = None
+    yt_err = None
+    ig_url = None
+    ig_err = None
+
+    # --- 4A. YouTube Upload ---
     try:
-        on_progress(25)
+        on_progress(20)
         vid_id = youtube_upload.upload(target_dir, progress_callback=on_progress)
-        on_progress(100)
-        
+        on_progress(50)
         yt_url = f"https://youtu.be/{vid_id}" if vid_id and vid_id != "dry_run_video_id" else "Uploaded (Draft)"
         youtube_upload.append_completed_book(meta.get("book", target_dir.name), "", "Self Improvement", yt_url)
-        
+
         # Git commit and push completed_books.md
         try:
             subprocess.run(["git", "config", "user.name", "studio-bot"], cwd=ROOT, check=False)
@@ -276,68 +281,79 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
         except Exception as git_err:
             print(f"⚠️ Git push completed_books.md error: {git_err}")
 
-        # Execute Instagram Upload if credentials configured
-        ig_url = None
-        if os.environ.get("IG_USERNAME"):
-            try:
-                import instagram_upload
-                ig_url = instagram_upload.upload_reel(
-                    target_dir / "final.mp4",
-                    meta=meta,
-                    book_title=meta.get("book", target_dir.name)
-                )
-            except Exception as ig_err:
-                print(f"[Instagram Upload] Error: {ig_err}")
-
-        links_text = f"🎬 *YouTube Shorts:* {yt_url}\n"
-        if ig_url:
-            links_text += f"📸 *Instagram Reel:* {ig_url}\n"
-
-        final_success_text = (
-            f"🎉 *SUCCESS! Reel Published!*\n\n"
-            f"{links_text}\n"
-            f"📌 *Title:* {title}\n"
-            f"📊 *Progress:* `[{get_progress_bar(100)}] 100% Complete` ✅"
-        )
-        if status_msg_id:
-            edit_msg(chat_id, status_msg_id, final_success_text)
-        else:
-            send_msg(chat_id, final_success_text)
-
-        # Update original video buttons with direct links
-        action_buttons = []
-        if orig_msg_id:
-            if yt_url.startswith("http"):
-                action_buttons.append({"text": "🎬 Watch on YouTube ↗", "url": yt_url})
-            if ig_url and ig_url.startswith("http"):
-                action_buttons.append({"text": "📸 View on Instagram ↗", "url": ig_url})
-            if action_buttons:
-                edit_reply_markup(chat_id, orig_msg_id, {
-                    "inline_keyboard": [action_buttons]
-                })
-
     except Exception as e:
-        err_msg = str(e)
-        if "uploadLimitExceeded" in err_msg or "exceeded the number of videos" in err_msg:
-            err_text = (
-                "⚠️ *YouTube Daily Upload Limit Reached!*\n\n"
-                "Aapke YouTube channel ki daily video upload limit aaj ke liye khatam ho chuki hai.\n\n"
-                "📌 *Reason:* YouTube unverified/new channels par per day 5-10 videos ki limit rakhta hai.\n"
-                "⏳ *Solution:* Yeh limit agle 24 ghante me auto-reset ho jayegi. Video safe hai, kal dobara *PASS* daba kar upload kar sakte hain!"
+        yt_err = str(e)
+        print(f"[YouTube Upload Error]: {yt_err}")
+
+    # --- 4B. Instagram Upload (Runs even if YouTube failed!) ---
+    if os.environ.get("IG_USERNAME"):
+        try:
+            if status_msg_id:
+                edit_msg(chat_id, status_msg_id, (
+                    f"⚙️ *WORK IN PROGRESS: Uploading to Instagram*\n\n"
+                    f"📌 *Video:* `{target_dir.name}`\n"
+                    f"🎬 *Title:* {title}\n\n"
+                    f"📊 *Progress:* `[{get_progress_bar(70)}] 70%`\n"
+                    f"💬 *Status:* Publishing Reel to Instagram..."
+                ))
+            import instagram_upload
+            ig_url = instagram_upload.upload_reel(
+                target_dir / "final.mp4",
+                meta=meta,
+                book_title=meta.get("book", target_dir.name)
             )
-        elif "quotaExceeded" in err_msg:
-            err_text = (
-                "⚠️ *YouTube API Quota Reached!*\n\n"
-                "YouTube Data API ki daily 10,000 units quota limit reach ho chuki hai.\n"
-                "Midnight PST par yeh auto-reset ho jayegi."
-            )
+            if not ig_url:
+                ig_err = "Upload skipped or returned empty URL"
+        except Exception as ig_e:
+            ig_err = str(ig_e)
+            print(f"[Instagram Upload Error]: {ig_err}")
+
+    # --- 5. Construct Status Notification ---
+    lines = []
+    if yt_url:
+        lines.append(f"✅ *YouTube Shorts:* {yt_url}")
+    elif yt_err:
+        if "uploadLimitExceeded" in yt_err or "exceeded the number of videos" in yt_err:
+            lines.append("⚠️ *YouTube:* Daily upload limit reached (resets in 24h)")
+        elif "quotaExceeded" in yt_err:
+            lines.append("⚠️ *YouTube:* Daily API quota reached")
         else:
-            err_text = f"❌ *Upload Failed:*\n`{err_msg}`"
-        print(f"❌ Upload error: {err_msg}")
-        if status_msg_id:
-            edit_msg(chat_id, status_msg_id, err_text)
-        else:
-            send_msg(chat_id, err_text)
+            lines.append(f"❌ *YouTube Error:* `{yt_err[:120]}`")
+
+    if ig_url:
+        lines.append(f"✅ *Instagram Reel:* {ig_url}")
+    elif os.environ.get("IG_USERNAME") and ig_err:
+        lines.append(f"⚠️ *Instagram Error:* `{ig_err[:120]}`")
+
+    # Overall header
+    if yt_url or ig_url:
+        header = "🎉 *SUCCESS! Video Published!*\n\n"
+    else:
+        header = "❌ *Upload Failed on both platforms!*\n\n"
+
+    final_status_text = (
+        f"{header}"
+        + "\n".join(lines) + "\n\n"
+        f"📌 *Title:* {title}\n"
+        f"📊 *Status:* Completed"
+    )
+
+    if status_msg_id:
+        edit_msg(chat_id, status_msg_id, final_status_text)
+    else:
+        send_msg(chat_id, final_status_text)
+
+    # Update original video buttons with direct links
+    action_buttons = []
+    if orig_msg_id:
+        if yt_url and yt_url.startswith("http"):
+            action_buttons.append({"text": "🎬 YouTube ↗", "url": yt_url})
+        if ig_url and ig_url.startswith("http"):
+            action_buttons.append({"text": "📸 Instagram ↗", "url": ig_url})
+        if action_buttons:
+            edit_reply_markup(chat_id, orig_msg_id, {
+                "inline_keyboard": [action_buttons]
+            })
     finally:
         with upload_lock:
             active_uploads -= 1

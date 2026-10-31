@@ -30,6 +30,7 @@ jobs:
           echo "Downloading artifact from run ID: $RUN_ID"
           gh run download "$RUN_ID" -n video -D data/output
       - name: Upload to YouTube
+        continue-on-error: true
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}

@@ -127,3 +127,4 @@ if __name__ == "__main__":
         print("Result:", res)
     else:
         print("Usage: python src/instagram_upload.py <path_to_video_or_dir>")
+
