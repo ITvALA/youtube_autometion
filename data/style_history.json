@@ -19,5 +19,12 @@
     "date": "2026-10-31",
     "book": "Thinking, Fast and Slow",
     "seed": 73899938
+  },
+  {
+    "style_id": "isometric",
+    "variant": 1,
+    "date": "2026-10-31",
+    "book": "The Intelligent Investor",
+    "seed": 499736155
   }
 ]

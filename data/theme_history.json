@@ -530,5 +530,39 @@
       "countdown",
       "quote"
     ]
+  },
+  {
+    "book": "The Intelligent Investor",
+    "date": "2026-10-31",
+    "theme": {
+      "palette": "Style isometric (v1)",
+      "colors": {
+        "bg1": "#111111",
+        "bg2": "#222222",
+        "ac": "#FFD93D",
+        "tx": "#FFFFFF",
+        "cd": "rgba(255,255,255,0.10)"
+      },
+      "font": "Inter",
+      "layout": "center",
+      "pattern": "grid",
+      "transition": "slide",
+      "chart": "bars",
+      "format": {
+        "name": "vertical",
+        "width": 1080,
+        "height": 1920
+      },
+      "formatName": "vertical"
+    },
+    "template_id": "style_isometric",
+    "sceneTypes": [
+      "hook",
+      "countdown",
+      "chalkboard",
+      "beforeAfter",
+      "card",
+      "quote"
+    ]
   }
 ]
