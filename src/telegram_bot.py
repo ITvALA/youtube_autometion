@@ -158,6 +158,7 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
     global active_uploads
     with upload_lock:
         active_uploads += 1
+
     if target_dir_name:
         target_dir = OUT_DIR / target_dir_name
     else:
@@ -354,9 +355,8 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
             edit_reply_markup(chat_id, orig_msg_id, {
                 "inline_keyboard": [action_buttons]
             })
-    finally:
-        with upload_lock:
-            active_uploads -= 1
+    with upload_lock:
+        active_uploads -= 1
 
 def handle_reject(chat_id, target_dir_name=None, message_obj=None):
     if message_obj and message_obj.get("message_id"):
