@@ -1,13 +1,12 @@
 {
-  "selected_voice_id": "voice_5_prabhat_tech",
-  "selected_voice_name": "5. Prabhat (Modern Tech & Hinglish Male)",
-  "voice_model": "en-IN-PrabhatNeural",
-  "voice": "en-IN-PrabhatNeural",
-  "elevenlabs_voice": "Neil",
-  "elevenlabs_voice_id": "AZnzlk1XvdvUeBnXmlld",
-  "pitch": "-2Hz",
+  "provider": "kittentts",
+  "selected_voice_id": "kitten_hindi_bruno",
+  "selected_voice_name": "KittenTTS Hindi (Expressive Bruno)",
+  "voice_model": "KittenML/kitten-tts-nano-0.8",
+  "voice": "Bruno",
+  "custom_sample_dir": "data/voices",
+  "speed": 1.0,
+  "pitch": "+0Hz",
   "rate": "+0%",
-  "locked": true,
-  "allow_wide": false,
-  "description": "User Finalized Voice: Prabhat Neural with ElevenLabs Neil integration."
+  "description": "KittenTTS Neural Engine with Hindi Voice Support and custom voice sample input."
 }
