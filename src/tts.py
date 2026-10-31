@@ -179,22 +179,22 @@ def _synth_google_wavenet(text, cfg, out):
     return []
 
 def synth_speech(text, cfg, out):
-    provider = cfg.get("provider", "edge-tts").lower()
+    provider = cfg.get("provider", "kittentts").lower()
     voice = cfg.get("voice", "").lower()
 
-    # 1. Google Wavenet-C (if requested and API key available)
-    if "wavenet" in voice or provider == "google":
-        try:
-            return _synth_google_wavenet(text, cfg, out)
-        except Exception as e:
-            print(f"[TTS] Google Wavenet-C unavailable ({e}), using studio neural fallback: {cfg.get('fallback_voice', 'hi-IN-MadhurNeural')}")
-
-    # 2. KittenTTS (if explicitly requested)
+    # 1. KittenTTS (if provider is kittentts)
     if provider in ("kittentts", "kitten", "kitten_tts"):
         try:
             return _synth_kitten(text, cfg, out)
         except Exception as e:
             print(f"[TTS] KittenTTS synthesis failed ({e}), falling back to Edge-TTS.")
+
+    # 2. Google Wavenet-C (if requested and API key available)
+    if "wavenet" in voice or provider == "google":
+        try:
+            return _synth_google_wavenet(text, cfg, out)
+        except Exception as e:
+            print(f"[TTS] Google Wavenet-C unavailable ({e}), using studio neural fallback: {cfg.get('fallback_voice', 'hi-IN-MadhurNeural')}")
 
     # 3. ElevenLabs
     el_key = os.getenv("ELEVENLABS_API_KEY") or os.getenv("XI_API_KEY") or cfg.get("elevenlabs_api_key")

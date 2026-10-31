@@ -1,12 +1,12 @@
 {
-  "provider": "edge-tts",
-  "selected_voice_id": "hi-IN-Wavenet-C",
-  "selected_voice_name": "Google Wavenet-C (Hindi Authoritative Male)",
-  "voice_model": "hi-IN-Wavenet-C",
-  "voice": "hi-IN-Wavenet-C",
-  "fallback_voice": "hi-IN-MadhurNeural",
+  "provider": "kittentts",
+  "selected_voice_id": "kitten_hindi",
+  "selected_voice_name": "KittenTTS Neural (GitHub)",
+  "voice_model": "KittenML/kitten-tts-nano-0.8",
+  "voice": "Bruno",
+  "custom_sample_dir": "data/voices",
   "speed": 0.93,
   "pitch": "+0Hz",
   "rate": "-7%",
-  "description": "Dual-script audio engine: Devanagari Hindi for TTS voice, Hinglish for visual screen lyrics."
+  "description": "KittenTTS Neural local model from GitHub (KittenML/kitten-tts-nano-0.8)."
 }
