@@ -4,6 +4,8 @@ import {loadFont as archivo} from "@remotion/google-fonts/ArchivoBlack";
 import {loadFont as space} from "@remotion/google-fonts/SpaceGrotesk";
 import {loadFont as anton} from "@remotion/google-fonts/Anton";
 
+import {StyleScene, hasStyle} from "./styles/StyleEngine";
+
 const FONT: Record<string, string> = {
   ArchivoBlack: archivo("normal", {weights: ["400"], subsets: ["latin"]}).fontFamily,
   SpaceGrotesk: space("normal", {weights: ["700"], subsets: ["latin"]}).fontFamily,
@@ -32,6 +34,7 @@ export type Plan = {
     format: {name: string; width: number; height: number};
   };
   template?: TemplateConfig;
+  style?: {id: string; variant: number; seed: number};
   scenes: Scene[];
 };
 type SP = {s: Scene; plan: Plan; u: number};
@@ -266,6 +269,10 @@ const Captions: React.FC<{scene: Scene; plan: Plan; u: number}> = ({scene, plan,
 const SceneWrap: React.FC<{plan: Plan; scene: Scene; index: number}> = ({plan, scene, index}) => {
   const f = useCurrentFrame();
   const u = useU();
+
+  // StyleEngine: completely different art direction per style
+  if (hasStyle(plan)) return <StyleScene plan={plan} scene={scene} index={index} />;
+
   const t = plan.theme;
   const c = t.colors;
   const p = index === 0 ? 1 : interpolate(f, [0, TRANS], [0, 1], {extrapolateRight: "clamp", easing: Easing.bezier(0.7, 0, 0.2, 1)});

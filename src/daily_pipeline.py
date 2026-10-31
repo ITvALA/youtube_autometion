@@ -4,6 +4,13 @@ Strictly 9:16 vertical 1080x1920 with 22 dynamic visual templates.
 import sys, re, random, shutil, argparse, datetime, subprocess, pathlib
 from pathlib import Path
 
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -11,7 +18,7 @@ if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
 from common import ROOT, load_env, jload, jsave
-import theme_engine, template_engine, llm, tts, audio, notify
+import theme_engine, template_engine, style_engine, llm, tts, audio, notify
 
 THEME_HIST = ROOT / "data" / "theme_history.json"
 slug = lambda s: re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
@@ -49,6 +56,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--book")
     ap.add_argument("--template")
+    ap.add_argument("--style", help="Force style ID (motion_graphics, perspective_3d, cutout_collage, blueprint, swiss_poster, isometric)")
     ap.add_argument("--headless", action="store_true", help="CI mode (kept for clarity)")
     a = ap.parse_args()
     load_env()
@@ -60,35 +68,74 @@ def main():
     
     book = pick_book(theme_history, a.book)
     
-    # 1. Pick Template
-    if a.template:
-        style_cfg["template_mode"] = "fixed"
-        style_cfg["fixed_id"] = a.template
+    # Check if style engine is active
+    style_mode = style_cfg.get("style_mode", "engine")
+    is_style_engine = (a.style is not None) or (style_mode == "engine")
+    
+    style = None
+    if is_style_engine:
+        style_hist = style_engine.load_style_history()
+        style = style_engine.pick_style(history=style_hist, cfg=style_cfg, forced_style=a.style)
         
-    template = template_engine.pick_template(history=template_history, config=style_cfg)
-    theme = template["theme"]
+        # Minimal dummy template & theme so llm.make_plan and fallback work cleanly
+        template = {
+            "id": f"style_{style['id']}",
+            "name": f"Style: {style['id'].replace('_', ' ').title()}",
+            "backdrop": "none",
+            "caption_style": "pill",
+            "transition": "slide",
+            "mascot": False,
+            "scene_recipe": ["hook", "card", "quote"]
+        }
+        theme = {
+            "palette": f"Style {style['id']} (v{style['variant']})",
+            "colors": {
+                "bg1": "#111111", "bg2": "#222222", "ac": "#FFD93D", "tx": "#FFFFFF", "cd": "rgba(255,255,255,0.10)"
+            },
+            "font": "Inter",
+            "layout": "center",
+            "pattern": "grid",
+            "transition": "slide",
+            "chart": "bars",
+            "format": {"name": "vertical", "width": 1080, "height": 1920},
+            "formatName": "vertical"
+        }
+        print("=" * 60)
+        print(f"📖 Book: {book['title']}")
+        print(f"🎨 Style Engine: {style['id']} (variant {style['variant']}, seed {style['seed']})")
+        print("=" * 60)
+    else:
+        # 1. Pick Template
+        if a.template:
+            style_cfg["template_mode"] = "fixed"
+            style_cfg["fixed_id"] = a.template
+            
+        template = template_engine.pick_template(history=template_history, config=style_cfg)
+        theme = template["theme"]
 
-    # Hard rule: strictly enforce 1080x1920 vertical
-    if theme.get("format", {}).get("width") != 1080 or theme.get("format", {}).get("height") != 1920:
-        print("⚠️ Non-vertical format requested. Forcing strictly to 1080x1920 vertical.")
-        theme["format"] = {"name": "vertical", "width": 1080, "height": 1920}
-        theme["formatName"] = "vertical"
+        # Hard rule: strictly enforce 1080x1920 vertical
+        if theme.get("format", {}).get("width") != 1080 or theme.get("format", {}).get("height") != 1920:
+            print("⚠️ Non-vertical format requested. Forcing strictly to 1080x1920 vertical.")
+            theme["format"] = {"name": "vertical", "width": 1080, "height": 1920}
+            theme["formatName"] = "vertical"
 
-    print("=" * 60)
-    print(f"📖 Book: {book['title']}")
-    print(f"🎨 Template: {template['name']} ({template['id']})")
-    print(f"✨ Palette: {theme['palette']} | Transition: {theme['transition']} | Layout: {theme['layout']}")
-    print("=" * 60)
+        print("=" * 60)
+        print(f"📖 Book: {book['title']}")
+        print(f"🎨 Template: {template['name']} ({template['id']})")
+        print(f"✨ Palette: {theme['palette']} | Transition: {theme['transition']} | Layout: {theme['layout']}")
+        print("=" * 60)
 
     # 2. Generate Plan with LLM (with template fallback safety)
     recent_seqs = [h.get("sceneTypes", []) for h in theme_history[-3:] if isinstance(h, dict)]
     try:
-        plan = llm.make_plan(book, recent_sequences=recent_seqs, template=template)
+        plan = llm.make_plan(book, recent_sequences=recent_seqs, template=template, style_mode=is_style_engine)
     except Exception as plan_err:
-        print(f"⚠️ Template plan failed: {plan_err}. Falling back to default classic template.")
+        print(f"⚠️ Plan failed: {plan_err}. Falling back to default plan.")
         template = template_engine.DEFAULT_TEMPLATE
         theme = template_engine._enrich_template(template, theme_history, random.Random())["theme"]
-        plan = llm.make_plan(book, recent_sequences=recent_seqs, template=template)
+        plan = llm.make_plan(book, recent_sequences=recent_seqs, template=template, style_mode=False)
+        is_style_engine = False
+        style = None
 
     unique_ts = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     key = f"{unique_ts}_{slug(book['title'])}"
@@ -115,6 +162,9 @@ def main():
         },
         "scenes": plan["scenes"]
     }
+    if is_style_engine and style:
+        rp["style"] = style
+
     jsave(work / "plan.json", rp)
     silent = work / "silent.mp4"
     npx = shutil.which("npx.cmd") or shutil.which("npx") or "npx.cmd"
@@ -151,6 +201,11 @@ def main():
         "template_id": template["id"],
         "template_name": template["name"]
     }
+    if is_style_engine and style:
+        meta["style_id"] = style["id"]
+        meta["style_variant"] = style["variant"]
+        meta["style_seed"] = style["seed"]
+
     jsave(out / "meta.json", meta)
     jsave(out / "plan.json", rp)
 
@@ -163,16 +218,27 @@ def main():
         "sceneTypes": [s["type"] for s in plan["scenes"]]
     })
     jsave(THEME_HIST, theme_history)
-    template_engine.record_template_history(template, book["title"])
+
+    if is_style_engine and style:
+        style_engine.record_style(style, book["title"])
+    else:
+        template_engine.record_template_history(template, book["title"])
 
     shutil.rmtree(work, ignore_errors=True)
 
     # 8. Send to Telegram for 1-Click Mobile Review
-    caption = (
-        f"{y['title']}\n\n"
-        f"🎨 Template: *{template['name']}* (`{template['id']}`)\n"
-        f"✨ Palette: {theme['palette']} / {theme['transition']} / 9:16 Vertical"
-    )
+    if is_style_engine and style:
+        caption = (
+            f"{y['title']}\n\n"
+            f"🎨 Style: *{style['id'].replace('_', ' ').title()}* (variant {style['variant']})\n"
+            f"✨ 9:16 Vertical | Seed: {style['seed']}"
+        )
+    else:
+        caption = (
+            f"{y['title']}\n\n"
+            f"🎨 Template: *{template['name']}* (`{template['id']}`)\n"
+            f"✨ Palette: {theme['palette']} / {theme['transition']} / 9:16 Vertical"
+        )
     notify.send(final, caption, video_dir=out)
     print("DONE:", final)
 

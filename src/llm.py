@@ -155,6 +155,15 @@ def normalize(p):
         elif stype == "gradientFlow":
             if not d.get("text"): d["text"] = "The Power of Momentum"
             if not d.get("sub"): d["sub"] = "Friction decreases as velocity increases."
+
+        # Keep titles and lines short for crisp visual rendering (especially StyleEngine)
+        if stype == "hook" and "title" in d:
+            words = str(d["title"]).split()
+            if len(words) > 4:
+                d["title"] = " ".join(words[:4])
+        for list_key in ("lines", "points", "items", "habits", "milestones"):
+            if list_key in d and isinstance(d[list_key], list):
+                d[list_key] = [" ".join(str(item).split()[:8]) for item in d[list_key][:4]]
             
     # Guarantee strict 9:16 vertical 1080x1920 format
     if "theme" in p and isinstance(p["theme"], dict):
@@ -163,14 +172,35 @@ def normalize(p):
 
     return p
 
-def validate(p, template=None, style=None):
+def validate(p, template=None, style=None, style_mode=False):
     sc = p.get("scenes")
-    if not isinstance(sc, list) or not 4 <= len(sc) <= 7:
-        return "need 4 to 7 scenes"
-    if sc[0].get("type") != "hook":
-        return "first scene must be hook"
-    if sc[-1].get("type") not in ("card", "quote", "quotePoster"):
-        return "last scene must be card, quote, or quotePoster"
+    if not isinstance(sc, list):
+        return "scenes must be a list"
+
+    if style_mode:
+        if not (5 <= len(sc) <= 6):
+            return "style mode requires 5 or 6 scenes"
+        if sc[0].get("type") != "hook":
+            return "first scene must be hook"
+        if sc[-1].get("type") not in ("card", "quote"):
+            return "last scene in style mode must be card or quote"
+        allowed_middle = {
+            "card", "dial", "timeline", "beforeAfter", "habitTracker",
+            "chalkboard", "paper", "countdown", "quote"
+        }
+        forbidden_style_types = {"story", "character", "animeParallax", "motionComic", "curve"}
+        for s in sc[1:-1]:
+            st = s.get("type")
+            if st in forbidden_style_types or st not in allowed_middle:
+                return f"forbidden scene type in style mode: {st}"
+    else:
+        if not (4 <= len(sc) <= 7):
+            return "need 4 to 7 scenes"
+        if sc[0].get("type") != "hook":
+            return "first scene must be hook"
+        if sc[-1].get("type") not in ("card", "quote", "quotePoster"):
+            return "last scene must be card, quote, or quotePoster"
+
     if len({s.get("type") for s in sc}) < 3:
         return "need at least 3 different scene types"
     
@@ -184,8 +214,8 @@ def validate(p, template=None, style=None):
             if k not in s.get("data", {}):
                 return f"{t} scene missing data.{k}"
                 
-    # Validate template recipe adherence if template provided
-    if template and isinstance(template, dict):
+    # Validate template recipe adherence if template provided (skip in style mode)
+    if not style_mode and template and isinstance(template, dict):
         recipe = template.get("scene_recipe", [])
         recipe_types = set(recipe)
         present_types = set(s.get("type") for s in sc)
@@ -199,22 +229,53 @@ def validate(p, template=None, style=None):
         
     return None
 
-def make_plan(book, recent_sequences=None, template=None):
+def make_plan(book, recent_sequences=None, template=None, style_mode=False):
     style = get_style()
-    template_info = ""
-    if template and isinstance(template, dict):
-        t_id = template.get("id")
-        t_name = template.get("name")
-        t_desc = template.get("description")
-        t_recipe = template.get("scene_recipe", [])
-        template_info = f"""\nACTIVE TEMPLATE: {t_name} ({t_id})
+
+    if style_mode:
+        prompt = f"""Book: {book['title']} by {book.get('author', 'Author')}.
+Make a 25-35 second vertical 9:16 video plan about its 3-4 most powerful lessons.
+Return JSON: {{"scenes":[{{"type":..., "narration":..., "data":{{...}}}}], "youtube":{{"title":..., "description":..., "tags":[...]}}}}
+
+STYLE MODE REQUIREMENTS:
+1. Generate exactly 5 or 6 scenes.
+2. First scene MUST be 'hook' (title <= 4 words in ALL CAPS).
+3. Last scene MUST be 'quote' or 'card'.
+4. Middle scenes MUST be chosen ONLY from: card, dial, timeline, beforeAfter, habitTracker, chalkboard, paper, countdown, quote.
+5. NEVER use story, character, animeParallax, motionComic, or curve.
+6. Keep titles SHORT (hook title <= 4 words, each line item <= 8 words, max 3-4 lines).
+7. At least 3 different scene types.
+8. Narration: natural Hinglish (Roman Hindi + English), 12-22 words per scene, high attention hook, no emojis.
+
+Available Scene types in Style Mode and their data:
+- hook: {{"title":"MAX 4 WORDS CAPS", "sub":"{book['title']}, {book.get('author', 'Author')}"}}
+- card: {{"lines":["takeaway 1 (<= 8 words)", "takeaway 2", "takeaway 3"]}}
+- dial: circular breakdown. {{"center":"PILLARS", "items":["pillar 1", "pillar 2", "pillar 3"]}}
+- timeline: roadmap steps. {{"milestones":["Step 1", "Step 2", "Step 3"]}}
+- beforeAfter: {{"before":"old way trap", "after":"breakthrough shift"}}
+- habitTracker: daily habit streak. {{"streak":"30 DAY PROTOCOL", "habits":["habit 1", "habit 2", "habit 3"]}}
+- chalkboard: classroom chalk board. {{"title":"RULE", "items":["point 1", "point 2", "point 3"]}}
+- paper: clean minimalist note. {{"title":"CORE PRINCIPLE", "points":["point 1", "point 2", "point 3"]}}
+- countdown: numbered ranking. {{"rank":"01", "title":"LESSON", "sub":"explanation"}}
+- quote: wisdom quote. {{"quote":"short punchy quote", "by":"{book.get('author', 'Author')}"}}
+
+Avoid these recent scene sequences: {json.dumps(recent_sequences or [])}.
+youtube.title under 70 chars, description 2 short lines + hashtags."""
+    else:
+        template_info = ""
+        if template and isinstance(template, dict):
+            t_id = template.get("id")
+            t_name = template.get("name")
+            t_desc = template.get("description")
+            t_recipe = template.get("scene_recipe", [])
+            template_info = f"""\nACTIVE TEMPLATE: {t_name} ({t_id})
 Template Look & Vibe: {t_desc}
 TARGET SCENE RECIPE: {json.dumps(t_recipe)}
 Ensure your chosen scenes closely match this recipe while covering the book's core insights."""
-    else:
-        template_info = f"\nSTYLE RULE: {STYLE_RULE.get(style, 'Use rich varied scenes')}"
+        else:
+            template_info = f"\nSTYLE RULE: {STYLE_RULE.get(style, 'Use rich varied scenes')}"
 
-    prompt = f"""Book: {book['title']} by {book.get('author', 'Author')}.
+        prompt = f"""Book: {book['title']} by {book.get('author', 'Author')}.
 Make a 25-35 second vertical 9:16 video plan about its 3-4 most powerful lessons.
 Return JSON: {{"scenes":[{{"type":..., "narration":..., "data":{{...}}}}], "youtube":{{"title":..., "description":..., "tags":[...]}}}}
 {template_info}
@@ -254,7 +315,7 @@ youtube.title under 70 chars, description 2 short lines + hashtags."""
         try:
             plan = json.loads(txt[txt.index("{"): txt.rindex("}") + 1])
             plan = normalize(plan)
-            err = validate(plan, template=template, style=style)
+            err = validate(plan, template=template, style=style, style_mode=style_mode)
             if not err:
                 return plan
         except Exception as e:

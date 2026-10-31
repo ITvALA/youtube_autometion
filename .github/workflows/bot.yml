@@ -1,0 +1,47 @@
+name: Telegram Bot 24x7
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"       # watchdog: restarts bot if not running
+
+concurrency:
+  group: telegram-bot
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+
+      - run: pip install -r requirements.txt
+
+      - name: Configure git for background sync
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "bot@users.noreply.github.com"
+
+      - name: Run bot for 5h50m
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: timeout 21000 python src/telegram_bot.py || true
+
+      - name: Restart myself (no gap)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run bot.yml

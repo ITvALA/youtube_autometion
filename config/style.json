@@ -2,5 +2,8 @@
   "template_mode": "random",
   "fixed_id": "parallax_dawn",
   "no_repeat_last": 20,
-  "animation_style": "story"
+  "animation_style": "story",
+  "style_mode": "engine",
+  "style_no_repeat_last": 4,
+  "style_fixed_id": null
 }

@@ -1,8 +1,12 @@
 name: Hourly Studio Reels
 on:
   schedule:
-    - cron: "0 * * * *"      # Every hour (at minute 0)
-  workflow_dispatch:           # manual trigger button anytime
+    - cron: "17 * * * *"       # off-peak minute avoids GitHub's top-of-hour congestion
+  workflow_dispatch:             # manual trigger button anytime
+
+concurrency:
+  group: studio-video
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -12,20 +16,59 @@ permissions:
 jobs:
   make-video:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
-      - uses: actions/setup-node@v4
+
+      # ── Guard: skip if a video was created < 45 min ago ──
+      - name: Guard against double runs
+        id: guard
+        run: |
+          if [ -f data/pending_video.json ]; then
+            TS=$(python3 -c "import json; print(json.load(open('data/pending_video.json')).get('timestamp',0))")
+            NOW=$(date +%s)
+            DIFF=$(( NOW - TS ))
+            if [ "$DIFF" -lt 2700 ]; then
+              echo "⏭️ Video created ${DIFF}s ago (< 45 min). Skipping."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - if: steps.guard.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+
+      - if: steps.guard.outputs.skip != 'true'
+        uses: actions/setup-node@v4
         with: { node-version: "20" }
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - run: pip install -r requirements.txt
-      - run: npm install --no-audit --no-fund
+
+      - if: steps.guard.outputs.skip != 'true'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - if: steps.guard.outputs.skip != 'true'
+        run: pip install -r requirements.txt
+
+      - if: steps.guard.outputs.skip != 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            remotion/node_modules
+            ~/.cache/remotion
+            remotion/node_modules/.remotion
+          key: remotion-${{ hashFiles('remotion/package.json') }}
+          restore-keys: remotion-
+
+      - if: steps.guard.outputs.skip != 'true'
+        run: npm install --no-audit --no-fund
         working-directory: remotion
-      - run: npx remotion browser ensure
+
+      - if: steps.guard.outputs.skip != 'true'
+        run: npx remotion browser ensure
         working-directory: remotion
+
       - name: Make Reel Video
+        if: steps.guard.outputs.skip != 'true'
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
@@ -37,24 +80,34 @@ jobs:
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: python src/daily_pipeline.py --headless
-      - uses: actions/upload-artifact@v4
+
+      - if: steps.guard.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
         with:
           name: video
           path: data/output
           retention-days: 7
+
       - name: Build Mobile Review Website
+        if: steps.guard.outputs.skip != 'true'
         run: python src/review_app/build_pages_site.py ${{ github.run_id }}
+
       - name: Upload Pages Artifact
+        if: steps.guard.outputs.skip != 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
+
       - name: Deploy to GitHub Pages
+        if: steps.guard.outputs.skip != 'true'
         id: deployment
         uses: actions/deploy-pages@v4
         continue-on-error: true
-      - name: Remember theme and template history
+
+      - name: Remember theme, template and style history
+        if: steps.guard.outputs.skip != 'true'
         run: |
           git config user.name "studio-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add data/theme_history.json data/template_history.json data/pending_video.json
-          git diff --cached --quiet || (git commit -m "theme, template and pending video [skip ci]" && git push)
+          git add data/theme_history.json data/template_history.json data/pending_video.json data/style_history.json
+          git diff --cached --quiet || (git commit -m "theme, template, style and pending video [skip ci]" && git push)

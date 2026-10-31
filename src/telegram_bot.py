@@ -4,7 +4,7 @@
 - Auto-preloads pending videos in background into data/output/
 - Zero-delay, multithreaded operation
 """
-import os, sys, time, json, pathlib, requests, threading, subprocess
+import os, sys, time, json, pathlib, requests, threading, subprocess, signal
 from pathlib import Path
 
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
@@ -29,6 +29,30 @@ ALLOWED_CHAT = str(os.environ.get("TELEGRAM_CHAT_ID", ""))
 BASE_URL = f"https://api.telegram.org/bot{TOKEN}"
 OUT_DIR = ROOT / "data" / "output"
 PENDING_FILE = ROOT / "data" / "pending_video.json"
+
+active_uploads = 0
+upload_lock = threading.Lock()
+shutdown_requested = False
+
+def sigterm_handler(signum, frame):
+    global shutdown_requested
+    print(f"🛑 Received signal {signum} (SIGTERM/SIGINT). Waiting for active uploads to finish...")
+    shutdown_requested = True
+    start_wait = time.time()
+    while time.time() - start_wait < 180:
+        with upload_lock:
+            if active_uploads == 0:
+                break
+        print("⏳ Waiting for running YouTube upload to finish...")
+        time.sleep(2)
+    print("👋 Clean shutdown complete.")
+    sys.exit(0)
+
+try:
+    signal.signal(signal.SIGTERM, sigterm_handler)
+    signal.signal(signal.SIGINT, sigterm_handler)
+except Exception:
+    pass
 
 def send_msg(chat_id, text, reply_markup=None):
     data = {"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}
@@ -102,7 +126,7 @@ def background_video_sync():
                 last_git_pull = now
                 try:
                     subprocess.run(
-                        ["git", "pull", "--rebase", "-X", "ours", "origin", "main"],
+                        ["git", "pull", "--rebase", "--autostash", "origin", "main"],
                         cwd=ROOT,
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
@@ -131,10 +155,14 @@ def background_video_sync():
 
 def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
     """Handles upload in background thread with live animated progress bar."""
-    if target_dir_name:
-        target_dir = OUT_DIR / target_dir_name
-    else:
-        target_dir = get_latest_output_dir()
+    global active_uploads
+    with upload_lock:
+        active_uploads += 1
+    try:
+        if target_dir_name:
+            target_dir = OUT_DIR / target_dir_name
+        else:
+            target_dir = get_latest_output_dir()
     
     # 1. Immediate visual feedback: Update original video button
     orig_msg_id = message_obj.get("message_id") if message_obj else None
@@ -228,6 +256,27 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
         yt_url = f"https://youtu.be/{vid_id}" if vid_id and vid_id != "dry_run_video_id" else "Uploaded (Draft)"
         youtube_upload.append_completed_book(meta.get("book", target_dir.name), "", "Self Improvement", yt_url)
         
+        # Git commit and push completed_books.md
+        try:
+            subprocess.run(["git", "config", "user.name", "studio-bot"], cwd=ROOT, check=False)
+            subprocess.run(["git", "config", "user.email", "bot@users.noreply.github.com"], cwd=ROOT, check=False)
+            subprocess.run(["git", "add", "completed_books.md"], cwd=ROOT, check=False)
+            diff_res = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=ROOT)
+            if diff_res.returncode != 0:
+                book_name = meta.get("book", target_dir.name)
+                subprocess.run(
+                    ["git", "commit", "-m", f"Record completed book: {book_name} [skip ci]"],
+                    cwd=ROOT, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                )
+                subprocess.run(
+                    ["git", "pull", "--rebase", "--autostash", "origin", "main"],
+                    cwd=ROOT, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                )
+                subprocess.run(["git", "push", "origin", "main"], cwd=ROOT, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                print(f"✅ Successfully committed and pushed completed book record for '{book_name}'")
+        except Exception as git_err:
+            print(f"⚠️ Git push completed_books.md error: {git_err}")
+
         final_success_text = (
             f"🎉 *SUCCESS! Video is LIVE on YouTube!*\n\n"
             f"🎬 *Watch:* {yt_url}\n"
@@ -251,6 +300,9 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
             edit_msg(chat_id, status_msg_id, err_text)
         else:
             send_msg(chat_id, err_text)
+    finally:
+        with upload_lock:
+            active_uploads -= 1
 
 def handle_reject(chat_id, target_dir_name=None, message_obj=None):
     if message_obj and message_obj.get("message_id"):
@@ -272,9 +324,13 @@ def start_bot():
     print("⚡ Auto-preload background sync active: videos save to output automatically on arrival.")
 
     offset = 0
-    while True:
+    while not shutdown_requested:
         try:
             r = requests.get(f"{BASE_URL}/getUpdates", params={"offset": offset, "timeout": 30}, timeout=45)
+            if r.status_code == 409:
+                print("⚠️ Telegram 409 Conflict: Another bot instance is currently polling. Sleeping 5s before retrying...")
+                time.sleep(5)
+                continue
             if not r.ok:
                 time.sleep(3)
                 continue
