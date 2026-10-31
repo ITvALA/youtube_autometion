@@ -14,7 +14,7 @@ def pick_random_bgm(bgm_dir=None):
     if not tracks:
         return None
     selected = random.choice(tracks)
-    print(f"[Audio] 🎵 Selected random motivational BGM: {selected.name}")
+    print(f"[Audio] Selected random motivational BGM: {selected.name}")
     return selected
 
 def mix(voice, total, out, bgm_file=None):
