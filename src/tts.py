@@ -116,13 +116,14 @@ def _synth_kokoro(text, cfg, out):
     wav_out = Path(out).with_suffix(".wav")
     sf.write(str(wav_out), samples, sample_rate)
     
-    subprocess.run([
-        "ffmpeg", "-y", "-loglevel", "error",
-        "-i", str(wav_out),
-        "-ar", "44100", "-ac", "2",
-        "-b:a", "192k",
-        str(out)
-    ], check=True)
+    pitch_factor = float(cfg.get("pitch_factor", 1.0))
+    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav_out)]
+    if pitch_factor != 1.0:
+        rate = int(44100 * pitch_factor)
+        tempo = 1.0 / pitch_factor
+        cmd += ["-af", f"asetrate={rate},atempo={tempo:.4f}"]
+    cmd += ["-ar", "44100", "-ac", "2", "-b:a", "192k", str(out)]
+    subprocess.run(cmd, check=True)
     
     if wav_out.exists() and str(wav_out) != str(out):
         try:
