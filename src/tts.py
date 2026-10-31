@@ -178,18 +178,50 @@ def _synth_google_wavenet(text, cfg, out):
         f.write(audio_content)
     return []
 
+def _synth_openai(text, cfg, out):
+    """OpenAI TTS (powers openai.fm) with native Hindi support."""
+    api_key = os.getenv("OPENAI_API_KEY") or cfg.get("openai_api_key")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is not set in .env for OpenAI TTS (openai.fm)")
+    model = cfg.get("voice_model", "tts-1")  # tts-1 or tts-1-hd
+    voice = cfg.get("voice", "onyx")        # onyx (deep male), echo, alloy, nova, shimmer
+    speed = float(cfg.get("speed", 0.95))
+    url = "https://api.openai.com/v1/audio/speech"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": model,
+        "input": text,
+        "voice": voice,
+        "speed": speed
+    }
+    r = requests.post(url, headers=headers, json=payload, timeout=60)
+    r.raise_for_status()
+    with open(out, "wb") as f:
+        f.write(r.content)
+    return []
+
 def synth_speech(text, cfg, out):
-    provider = cfg.get("provider", "kittentts").lower()
+    provider = cfg.get("provider", "edge-tts").lower()
     voice = cfg.get("voice", "").lower()
 
-    # 1. KittenTTS (if provider is kittentts)
+    # 1. OpenAI TTS (openai.fm)
+    if provider in ("openai", "openaifm", "openai.fm") or voice in ("onyx", "echo", "alloy", "fable", "nova", "shimmer"):
+        try:
+            return _synth_openai(text, cfg, out)
+        except Exception as e:
+            print(f"[TTS] OpenAI TTS (openai.fm) failed: {e}. Falling back to studio neural voice: {cfg.get('fallback_voice', 'hi-IN-MadhurNeural')}")
+
+    # 2. KittenTTS (if provider is kittentts)
     if provider in ("kittentts", "kitten", "kitten_tts"):
         try:
             return _synth_kitten(text, cfg, out)
         except Exception as e:
             print(f"[TTS] KittenTTS synthesis failed ({e}), falling back to Edge-TTS.")
 
-    # 2. Google Wavenet-C (if requested and API key available)
+    # 3. Google Wavenet-C (if requested and API key available)
     if "wavenet" in voice or provider == "google":
         try:
             return _synth_google_wavenet(text, cfg, out)

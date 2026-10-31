@@ -1,12 +1,13 @@
 {
-  "provider": "kittentts",
-  "selected_voice_id": "kitten_hindi",
-  "selected_voice_name": "KittenTTS Neural (GitHub)",
-  "voice_model": "KittenML/kitten-tts-nano-0.8",
-  "voice": "Bruno",
-  "custom_sample_dir": "data/voices",
-  "speed": 0.93,
+  "provider": "openai.fm",
+  "selected_voice_id": "openai_onyx",
+  "selected_voice_name": "OpenAI TTS Onyx (Deep Hindi Narrator)",
+  "voice_model": "tts-1",
+  "voice": "onyx",
+  "language": "hi",
+  "fallback_voice": "hi-IN-MadhurNeural",
+  "speed": 0.95,
   "pitch": "+0Hz",
   "rate": "-7%",
-  "description": "KittenTTS Neural local model from GitHub (KittenML/kitten-tts-nano-0.8)."
+  "description": "OpenAI TTS Engine (powers openai.fm) with native Hindi support and deep motivational resonance."
 }
