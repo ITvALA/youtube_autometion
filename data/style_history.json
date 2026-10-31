@@ -61,5 +61,12 @@
     "date": "2026-10-31",
     "book": "Think and Grow Rich",
     "seed": 293863281
+  },
+  {
+    "style_id": "motion_graphics",
+    "variant": 2,
+    "date": "2026-10-31",
+    "book": "Rich Dad Poor Dad",
+    "seed": 620369717
   }
 ]
