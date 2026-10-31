@@ -246,6 +246,9 @@ STYLE MODE REQUIREMENTS:
 6. Keep titles SHORT (hook title <= 4 words, each line item <= 8 words, max 3-4 lines).
 7. At least 3 different scene types.
 8. Narration: natural Hinglish (Roman Hindi + English), 12-22 words per scene, high attention hook, no emojis.
+9. BRANDING MANDATES:
+   - First scene narration MUST start by explicitly saying the book name "{book['title']}".
+   - Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...aise aur powerful insights ke liye MindSpark ko subscribe karein!").
 
 Available Scene types in Style Mode and their data:
 - hook: {{"title":"MAX 4 WORDS CAPS", "sub":"{book['title']}, {book.get('author', 'Author')}"}}
@@ -306,6 +309,9 @@ Available Scene types and their data:
 
 Rules: 5 or 6 scenes. First scene = hook. Last scene = card, quote, or quotePoster. At least 3 different scene types.
 Narration: natural Hinglish (Roman Hindi + English), 12-22 words per scene, high attention hook, no emojis.
+BRANDING MANDATES:
+- First scene narration MUST start by explicitly saying the book name "{book['title']}".
+- Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...aise aur powerful insights ke liye MindSpark ko subscribe karein!").
 Avoid these recent scene sequences: {json.dumps(recent_sequences or [])}.
 youtube.title under 70 chars, description 2 short lines + hashtags."""
 
@@ -315,6 +321,19 @@ youtube.title under 70 chars, description 2 short lines + hashtags."""
         try:
             plan = json.loads(txt[txt.index("{"): txt.rindex("}") + 1])
             plan = normalize(plan)
+
+            # Programmatically guarantee book name at start and MindSpark at end
+            if plan.get("scenes"):
+                first_s = plan["scenes"][0]
+                last_s = plan["scenes"][-1]
+                b_title = book.get("title", "").replace(",", "").strip()
+                f_narr = first_s.get("narration", "")
+                if b_title.lower() not in f_narr.lower():
+                    first_s["narration"] = f"Kitab {b_title}: " + f_narr
+                l_narr = last_s.get("narration", "")
+                if "mindspark" not in l_narr.lower():
+                    last_s["narration"] = l_narr.rstrip(".! ") + ". Aur aisi life-changing insights ke liye MindSpark ko follow karein!"
+
             err = validate(plan, template=template, style=style, style_mode=style_mode)
             if not err:
                 return plan

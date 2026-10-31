@@ -82,3 +82,10 @@ def test_theme_engine_selection():
     assert "transition" in theme
     assert theme["format"]["width"] == 1080
     assert theme["format"]["height"] == 1920
+
+def test_pick_random_bgm():
+    from src.audio import pick_random_bgm
+    bgm = pick_random_bgm()
+    assert bgm is not None
+    assert bgm.exists()
+    assert bgm.suffix == ".mp3"

@@ -4,8 +4,8 @@
   "selected_voice_name": "Madhur Neural (Expressive Hindi Storyteller)",
   "voice_model": "hi-IN-MadhurNeural",
   "voice": "hi-IN-MadhurNeural",
-  "speed": 1.0,
+  "speed": 0.93,
   "pitch": "+0Hz",
-  "rate": "+0%",
-  "description": "Premium Neural Hindi Voice - Natural storytelling, deep human resonance, zero robotic distortion."
+  "rate": "-7%",
+  "description": "Premium Neural Hindi Voice - Natural storytelling, deep human resonance, slowed down for clear articulation."
 }
