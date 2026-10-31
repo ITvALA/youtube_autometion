@@ -8,6 +8,10 @@ on:
         description: "Force run (bypass 45-min guard)"
         type: boolean
         default: false
+      book:
+        description: "Custom Topic or Book Name (Leave empty for automatic)"
+        type: string
+        default: ""
 
 concurrency:
   group: studio-video
@@ -86,7 +90,12 @@ jobs:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-        run: python src/daily_pipeline.py --headless
+        run: |
+          if [ -n "${{ inputs.book }}" ]; then
+            python src/daily_pipeline.py --headless --book "${{ inputs.book }}"
+          else
+            python src/daily_pipeline.py --headless
+          fi
 
       - if: steps.guard.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
