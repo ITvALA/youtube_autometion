@@ -47,5 +47,12 @@
     "date": "2026-10-31",
     "book": "Meditations",
     "seed": 260039551
+  },
+  {
+    "style_id": "cutout_collage",
+    "variant": 0,
+    "date": "2026-10-31",
+    "book": "Range",
+    "seed": 181403649
   }
 ]
