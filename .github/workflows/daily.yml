@@ -3,6 +3,11 @@ on:
   schedule:
     - cron: "17 * * * *"       # off-peak minute avoids GitHub's top-of-hour congestion
   workflow_dispatch:             # manual trigger button anytime
+    inputs:
+      force:
+        description: "Force run (bypass 45-min guard)"
+        type: boolean
+        default: false
 
 concurrency:
   group: studio-video
@@ -24,7 +29,9 @@ jobs:
       - name: Guard against double runs
         id: guard
         run: |
-          if [ -f data/pending_video.json ]; then
+          if [ "${{ inputs.force }}" = "true" ]; then
+            echo "⚡ Force run requested via manual trigger. Bypassing 45-min guard."
+          elif [ -f data/pending_video.json ]; then
             TS=$(python3 -c "import json; print(json.load(open('data/pending_video.json')).get('timestamp',0))")
             NOW=$(date +%s)
             DIFF=$(( NOW - TS ))
