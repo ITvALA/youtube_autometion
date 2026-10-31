@@ -18,6 +18,24 @@ except Exception:
     pass
 
 _kitten_model = None
+_kokoro_model = None
+
+def get_kokoro_model(model_path=None, voices_path=None):
+    """Loads and caches Kokoro-82M ONNX model instance."""
+    global _kokoro_model
+    if _kokoro_model is None:
+        try:
+            from kokoro_onnx import Kokoro
+            m_path = model_path or (ROOT / "data" / "models" / "kokoro" / "kokoro-v1.0.int8.onnx")
+            v_path = voices_path or (ROOT / "data" / "models" / "kokoro" / "voices-v1.0.bin")
+            if Path(m_path).exists() and Path(v_path).exists():
+                _kokoro_model = Kokoro(str(m_path), str(v_path))
+            else:
+                print(f"[Kokoro] Model files not found at {m_path} or {v_path}")
+        except Exception as e:
+            print(f"[Kokoro] Initialization error: {e}")
+            _kokoro_model = None
+    return _kokoro_model
 
 def get_kitten_model(model_name="KittenML/kitten-tts-nano-0.8"):
     """Loads and caches KittenTTS model instance for low-latency generation."""
@@ -79,6 +97,39 @@ def _synth_elevenlabs(text, voice_id, api_key, out):
     with open(out, "wb") as f:
         f.write(base64.b64decode(data["audio_base64"]))
     return parse_elevenlabs_alignment(data.get("alignment", {}))
+
+def _synth_kokoro(text, cfg, out):
+    """Synthesizes speech using hexgrad/Kokoro-82M ONNX with native Hindi voices."""
+    k = get_kokoro_model()
+    if not k:
+        raise RuntimeError("Kokoro ONNX model failed to load")
+    voice = cfg.get("voice", "hm_omega")
+    available = k.get_voices()
+    if voice not in available:
+        voice = "hm_omega" if "hm_omega" in available else (available[0] if available else "af")
+    speed = float(cfg.get("speed", 0.93))
+    lang = cfg.get("lang", "hi")
+    
+    samples, sample_rate = k.create(text, voice=voice, speed=speed, lang=lang)
+    
+    import soundfile as sf
+    wav_out = Path(out).with_suffix(".wav")
+    sf.write(str(wav_out), samples, sample_rate)
+    
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error",
+        "-i", str(wav_out),
+        "-ar", "44100", "-ac", "2",
+        "-b:a", "192k",
+        str(out)
+    ], check=True)
+    
+    if wav_out.exists() and str(wav_out) != str(out):
+        try:
+            wav_out.unlink()
+        except Exception:
+            pass
+    return []
 
 def _synth_kitten(text, cfg, out):
     """Synthesizes speech using KittenTTS with optional custom Hindi voice sample."""
@@ -206,6 +257,13 @@ def _synth_openai(text, cfg, out):
 def synth_speech(text, cfg, out):
     provider = cfg.get("provider", "edge-tts").lower()
     voice = cfg.get("voice", "").lower()
+
+    # 1. Kokoro-82M (Top Trending Hindi Open-Weights Model on Hugging Face)
+    if provider in ("kokoro", "kokoro-82m", "kokoro_onnx", "hexgrad/kokoro-82m") or voice.startswith(("hm_", "hf_")):
+        try:
+            return _synth_kokoro(text, cfg, out)
+        except Exception as e:
+            print(f"[TTS] Kokoro-82M failed ({e}), falling back to studio neural voice: {cfg.get('fallback_voice', 'hi-IN-MadhurNeural')}")
 
     # 1. OpenAI TTS (openai.fm)
     if provider in ("openai", "openaifm", "openai.fm") or voice in ("onyx", "echo", "alloy", "fable", "nova", "shimmer"):

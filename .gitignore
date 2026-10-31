@@ -15,3 +15,5 @@ __pycache__/
 venv/
 data/test_renders/
 data/stills/
+output/
+data/models/
