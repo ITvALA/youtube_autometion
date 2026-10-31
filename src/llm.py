@@ -235,7 +235,7 @@ def make_plan(book, recent_sequences=None, template=None, style_mode=False):
     if style_mode:
         prompt = f"""Book: {book['title']} by {book.get('author', 'Author')}.
 Make a 25-35 second vertical 9:16 video plan about its 3-4 most powerful lessons.
-Return JSON: {{"scenes":[{{"type":..., "narration":..., "data":{{...}}}}], "youtube":{{"title":..., "description":..., "tags":[...]}}}}
+Return JSON: {{"scenes":[{{"type":..., "narration":..., "tts_text":..., "data":{{...}}}}], "youtube":{{"title":..., "description":..., "tags":[...]}}}}
 
 STYLE MODE REQUIREMENTS:
 1. Generate exactly 5 or 6 scenes.
@@ -245,7 +245,9 @@ STYLE MODE REQUIREMENTS:
 5. NEVER use story, character, animeParallax, motionComic, or curve.
 6. Keep titles SHORT (hook title <= 4 words, each line item <= 8 words, max 3-4 lines).
 7. At least 3 different scene types.
-8. Narration: natural Hinglish (Roman Hindi + English), 12-22 words per scene, high attention hook, no emojis.
+8. DUAL-SCRIPT SYSTEM:
+   - 'narration': Clean Hinglish (Roman English letters, 12-22 words) for ON-SCREEN visual subtitles/lyrics.
+   - 'tts_text': Pure Devanagari Hindi text corresponding to the scene for the TTS audio voice to speak with flawless native pronunciation.
 9. BRANDING MANDATES:
    - First scene narration MUST start directly with "{book['title']} hume sikhati hai..." (NO greetings like 'Namaste dosto', NO 'Kitab' prefix, start directly with the book title).
    - Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...aise aur powerful insights ke liye MindSpark ko subscribe karein!").
@@ -280,7 +282,7 @@ Ensure your chosen scenes closely match this recipe while covering the book's co
 
         prompt = f"""Book: {book['title']} by {book.get('author', 'Author')}.
 Make a 25-35 second vertical 9:16 video plan about its 3-4 most powerful lessons.
-Return JSON: {{"scenes":[{{"type":..., "narration":..., "data":{{...}}}}], "youtube":{{"title":..., "description":..., "tags":[...]}}}}
+Return JSON: {{"scenes":[{{"type":..., "narration":..., "tts_text":..., "data":{{...}}}}], "youtube":{{"title":..., "description":..., "tags":[...]}}}}
 {template_info}
 
 Available Scene types and their data:
@@ -308,7 +310,9 @@ Available Scene types and their data:
 - quote: wisdom quote. {{"quote":"quote text", "by":"{book.get('author', 'Author')}"}}
 
 Rules: 5 or 6 scenes. First scene = hook. Last scene = card, quote, or quotePoster. At least 3 different scene types.
-Narration: natural Hinglish (Roman Hindi + English), 12-22 words per scene, high attention hook, no emojis.
+DUAL-SCRIPT SYSTEM:
+- 'narration': Clean Hinglish (Roman English letters, 12-22 words) for ON-SCREEN visual subtitles/lyrics.
+- 'tts_text': Pure Devanagari Hindi text corresponding to the scene for the TTS audio voice to speak with flawless native pronunciation.
 BRANDING MANDATES:
 - First scene narration MUST start directly with "{book['title']} hume sikhati hai..." (NO greetings like 'Namaste dosto', NO 'Kitab' prefix, start directly with the book title).
 - Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...aise aur powerful insights ke liye MindSpark ko subscribe karein!").
@@ -338,6 +342,11 @@ youtube.title under 70 chars, description 2 short lines + hashtags."""
                 l_narr = last_s.get("narration", "")
                 if "mindspark" not in l_narr.lower():
                     last_s["narration"] = l_narr.rstrip(".! ") + ". Aur aisi life-changing insights ke liye MindSpark ko subscribe karein!"
+
+                # Ensure tts_text exists on each scene
+                for sc in plan["scenes"]:
+                    if not sc.get("tts_text"):
+                        sc["tts_text"] = sc["narration"]
 
             err = validate(plan, template=template, style=style, style_mode=style_mode)
             if not err:

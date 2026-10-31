@@ -131,9 +131,10 @@ def _synth_kitten(text, cfg, out):
 
 async def _synth_edge(text, cfg, out):
     voice = cfg.get("voice_model") or cfg.get("voice") or "hi-IN-MadhurNeural"
-    if not voice.startswith(("en-", "hi-", "Microsoft")):
-        voice = "hi-IN-MadhurNeural"
-    kw = dict(rate=cfg.get("rate", "+0%"), pitch=cfg.get("pitch", "+0Hz"))
+    # If Wavenet requested without Google key, fall back to high-fidelity Madhur Neural
+    if "wavenet" in voice.lower() or not voice.startswith(("en-", "hi-", "Microsoft")):
+        voice = cfg.get("fallback_voice", "hi-IN-MadhurNeural")
+    kw = dict(rate=cfg.get("rate", "-7%"), pitch=cfg.get("pitch", "+0Hz"))
     try:
         import edge_tts
         try:
@@ -152,17 +153,50 @@ async def _synth_edge(text, cfg, out):
         print(f"[TTS] Edge-TTS error: {e}")
         return []
 
+def _synth_google_wavenet(text, cfg, out):
+    """Google Cloud Text-to-Speech API for hi-IN-Wavenet-C."""
+    api_key = os.getenv("GOOGLE_TTS_API_KEY") or os.getenv("GCP_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise RuntimeError("GOOGLE_TTS_API_KEY is not set for Wavenet-C")
+    voice_name = cfg.get("voice", "hi-IN-Wavenet-C")
+    url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api_key}"
+    payload = {
+        "input": {"text": text},
+        "voice": {
+            "languageCode": "hi-IN",
+            "name": voice_name
+        },
+        "audioConfig": {
+            "audioEncoding": "MP3",
+            "speakingRate": float(cfg.get("speed", 0.93))
+        }
+    }
+    r = requests.post(url, json=payload, timeout=30)
+    r.raise_for_status()
+    audio_content = base64.b64decode(r.json()["audioContent"])
+    with open(out, "wb") as f:
+        f.write(audio_content)
+    return []
+
 def synth_speech(text, cfg, out):
-    provider = cfg.get("provider", "kittentts").lower()
-    
-    # 1. KittenTTS (Default / Requested)
+    provider = cfg.get("provider", "edge-tts").lower()
+    voice = cfg.get("voice", "").lower()
+
+    # 1. Google Wavenet-C (if requested and API key available)
+    if "wavenet" in voice or provider == "google":
+        try:
+            return _synth_google_wavenet(text, cfg, out)
+        except Exception as e:
+            print(f"[TTS] Google Wavenet-C unavailable ({e}), using studio neural fallback: {cfg.get('fallback_voice', 'hi-IN-MadhurNeural')}")
+
+    # 2. KittenTTS (if explicitly requested)
     if provider in ("kittentts", "kitten", "kitten_tts"):
         try:
             return _synth_kitten(text, cfg, out)
         except Exception as e:
             print(f"[TTS] KittenTTS synthesis failed ({e}), falling back to Edge-TTS.")
 
-    # 2. ElevenLabs
+    # 3. ElevenLabs
     el_key = os.getenv("ELEVENLABS_API_KEY") or os.getenv("XI_API_KEY") or cfg.get("elevenlabs_api_key")
     if (provider == "elevenlabs" or cfg.get("voice") == "elevenlabs_neil") and el_key:
         voice_id = cfg.get("elevenlabs_voice_id") or "AZnzlk1XvdvUeBnXmlld"
@@ -171,21 +205,28 @@ def synth_speech(text, cfg, out):
         except Exception as e:
             print(f"[TTS] ElevenLabs call failed ({e}), falling back to Edge-TTS.")
 
-    # 3. Edge-TTS Fallback
+    # 4. Edge-TTS Studio Neural
     return asyncio.run(_synth_edge(text, cfg, out))
 
 def narrate(scenes, workdir, cfg, pad=0.45):
+    """Synthesizes speech using dual scripts: tts_text (Devanagari Hindi) for audio voice, narration (Hinglish) for on-screen lyrics."""
     workdir.mkdir(parents=True, exist_ok=True)
     parts = []
     for i, s in enumerate(scenes):
         raw, padded = workdir / f"s{i}_raw.mp3", workdir / f"s{i}.mp3"
-        words = synth_speech(s["narration"], cfg, raw)
+        # 1. Voice audio: Use tts_text (Devanagari Hindi) if provided for 100% natural pronunciation
+        voice_text = s.get("tts_text") or s["narration"]
+        synth_speech(voice_text, cfg, raw)
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-af", f"apad=pad_dur={pad}", "-ar", "44100", "-ac", "2", padded], check=True)
         s["durationSec"] = round(dur(padded), 3)
-        if not words:  # fallback: evenly spaced words
-            toks = s["narration"].split()
-            step = (s["durationSec"] - pad) / max(1, len(toks))
-            words = [{"w": t, "s": round(k * step, 3), "e": round((k + 1) * step, 3)} for k, t in enumerate(toks)]
+
+        # 2. Screen Lyrics / Captions: Always use Hinglish 'narration' for modern on-screen reading
+        hinglish_tokens = s["narration"].split()
+        if hinglish_tokens:
+            step = (s["durationSec"] - pad) / max(1, len(hinglish_tokens))
+            words = [{"w": t, "s": round(k * step, 3), "e": round((k + 1) * step, 3)} for k, t in enumerate(hinglish_tokens)]
+        else:
+            words = []
         s["words"] = words
         parts.append(padded)
     lst = workdir / "list.txt"

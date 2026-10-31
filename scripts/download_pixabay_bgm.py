@@ -77,3 +77,4 @@ def download_pixabay_motivational(limit=12):
 
 if __name__ == "__main__":
     download_pixabay_motivational()
+
