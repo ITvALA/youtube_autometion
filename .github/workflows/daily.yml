@@ -25,12 +25,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ── Guard: skip if a video was created < 45 min ago ──
+      # ── Guard: skip if a video was created < 45 min ago (scheduled runs only) ──
       - name: Guard against double runs
         id: guard
         run: |
-          if [ "${{ inputs.force }}" = "true" ]; then
-            echo "⚡ Force run requested via manual trigger. Bypassing 45-min guard."
+          if [ "${{ inputs.force }}" = "true" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "⚡ Manual trigger detected. Bypassing 45-min guard."
           elif [ -f data/pending_video.json ]; then
             TS=$(python3 -c "import json; print(json.load(open('data/pending_video.json')).get('timestamp',0))")
             NOW=$(date +%s)

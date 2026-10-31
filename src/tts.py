@@ -130,9 +130,9 @@ def _synth_kitten(text, cfg, out):
     return words
 
 async def _synth_edge(text, cfg, out):
-    voice = cfg.get("voice_model") or cfg.get("voice") or "en-IN-PrabhatNeural"
+    voice = cfg.get("voice_model") or cfg.get("voice") or "hi-IN-MadhurNeural"
     if not voice.startswith(("en-", "hi-", "Microsoft")):
-        voice = "en-IN-PrabhatNeural"
+        voice = "hi-IN-MadhurNeural"
     kw = dict(rate=cfg.get("rate", "+0%"), pitch=cfg.get("pitch", "+0Hz"))
     try:
         import edge_tts
