@@ -12,5 +12,12 @@
     "date": "2026-10-31",
     "book": "The Richest Man in Babylon",
     "seed": 737338404
+  },
+  {
+    "style_id": "motion_graphics",
+    "variant": 0,
+    "date": "2026-10-31",
+    "book": "Thinking, Fast and Slow",
+    "seed": 73899938
   }
 ]
