@@ -27,6 +27,19 @@ def pick_book(history, forced=None):
     books = jload(ROOT / "data" / "books.json", [])
     if forced:
         return next((b for b in books if b["title"].lower() == forced.lower()), {"title": forced, "author": ""})
+
+    # Check if a custom next book was requested via Telegram
+    next_file = ROOT / "data" / "next_book.txt"
+    if next_file.exists():
+        try:
+            custom_title = next_file.read_text(encoding="utf-8").strip()
+            if custom_title:
+                next_file.unlink(missing_ok=True)
+                print(f"[Pipeline] Found Telegram queued book: '{custom_title}'")
+                return next((b for b in books if b["title"].lower() == custom_title.lower()), {"title": custom_title, "author": ""})
+        except Exception as e:
+            print(f"[Pipeline] Warning reading next_book.txt: {e}")
+
     cp = ROOT / "completed_books.md"
     done = cp.read_text(encoding="utf-8").lower() if cp.exists() else ""
     used = {h["book"].lower() for h in history if "book" in h}

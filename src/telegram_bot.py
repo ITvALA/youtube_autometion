@@ -365,6 +365,43 @@ def handle_reject(chat_id, target_dir_name=None, message_obj=None):
         })
     send_msg(chat_id, "❌ *Video marked as rejected.* It will not be uploaded to YouTube.")
 
+
+def git_sync_changes(commit_msg):
+    try:
+        subprocess.run(["git", "config", "user.name", "studio-bot"], cwd=ROOT, check=False)
+        subprocess.run(["git", "config", "user.email", "bot@users.noreply.github.com"], cwd=ROOT, check=False)
+        subprocess.run(["git", "add", "data/books.json", "data/next_book.txt"], cwd=ROOT, check=False)
+        diff_res = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=ROOT)
+        if diff_res.returncode != 0:
+            subprocess.run(["git", "commit", "-m", f"{commit_msg} [skip ci]"], cwd=ROOT, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "pull", "--rebase", "--autostash", "origin", "main"], cwd=ROOT, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "push", "origin", "main"], cwd=ROOT, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            print(f"[Git Sync] {commit_msg} pushed to main.")
+    except Exception as ge:
+        print(f"[Git Sync Error]: {ge}")
+
+def trigger_workflow_make_video(book_name):
+    next_file = ROOT / "data" / "next_book.txt"
+    next_file.write_text(book_name, encoding="utf-8")
+    git_sync_changes(f"Queue next book: {book_name}")
+    
+    gh_token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if gh_token:
+        try:
+            headers = {
+                "Authorization": f"Bearer {gh_token}",
+                "Accept": "application/vnd.github.v3+json"
+            }
+            url = "https://api.github.com/repos/ITvALA/youtube_autometion/actions/workflows/daily.yml/dispatches"
+            r = requests.post(url, headers=headers, json={"ref": "main", "inputs": {"force": True, "book": book_name}}, timeout=10)
+            if r.status_code in (204, 200, 201):
+                return True
+            else:
+                print(f"[GH Trigger] API response {r.status_code}: {r.text}")
+        except Exception as ge:
+            print(f"[GH Trigger Error]: {ge}")
+    return False
+
 def start_bot():
     if not TOKEN:
         print("Error: TELEGRAM_BOT_TOKEN not found in environment or .env file.")
@@ -442,26 +479,124 @@ def start_bot():
                     print(f"⚠️ Ignored text message from unauthorized chat: {sender_chat} (expected {ALLOWED_CHAT})")
                     continue
                 
-                cmd = text.lower()
-                if cmd in ("/start", "/help"):
-                    send_msg(sender_chat, (
-                        "👋 *Welcome to MindSpark Studio Bot!*\n\n"
-                        "*Commands:*\n"
-                        "• Tap *PASS* button — Turant YouTube par video upload karein.\n"
-                        "• Tap *REJECT* button — Video ko discard karein.\n"
-                        "• Send `pass` or `/pass` — Latest video ko upload karein."
-                    ))
-                elif cmd in ("/pass", "pass", "upload", "y", "yes"):
+                raw_cmd = text.strip()
+                cmd_lower = raw_cmd.lower()
+
+                # Help menu: triggered by -h, /h, -/h, /help, help
+                if cmd_lower in ("/help", "/h", "-h", "-/h", "help", "/start", "h"):
+                    help_text = (
+                        "📚 *MindSpark Video & Book Controller* 🎬\n\n"
+                        "Aap yahan se books aur video generation direct control kar sakte hain:\n\n"
+                        "1️⃣ *Naya Video Banane Ke Liye:*\n"
+                        "• `/make <Book Name>` — Is book par naya video banana start karein\n"
+                        "  _Example:_ `/make Bhagavad Gita`\n\n"
+                        "2️⃣ *Nayi Book Jodne Ke Liye:*\n"
+                        "• `/add <Book Name>` — books.json me nayi book save karein\n"
+                        "  _Example:_ `/add Ikigai`\n\n"
+                        "3️⃣ *Book Nikalne / Delete Karne Ke Liye:*\n"
+                        "• `/del <Book Name>` — books.json se book delete karein\n"
+                        "  _Example:_ `/del Range`\n\n"
+                        "4️⃣ *Available Books Dekhne Ke Liye:*\n"
+                        "• `/list` ya `/books` — Saari books ki list dekhein\n\n"
+                        "5️⃣ *Review & Publish:*\n"
+                        "• `/pass` — Video YouTube & Instagram par publish karein\n"
+                        "• `/reject` — Video discard karein\n"
+                        "• `/status` — Current status check karein"
+                    )
+                    send_msg(sender_chat, help_text)
+
+                elif cmd_lower in ("/pass", "pass", "upload", "y", "yes"):
                     threading.Thread(target=handle_pass_async, args=(sender_chat, None, msg), daemon=True).start()
-                elif cmd in ("/reject", "reject", "no", "n"):
+
+                elif cmd_lower in ("/reject", "reject", "no", "n"):
                     threading.Thread(target=handle_reject, args=(sender_chat, None, msg), daemon=True).start()
-                elif cmd in ("/status", "status"):
+
+                elif cmd_lower in ("/status", "status"):
                     target_dir = get_latest_output_dir()
+                    next_file = ROOT / "data" / "next_book.txt"
+                    queued_book = next_file.read_text(encoding="utf-8").strip() if next_file.exists() else "None (Automatic)"
+                    status_report = f"📊 *MindSpark Studio Status*\n\n📌 *Next Queued Book:* {queued_book}\n"
                     if target_dir:
                         meta = jload(target_dir / "meta.json", {})
-                        send_msg(sender_chat, f"📹 *Latest Local Video:* {meta.get('title', target_dir.name)}\n📁 Folder: `{target_dir.name}`\n👉 Tap PASS on the video to upload.")
+                        status_report += f"📹 *Latest Video:* {meta.get('title', target_dir.name)}\n📁 Folder: `{target_dir.name}`\n👉 Tap PASS on the video message to publish!"
                     else:
-                        send_msg(sender_chat, "ℹ️ No local video found in output. Tap PASS on any video in chat to upload it to YouTube!")
+                        status_report += "ℹ️ No pending local videos."
+                    send_msg(sender_chat, status_report)
+
+                # Command: /make <Book Name> or /next <Book Name>
+                elif cmd_lower.startswith("/make ") or cmd_lower.startswith("/next ") or cmd_lower.startswith("make "):
+                    book_query = raw_cmd.split(" ", 1)[1].strip()
+                    if book_query:
+                        triggered = trigger_workflow_make_video(book_query)
+                        if triggered:
+                            send_msg(sender_chat, f"🚀 *Workflow Started!*\nBook: *{book_query}* ka video generate hona shuru ho gaya hai.\nLagbhag 7-8 minute me Telegram par video aa jayegi!")
+                        else:
+                            send_msg(sender_chat, f"✅ *Book Queued!*\nNext video ke liye *'{book_query}'* select ho gayi hai! Agle workflow run me yeh generate hogi.")
+                    else:
+                        send_msg(sender_chat, "⚠️ Kripya book ka naam likhein. Example: `/make Bhagavad Gita`")
+
+                # Command: /add <Book Name>
+                elif cmd_lower.startswith("/add ") or cmd_lower.startswith("add "):
+                    book_arg = raw_cmd.split(" ", 1)[1].strip()
+                    if book_arg:
+                        author = ""
+                        if " - " in book_arg:
+                            b_parts = book_arg.split(" - ", 1)
+                            title, author = b_parts[0].strip(), b_parts[1].strip()
+                        else:
+                            title = book_arg
+                        books_file = ROOT / "data" / "books.json"
+                        books = jload(books_file, [])
+                        if any(b.get("title", "").lower() == title.lower() for b in books):
+                            send_msg(sender_chat, f"ℹ️ *'{title}'* pehle se `books.json` me mojood hai!")
+                        else:
+                            books.append({"title": title, "author": author})
+                            jsave(books_file, books)
+                            git_sync_changes(f"Add book: {title}")
+                            send_msg(sender_chat, f"✅ *Book Added Successfully!*\n📖 Title: *{title}*\n✍️ Author: {author or 'N/A'}\n📚 Total books in pool: {len(books)}\n\nIs par video banane ke liye type karein: `/make {title}`")
+                    else:
+                        send_msg(sender_chat, "⚠️ Kripya book ka naam likhein. Example: `/add Ikigai`")
+
+                # Command: /del <Book Name> or /remove <Book Name>
+                elif cmd_lower.startswith("/del ") or cmd_lower.startswith("/remove ") or cmd_lower.startswith("del "):
+                    book_arg = raw_cmd.split(" ", 1)[1].strip().lower()
+                    if book_arg:
+                        books_file = ROOT / "data" / "books.json"
+                        books = jload(books_file, [])
+                        original_count = len(books)
+                        matched_titles = [b.get("title", "") for b in books if book_arg == b.get("title", "").lower() or book_arg in b.get("title", "").lower()]
+                        books = [b for b in books if book_arg != b.get("title", "").lower() and book_arg not in b.get("title", "").lower()]
+                        if len(books) < original_count:
+                            jsave(books_file, books)
+                            git_sync_changes(f"Remove book: {', '.join(matched_titles)}")
+                            send_msg(sender_chat, f"🗑️ *Book Removed!*\nNikaali gayi books: *{', '.join(matched_titles)}*\n📚 Ab total books bachi hain: {len(books)}")
+                        else:
+                            send_msg(sender_chat, f"⚠️ *'{book_arg}'* `books.json` me nahi mili. `/list` karke saari books dekh sakte hain.")
+                    else:
+                        send_msg(sender_chat, "⚠️ Kripya book ka naam likhein jise nikaalna hai. Example: `/del Range`")
+
+                # Command: /list or /books
+                elif cmd_lower in ("/list", "list", "/books", "books"):
+                    books_file = ROOT / "data" / "books.json"
+                    books = jload(books_file, [])
+                    cp = ROOT / "completed_books.md"
+                    done = cp.read_text(encoding="utf-8").lower() if cp.exists() else ""
+                    
+                    lines = []
+                    for idx, b in enumerate(books[:20], 1):
+                        b_title = b.get("title", "")
+                        b_status = "✅ Completed" if b_title.lower() in done else "⏳ Available"
+                        lines.append(f"{idx}. *{b_title}* — {b_status}")
+                    
+                    list_text = (
+                        f"📚 *Books Library ({len(books)} Total):*\n\n"
+                        + "\n".join(lines) +
+                        f"\n\n_(Dikhaye gaye pehle {min(20, len(books))} books)_\n\n"
+                        "👉 Nayi book jodne ke liye: `/add <Book Name>`\n"
+                        "👉 Book par video banane ke liye: `/make <Book Name>`\n"
+                        "👉 Book nikaalne ke liye: `/del <Book Name>`"
+                    )
+                    send_msg(sender_chat, list_text)
         except Exception as e:
             time.sleep(2)
 
