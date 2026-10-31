@@ -1,14 +1,13 @@
 {
   "provider": "kokoro",
   "selected_voice_id": "kokoro_hm_omega",
-  "selected_voice_name": "Kokoro-82M (hm_omega - Deep Confident Male)",
+  "selected_voice_name": "Kokoro-82M (hm_omega - Hindi Male)",
   "voice_model": "hexgrad/Kokoro-82M",
   "voice": "hm_omega",
   "language": "hi",
   "fallback_voice": "hi-IN-MadhurNeural",
   "speed": 1.0,
-  "pitch_factor": 0.95,
   "pitch": "+0Hz",
   "rate": "+0%",
-  "description": "hexgrad/Kokoro-82M ONNX model with native Hindi support (hm_omega) with deep baritone pitch factor (0.95)."
+  "description": "Kokoro-82M ONNX native clean Hindi voice without artificial filters."
 }
