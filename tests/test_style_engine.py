@@ -4,8 +4,11 @@ from src.style_engine import STYLE_IDS, pick_style, record_style
 from src.llm import validate, normalize
 
 def test_style_ids_count():
-    assert len(STYLE_IDS) == 6
-    expected = ["motion_graphics", "perspective_3d", "cutout_collage", "blueprint", "swiss_poster", "isometric"]
+    assert len(STYLE_IDS) == 10
+    expected = [
+        "motion_graphics", "perspective_3d", "cutout_collage", "blueprint", "swiss_poster", "isometric",
+        "tech_glow", "cyber_terminal", "flat_vector", "cinematic_noir"
+    ]
     assert set(STYLE_IDS) == set(expected)
 
 def test_10_simulated_runs_no_repeat_within_last_4():

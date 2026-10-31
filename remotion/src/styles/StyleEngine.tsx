@@ -59,6 +59,22 @@ export const STYLES: Def[] = [
     {bg: "#17233B", bg2: "#0D1627", fg: "#FFFFFF", a: "#FFB703", b: "#4CC9F0", c: "#F72585"},
     {bg: "#2B1747", bg2: "#170B2B", fg: "#FFFFFF", a: "#00F5D4", b: "#FEE440", c: "#F15BB5"},
     {bg: "#0F2F2A", bg2: "#071A17", fg: "#F3FFF8", a: "#FF9F1C", b: "#2EC4B6", c: "#E71D36"}]},
+  {id: "tech_glow", name: "Tech Glow", font: F.poppins, pals: [
+    {bg: "#060B19", bg2: "#0D1B2A", fg: "#FFFFFF", a: "#00F0FF", b: "#7928CA", c: "#FF0080"},
+    {bg: "#04120D", bg2: "#08231A", fg: "#FFFFFF", a: "#00FF88", b: "#00F5D4", c: "#FFD60A"},
+    {bg: "#120B04", bg2: "#261408", fg: "#FFFFFF", a: "#FF6B00", b: "#FF0055", c: "#FFCC00"}]},
+  {id: "cyber_terminal", name: "Cyber Terminal", font: F.mono, pals: [
+    {bg: "#0A1208", bg2: "#040803", fg: "#39FF14", a: "#00FF66", b: "#70FF00", c: "#FFFFFF"},
+    {bg: "#140D04", bg2: "#0A0602", fg: "#FFB000", a: "#FF8000", b: "#FFD000", c: "#FFFFFF"},
+    {bg: "#050F14", bg2: "#02070A", fg: "#00E5FF", a: "#00A3FF", b: "#7DF9FF", c: "#FFFFFF"}]},
+  {id: "flat_vector", name: "Flat Vector", font: F.rubik, pals: [
+    {bg: "#0F172A", bg2: "#1E293B", fg: "#F8FAFC", a: "#6366F1", b: "#EC4899", c: "#14B8A6"},
+    {bg: "#F8FAFC", bg2: "#E2E8F0", fg: "#0F172A", a: "#2563EB", b: "#7C3AED", c: "#F59E0B"},
+    {bg: "#1E1035", bg2: "#2D1854", fg: "#FFFFFF", a: "#A855F7", b: "#06B6D4", c: "#F43F5E"}]},
+  {id: "cinematic_noir", name: "Cinematic Noir", font: F.bebas, pals: [
+    {bg: "#0A0A0A", bg2: "#141414", fg: "#F7F2E7", a: "#D4AF37", b: "#F3E5AB", c: "#AA7A1E"},
+    {bg: "#060F0C", bg2: "#0E1F1A", fg: "#F2F9F6", a: "#52B788", b: "#D8F3DC", c: "#D4AF37"},
+    {bg: "#14060A", bg2: "#240B10", fg: "#FFF0F2", a: "#E63946", b: "#FFB4A2", c: "#D4AF37"}]},
 ];
 export const STYLE_IDS = STYLES.map((s) => s.id);
 
@@ -332,7 +348,211 @@ const ISO: R = {align: "flex-start",
     </>);
   }};
 
-const RENDER: Record<string, R> = {motion_graphics: MG, perspective_3d: P3, cutout_collage: CO, blueprint: BP, swiss_poster: SW, isometric: ISO};
+/* =============== 7. TECH GLOW: Glassmorphism, neon outlines, floating glow orbs =============== */
+const TG: R = {align: "center",
+  bg: ({pal, f, u, seed}) => {
+    return (
+      <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 30%, ${pal.bg2}, ${pal.bg})`, overflow: "hidden"}}>
+        <div style={{position: "absolute", inset: 0, opacity: 0.12, backgroundImage: `linear-gradient(${pal.a} 1px, transparent 1px), linear-gradient(90deg, ${pal.a} 1px, transparent 1px)`, backgroundSize: `${8 * u}px ${8 * u}px`, transform: "perspective(300px) rotateX(45deg) translateY(20%)"}} />
+        <div style={{position: "absolute", width: 60 * u, height: 60 * u, borderRadius: "50%", background: pal.a, filter: "blur(90px)", opacity: 0.22, left: -10 * u, top: 15 * u + Math.sin(f * 0.04) * 5 * u}} />
+        <div style={{position: "absolute", width: 55 * u, height: 55 * u, borderRadius: "50%", background: pal.b, filter: "blur(80px)", opacity: 0.18, right: -5 * u, bottom: 25 * u + Math.cos(f * 0.035) * 6 * u}} />
+      </AbsoluteFill>
+    );
+  },
+  body: ({c, pal, u, f, fps}) => {
+    const s0 = S(f, fps, 2, 10);
+    const glassCard: React.CSSProperties = {
+      background: "rgba(255, 255, 255, 0.06)",
+      backdropFilter: "blur(20px)",
+      border: `1.5px solid rgba(255, 255, 255, 0.15)`,
+      borderRadius: 3 * u,
+      boxShadow: `0 10px 40px rgba(0,0,0,0.6), 0 0 30px ${pal.a}33`,
+      padding: `${2.2 * u}px ${3 * u}px`,
+      width: "100%",
+      boxSizing: "border-box",
+    };
+    if (c.role === "list") {
+      return (
+        <>
+          <div style={{...glassCard, transform: `scale(${s0})`, borderColor: `${pal.a}88`, textAlign: "center", marginBottom: 1.5 * u}}>
+            <div style={{fontSize: fit(c.title.length, 7.8 * u, 4.8 * u, 16), fontWeight: 900, textTransform: "uppercase", background: `linear-gradient(90deg, #fff, ${pal.a})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"}}>
+              {c.title}
+            </div>
+          </div>
+          {c.lines.map((l, i) => {
+            const si = S(f, fps, 10 + i * 7, 10);
+            return (
+              <div key={i} style={{...glassCard, display: "flex", alignItems: "center", gap: 2.5 * u, transform: `translateY(${(1 - si) * 50 * u}px)`, opacity: cl(si * 2)}}>
+                <span style={{width: 7 * u, height: 7 * u, flex: "none", borderRadius: "50%", background: `linear-gradient(135deg, ${pal.a}, ${pal.b})`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 4.8 * u, fontWeight: 900, boxShadow: `0 0 15px ${pal.a}`}}>
+                  {i + 1}
+                </span>
+                <span style={{fontSize: fit(l.length, 5.6 * u, 3.8 * u, 24), color: "#fff", fontWeight: 700}}>{l}</span>
+              </div>
+            );
+          })}
+        </>
+      );
+    }
+    const lines = chunk(c.title.split(" "), c.role === "quote" ? 5 : 3);
+    const fsz = fit(Math.max(...lines.map((l) => l.length)), 13 * u, 5.8 * u, 12);
+    return (
+      <div style={{...glassCard, transform: `scale(${s0})`, textAlign: "center", padding: `${4 * u}px ${3 * u}px`, borderColor: `${pal.a}66`}}>
+        {lines.map((l, i) => (
+          <div key={i} style={{fontSize: fsz, lineHeight: 1.15, fontWeight: 900, textTransform: "uppercase", background: i % 2 ? `linear-gradient(90deg, ${pal.a}, ${pal.b})` : "#FFFFFF", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"}}>
+            {l}
+          </div>
+        ))}
+        {c.sub && <div style={{fontSize: 4.5 * u, color: pal.a, marginTop: 3 * u, opacity: cl((f - 22) / 8), fontWeight: 700}}>✦ {c.sub}</div>}
+      </div>
+    );
+  }
+};
+
+/* =============== 8. CYBER TERMINAL: Retro hacker monospace, scanlines, blinking cursor =============== */
+const CT: R = {align: "flex-start",
+  bg: ({pal}) => {
+    return (
+      <AbsoluteFill style={{background: pal.bg, overflow: "hidden"}}>
+        <div style={{position: "absolute", inset: 0, opacity: 0.18, backgroundImage: "linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.7) 50%)", backgroundSize: "100% 4px"}} />
+        <div style={{position: "absolute", top: 40, left: 60, right: 60, borderBottom: `1px solid ${pal.fg}44`, paddingBottom: 8, fontSize: 18, color: pal.fg, opacity: 0.6, letterSpacing: 2}}>
+          SYSTEM_LOG://MINDSPARK_CORE [STATUS_OK]
+        </div>
+      </AbsoluteFill>
+    );
+  },
+  body: ({c, pal, u, f, fps}) => {
+    const blink = Math.floor(f / 8) % 2 === 0 ? "_" : " ";
+    if (c.role === "list") {
+      return (
+        <div style={{width: "100%", fontFamily: F.mono}}>
+          <div style={{fontSize: fit(c.title.length, 7 * u, 4.5 * u, 18), color: pal.a, textTransform: "uppercase", border: `1px solid ${pal.a}`, padding: `${1 * u}px ${2 * u}px`, marginBottom: 3 * u}}>
+            &gt; {c.title}
+          </div>
+          {c.lines.map((l, i) => {
+            const si = S(f, fps, 8 + i * 7, 12);
+            return (
+              <div key={i} style={{margin: `${2 * u}px 0`, padding: `${1.2 * u}px ${2 * u}px`, background: `${pal.fg}10`, borderLeft: `3px solid ${pal.fg}`, fontSize: fit(l.length, 5.2 * u, 3.8 * u, 24), color: pal.fg, transform: `translateX(${(1 - si) * -30 * u}px)`, opacity: cl(si * 2)}}>
+                <span style={{color: pal.b, marginRight: 1.5 * u}}>[0{i + 1}]</span>{l}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    const lines = chunk(c.title.toUpperCase().split(" "), 3);
+    const fsz = fit(Math.max(...lines.map((l) => l.length)), 12 * u, 5.5 * u, 12);
+    return (
+      <div style={{width: "100%", fontFamily: F.mono, border: `2px solid ${pal.fg}`, padding: `${4 * u}px ${3 * u}px`, background: `${pal.bg2}dd`, boxShadow: `0 0 25px ${pal.fg}33`}}>
+        <div style={{fontSize: 3.5 * u, color: pal.a, marginBottom: 2 * u}}>&gt;&gt; EXECUTE_PROTOCOL:</div>
+        {lines.map((l, i) => (
+          <div key={i} style={{fontSize: fsz, color: pal.fg, lineHeight: 1.1, textShadow: `0 0 10px ${pal.fg}`}}>
+            {l}
+          </div>
+        ))}
+        <div style={{fontSize: 5 * u, color: pal.a, marginTop: 2 * u}}>{blink}</div>
+        {c.sub && <div style={{fontSize: 4 * u, color: pal.b, marginTop: 2 * u, opacity: cl((f - 20) / 8)}}>[INFO]: {c.sub}</div>}
+      </div>
+    );
+  }
+};
+
+/* =============== 9. FLAT VECTOR: Modern clean geometric cards & nodes =============== */
+const FV: R = {align: "center",
+  bg: ({pal, f}) => {
+    return (
+      <AbsoluteFill style={{background: `linear-gradient(145deg, ${pal.bg}, ${pal.bg2})`, overflow: "hidden"}}>
+        <svg viewBox="0 0 1080 1920" style={{position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.22}}>
+          <circle cx="200" cy="400" r={160 + Math.sin(f * 0.03) * 20} fill={pal.a} />
+          <circle cx="880" cy="1400" r={220 + Math.cos(f * 0.025) * 25} fill={pal.b} />
+          <line x1="200" y1="400" x2="880" y2="1400" stroke={pal.fg} strokeWidth="3" strokeDasharray="8 8" />
+        </svg>
+      </AbsoluteFill>
+    );
+  },
+  body: ({c, pal, u, f, fps}) => {
+    const s0 = S(f, fps, 2, 10);
+    if (c.role === "list") {
+      return (
+        <div style={{width: "100%"}}>
+          <div style={{background: pal.a, color: ink(pal.a), padding: `${1.4 * u}px ${2.5 * u}px`, borderRadius: 2 * u, fontSize: fit(c.title.length, 7.5 * u, 4.6 * u, 16), fontWeight: 900, textAlign: "center", marginBottom: 2 * u, transform: `scale(${s0})`}}>
+            {c.title}
+          </div>
+          {c.lines.map((l, i) => {
+            const si = S(f, fps, 10 + i * 7, 10);
+            return (
+              <div key={i} style={{display: "flex", alignItems: "center", gap: 2.2 * u, background: pal.fg, color: pal.bg, borderRadius: 2 * u, padding: `${1.4 * u}px ${2.4 * u}px`, margin: `${1.6 * u}px 0`, transform: `translateY(${(1 - si) * 40 * u}px)`, opacity: cl(si * 2), boxShadow: "0 8px 24px rgba(0,0,0,0.18)"}}>
+                <span style={{width: 6.5 * u, height: 6.5 * u, flex: "none", borderRadius: "50%", background: pal.b, color: ink(pal.b), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 4.5 * u}}>{i + 1}</span>
+                <span style={{fontSize: fit(l.length, 5.2 * u, 3.8 * u, 24), fontWeight: 800}}>{l}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    const lines = chunk(c.title.split(" "), 3);
+    const fsz = fit(Math.max(...lines.map((l) => l.length)), 13 * u, 5.8 * u, 11);
+    return (
+      <div style={{background: pal.fg, color: pal.bg, borderRadius: 3.5 * u, padding: `${4.5 * u}px ${3.5 * u}px`, width: "100%", textAlign: "center", transform: `scale(${s0})`, boxShadow: "0 14px 45px rgba(0,0,0,0.25)"}}>
+        {lines.map((l, i) => (
+          <div key={i} style={{fontSize: fsz, fontWeight: 900, lineHeight: 1.15, textTransform: "uppercase", color: i % 2 ? pal.a : pal.bg}}>
+            {l}
+          </div>
+        ))}
+        {c.sub && <div style={{fontSize: 4.4 * u, color: pal.b, marginTop: 2.5 * u, fontWeight: 800}}>● {c.sub}</div>}
+      </div>
+    );
+  }
+};
+
+/* =============== 10. CINEMATIC NOIR: Luxury Gold & Deep Charcoal Editorial =============== */
+const CN: R = {align: "center",
+  bg: ({pal}) => {
+    return (
+      <AbsoluteFill style={{background: `radial-gradient(circle at 50% 50%, ${pal.bg2}, ${pal.bg})`, overflow: "hidden"}}>
+        <div style={{position: "absolute", inset: 0, opacity: 0.08, backgroundImage: "radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px)", backgroundSize: "24px 24px"}} />
+        <div style={{position: "absolute", inset: "28px", border: `1px solid ${pal.a}44`, pointerEvents: "none"}} />
+        <div style={{position: "absolute", inset: "34px", border: `1px solid ${pal.a}22`, pointerEvents: "none"}} />
+      </AbsoluteFill>
+    );
+  },
+  body: ({c, pal, u, f, fps}) => {
+    const s0 = S(f, fps, 2, 12);
+    if (c.role === "list") {
+      const romans = ["I", "II", "III", "IV"];
+      return (
+        <div style={{width: "100%", textAlign: "center"}}>
+          <div style={{color: pal.a, fontSize: fit(c.title.length, 7.8 * u, 4.6 * u, 16), letterSpacing: 4, textTransform: "uppercase", marginBottom: 3 * u, borderBottom: `1px solid ${pal.a}66`, paddingBottom: 1.5 * u}}>
+            ✦ {c.title} ✦
+          </div>
+          {c.lines.map((l, i) => {
+            const si = S(f, fps, 10 + i * 7, 12);
+            return (
+              <div key={i} style={{display: "flex", alignItems: "center", gap: 2.5 * u, margin: `${2 * u}px 0`, padding: `${1.4 * u}px ${2 * u}px`, border: `1px solid ${pal.a}33`, background: "rgba(0,0,0,0.4)", transform: `translateY(${(1 - si) * 35 * u}px)`, opacity: cl(si * 2)}}>
+                <span style={{color: pal.a, fontSize: 5.5 * u, fontWeight: 900, minWidth: 6 * u}}>{romans[i] || i + 1}</span>
+                <span style={{fontSize: fit(l.length, 5.4 * u, 3.8 * u, 24), color: pal.fg, textAlign: "left"}}>{l}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    const lines = chunk(c.title.toUpperCase().split(" "), 3);
+    const fsz = fit(Math.max(...lines.map((l) => l.length)), 13 * u, 6 * u, 11);
+    return (
+      <div style={{textAlign: "center", width: "100%", transform: `scale(${s0})`}}>
+        <div style={{fontSize: 5 * u, color: pal.a, marginBottom: 2 * u}}>— ✦ —</div>
+        {lines.map((l, i) => (
+          <div key={i} style={{fontSize: fsz, color: i % 2 ? pal.a : pal.fg, lineHeight: 1.15, letterSpacing: 2, textShadow: i % 2 ? `0 0 20px ${pal.a}55` : "none"}}>
+            {l}
+          </div>
+        ))}
+        {c.sub && <div style={{fontSize: 4.5 * u, color: pal.b, marginTop: 3 * u, letterSpacing: 3, opacity: cl((f - 20) / 8)}}>— {c.sub} —</div>}
+      </div>
+    );
+  }
+};
+
+const RENDER: Record<string, R> = {motion_graphics: MG, perspective_3d: P3, cutout_collage: CO, blueprint: BP, swiss_poster: SW, isometric: ISO, tech_glow: TG, cyber_terminal: CT, flat_vector: FV, cinematic_noir: CN};
 
 /* ---------- captions: each style has its own look ---------- */
 const Caps: React.FC<{scene: Scene; id: string; pal: Pal; u: number; f: number; fps: number; h: number}> = ({scene, id, pal, u, f, fps, h}) => {
@@ -346,6 +566,10 @@ const Caps: React.FC<{scene: Scene; id: string; pal: Pal; u: number; f: number; 
     blueprint: {bg: "rgba(0,0,0,0.5)", fg: pal.fg, ac: pal.b, r: 0, up: 1, rot: 0, z: 4.6, bd: `1px dashed ${pal.a}`},
     swiss_poster: {bg: pal.fg, fg: pal.bg, ac: pal.a, r: 0, up: 1, rot: 0, z: 5},
     isometric: {bg: "rgba(0,0,0,0.45)", fg: "#fff", ac: pal.a, r: 1.2 * u, up: 0, rot: 0, z: 5},
+    tech_glow: {bg: "rgba(0,0,0,0.6)", fg: "#fff", ac: pal.a, r: 99, up: 0, rot: 0, z: 5.2, bd: `1px solid ${pal.a}88`},
+    cyber_terminal: {bg: pal.bg2, fg: pal.fg, ac: pal.a, r: 0, up: 1, rot: 0, z: 4.8, bd: `1px solid ${pal.fg}`},
+    flat_vector: {bg: pal.fg, fg: pal.bg, ac: pal.a, r: 2 * u, up: 0, rot: 0, z: 5.2},
+    cinematic_noir: {bg: "rgba(0,0,0,0.7)", fg: pal.fg, ac: pal.a, r: 0, up: 1, rot: 0, z: 4.8, bd: `1px solid ${pal.a}66`},
   };
   const k = cfg[id] || cfg.swiss_poster; const j = Math.floor(f / 3);
   return (
@@ -370,6 +594,10 @@ export const StyleScene: React.FC<{plan: Plan; scene: Scene; index: number}> = (
     def.id === "cutout_collage" ? {transform: `translateY(${(1 - e) * -30}%) rotate(${(1 - e) * -6}deg)`} :
     def.id === "blueprint" ? {opacity: e, filter: `blur(${(1 - e) * 8}px)`} :
     def.id === "swiss_poster" ? {clipPath: `inset(0 0 ${(1 - e) * 100}% 0)`} :
+    def.id === "tech_glow" ? {transform: `scale(${0.9 + 0.1 * e})`, opacity: e} :
+    def.id === "cyber_terminal" ? {clipPath: `inset(${(1 - e) * 50}% 0 ${(1 - e) * 50}% 0)`} :
+    def.id === "flat_vector" ? {transform: `translateX(${(1 - e) * 100}%)`} :
+    def.id === "cinematic_noir" ? {opacity: e, filter: `contrast(${1 + (1 - e) * 0.5})`} :
     {transform: `translateY(${(1 - e) * 100}%)`};
   return (
     <AbsoluteFill style={{...tr, fontFamily: def.font, color: pal.fg, background: pal.bg}}>

@@ -15,7 +15,8 @@ from common import ROOT, jload, jsave
 
 STYLE_IDS = [
     "motion_graphics", "perspective_3d", "cutout_collage",
-    "blueprint", "swiss_poster", "isometric"
+    "blueprint", "swiss_poster", "isometric",
+    "tech_glow", "cyber_terminal", "flat_vector", "cinematic_noir"
 ]
 STYLE_HIST_FILE = ROOT / "data" / "style_history.json"
 STYLE_CFG_FILE = ROOT / "config" / "style.json"
