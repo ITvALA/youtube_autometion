@@ -14,3 +14,4 @@
 | 8 | 2026-10-30 | Hooked | Unknown | Self Improvement | https://youtu.be/zLMlZ7C1IXw |
 | 9 | 2026-10-30 | Hooked | Unknown | Self Improvement | https://youtu.be/-wVA4qMUBLY |
 | 10 | 2026-10-30 | Hooked | Unknown | Self Improvement | https://youtu.be/wDxeWoN2gq8 |
+| 11 | 2026-10-31 | Almanack of Naval Ravikant | Naval Ravikant | Self Improvement | https://youtu.be/A5wp4RwKDu8 |
