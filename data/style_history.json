@@ -54,5 +54,12 @@
     "date": "2026-10-31",
     "book": "Range",
     "seed": 181403649
+  },
+  {
+    "style_id": "isometric",
+    "variant": 0,
+    "date": "2026-10-31",
+    "book": "Think and Grow Rich",
+    "seed": 293863281
   }
 ]
