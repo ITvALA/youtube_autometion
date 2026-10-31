@@ -1,13 +1,13 @@
 {
   "provider": "kokoro",
-  "selected_voice_id": "kokoro_hf_beta",
-  "selected_voice_name": "Kokoro-82M (hf_beta - Hindi Female)",
+  "selected_voice_id": "kokoro_hm_psi",
+  "selected_voice_name": "Kokoro-82M (hm_psi - Hindi Male Storyteller)",
   "voice_model": "hexgrad/Kokoro-82M",
-  "voice": "hf_beta",
+  "voice": "hm_psi",
   "language": "hi",
-  "fallback_voice": "hi-IN-SwaraNeural",
+  "fallback_voice": "hi-IN-MadhurNeural",
   "speed": 0.93,
   "pitch": "+0Hz",
   "rate": "-7%",
-  "description": "hexgrad/Kokoro-82M ONNX model with native Hindi support (hf_beta) - Expressive Hindi female voice."
+  "description": "hexgrad/Kokoro-82M ONNX model with native Hindi support (hm_psi) - Calm & authoritative Hindi male storyteller."
 }
