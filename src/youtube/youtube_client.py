@@ -89,14 +89,14 @@ class YouTubeUploader:
         title: str,
         description: str,
         tags: Optional[list] = None,
-        privacy_status: str = "private",
+        privacy_status: str = "public",
         thumbnail_path: Optional[str] = None,
         dry_run: bool = False,
         progress_callback: Optional[Any] = None
     ) -> Dict[str, Any]:
         """
         Uploads an MP4 video to YouTube Data API v3.
-        Defaults strictly to 'private'.
+        Defaults to 'public'.
         """
         if dry_run:
             return {

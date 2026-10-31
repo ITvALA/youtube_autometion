@@ -19,7 +19,7 @@ def upload(d, dry_run=False, progress_callback=None):
     title = meta.get("title", f"{d.name} Summary #MindSpark")[:100]
     description = meta.get("description", "")
     tags = meta.get("tags", ["Shorts", "MindSpark", "Books"])
-    privacy = meta.get("privacy", "private")
+    privacy = os.environ.get("YOUTUBE_PRIVACY", "public")
 
     # If dry_run is set via flag or env var
     if dry_run or os.environ.get("DRY_RUN", "").lower() in ("1", "true"):

@@ -197,7 +197,7 @@ def main():
         "title": y["title"],
         "description": y.get("description", ""),
         "tags": y.get("tags", []),
-        "privacy": "private",
+        "privacy": os.environ.get("YOUTUBE_PRIVACY", "public"),
         "template_id": template["id"],
         "template_name": template["name"]
     }
