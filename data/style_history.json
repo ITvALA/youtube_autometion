@@ -33,5 +33,12 @@
     "date": "2026-10-31",
     "book": "The Power of Now",
     "seed": 658197934
+  },
+  {
+    "style_id": "blueprint",
+    "variant": 0,
+    "date": "2026-10-31",
+    "book": "Ego Is the Enemy",
+    "seed": 575319996
   }
 ]
