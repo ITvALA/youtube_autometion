@@ -68,6 +68,7 @@ def verify_resolution(video_path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--book")
+    ap.add_argument("--script", help="Custom user script or arbitrary topic")
     ap.add_argument("--template")
     ap.add_argument("--style", help="Force style ID (motion_graphics, perspective_3d, cutout_collage, blueprint, swiss_poster, isometric)")
     ap.add_argument("--headless", action="store_true", help="CI mode (kept for clarity)")
@@ -79,7 +80,23 @@ def main():
     style_cfg = jload(ROOT / "config" / "style.json", {})
     voice_cfg = jload(ROOT / "config" / "voice_config.json", {})
     
-    book = pick_book(theme_history, a.book)
+    custom_script = a.script
+    script_file = ROOT / "data" / "custom_script.txt"
+    if not custom_script and script_file.exists():
+        try:
+            custom_script = script_file.read_text(encoding="utf-8").strip()
+            script_file.unlink(missing_ok=True)
+            print("[Pipeline] Loaded custom script from Telegram!")
+        except Exception as se:
+            print(f"[Pipeline] Warning reading custom_script.txt: {se}")
+
+    if custom_script:
+        # Generate short title from first words
+        first_line = custom_script.split("\n")[0].strip()
+        short_title = " ".join(first_line.split()[:4]).title() or "MindSpark Wisdom"
+        book = {"title": short_title, "author": "MindSpark"}
+    else:
+        book = pick_book(theme_history, a.book)
     
     # Check if style engine is active
     style_mode = style_cfg.get("style_mode", "engine")
@@ -141,7 +158,7 @@ def main():
     # 2. Generate Plan with LLM (with template fallback safety)
     recent_seqs = [h.get("sceneTypes", []) for h in theme_history[-3:] if isinstance(h, dict)]
     try:
-        plan = llm.make_plan(book, recent_sequences=recent_seqs, template=template, style_mode=is_style_engine)
+        plan = llm.make_plan(book, recent_sequences=recent_seqs, template=template, style_mode=is_style_engine, custom_script=custom_script)
     except Exception as plan_err:
         print(f"⚠️ Plan failed: {plan_err}. Falling back to default plan.")
         template = template_engine.DEFAULT_TEMPLATE

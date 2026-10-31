@@ -229,12 +229,22 @@ def validate(p, template=None, style=None, style_mode=False):
         
     return None
 
-def make_plan(book, recent_sequences=None, template=None, style_mode=False):
+def make_plan(book, recent_sequences=None, template=None, style_mode=False, custom_script=None):
     style = get_style()
 
     if style_mode:
-        prompt = f"""Book: {book['title']} by {book.get('author', 'Author')}.
-Make a 25-35 second vertical 9:16 video plan about its 3-4 most powerful lessons.
+        if custom_script:
+            topic_desc = f"""CUSTOM USER TOPIC / SCRIPT:
+\"\"\"{custom_script}\"\"\"
+Convert this custom user topic/script into a high-energy 25-35 second vertical 9:16 video plan with 5 scenes.
+Faithfully follow the user's message and core points."""
+            hook_start_req = "First scene narration MUST immediately hook the viewer with the core question or problem (NO greetings like 'Namaste dosto', get straight to the point)."
+        else:
+            topic_desc = f"""Book: {book['title']} by {book.get('author', 'Author')}.
+Make a 25-35 second vertical 9:16 video plan about its 3-4 most powerful lessons."""
+            hook_start_req = f"First scene narration MUST start directly with '{book['title']} hume sikhati hai...' (NO greetings like 'Namaste dosto', start directly with the book title)."
+
+        prompt = f"""{topic_desc}
 Return JSON: {{"scenes":[{{"type":..., "narration":..., "tts_text":..., "data":{{...}}}}], "youtube":{{"title":..., "description":..., "tags":[...]}}}}
 
 STYLE MODE REQUIREMENTS:
@@ -249,7 +259,7 @@ STYLE MODE REQUIREMENTS:
    - 'narration': Clean Hinglish (Roman English letters, 12-22 words) for ON-SCREEN visual subtitles/lyrics.
    - 'tts_text': Pure Devanagari Hindi text corresponding to the scene for the TTS audio voice to speak with flawless native pronunciation.
 9. BRANDING MANDATES:
-   - First scene narration MUST start directly with "{book['title']} hume sikhati hai..." (NO greetings like 'Namaste dosto', NO 'Kitab' prefix, start directly with the book title).
+   - {hook_start_req}
    - Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...aise aur powerful insights ke liye MindSpark ko subscribe karein!").
 
 Available Scene types in Style Mode and their data:

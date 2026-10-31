@@ -370,7 +370,7 @@ def git_sync_changes(commit_msg):
     try:
         subprocess.run(["git", "config", "user.name", "studio-bot"], cwd=ROOT, check=False)
         subprocess.run(["git", "config", "user.email", "bot@users.noreply.github.com"], cwd=ROOT, check=False)
-        subprocess.run(["git", "add", "data/books.json", "data/next_book.txt"], cwd=ROOT, check=False)
+        subprocess.run(["git", "add", "data/books.json", "data/next_book.txt", "data/custom_script.txt"], cwd=ROOT, check=False)
         diff_res = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=ROOT)
         if diff_res.returncode != 0:
             subprocess.run(["git", "commit", "-m", f"{commit_msg} [skip ci]"], cwd=ROOT, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -379,6 +379,28 @@ def git_sync_changes(commit_msg):
             print(f"[Git Sync] {commit_msg} pushed to main.")
     except Exception as ge:
         print(f"[Git Sync Error]: {ge}")
+
+def trigger_workflow_custom_script(script_text):
+    script_file = ROOT / "data" / "custom_script.txt"
+    script_file.write_text(script_text, encoding="utf-8")
+    git_sync_changes("Queue custom user script for video")
+    
+    gh_token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if gh_token:
+        try:
+            headers = {
+                "Authorization": f"Bearer {gh_token}",
+                "Accept": "application/vnd.github.v3+json"
+            }
+            url = "https://api.github.com/repos/ITvALA/youtube_autometion/actions/workflows/daily.yml/dispatches"
+            r = requests.post(url, headers=headers, json={"ref": "main", "inputs": {"force": True}}, timeout=10)
+            if r.status_code in (204, 200, 201):
+                return True
+            else:
+                print(f"[GH Trigger Custom Script] Status {r.status_code}: {r.text}")
+        except Exception as ge:
+            print(f"[GH Trigger Custom Script Error]: {ge}")
+    return False
 
 def trigger_workflow_make_video(book_name):
     next_file = ROOT / "data" / "next_book.txt"
@@ -488,7 +510,7 @@ def start_bot():
                         "📚 *MindSpark Video & Book Controller* 🎬\n\n"
                         "Aap yahan se books aur video generation direct control kar sakte hain:\n\n"
                         "1️⃣ *Naya Video Banane Ke Liye:*\n"
-                        "• `/make <Book Name>` — Is book par naya video banana start karein\n"
+                        "• `/make <Book Name>` — Is book par naya video banana start karein\n• `/script <Aapka Script / Topic>` — Direct script bhej kar video banayein (koi book nahi)\n"
                         "  _Example:_ `/make Bhagavad Gita`\n\n"
                         "2️⃣ *Nayi Book Jodne Ke Liye:*\n"
                         "• `/add <Book Name>` — books.json me nayi book save karein\n"
@@ -524,6 +546,19 @@ def start_bot():
                     send_msg(sender_chat, status_report)
 
                 # Command: /make <Book Name> or /next <Book Name>
+                                # Command: /script <Custom Script or Topic>
+                elif cmd_lower.startswith("/script ") or cmd_lower.startswith("script "):
+                    custom_text = raw_cmd.split(" ", 1)[1].strip()
+                    if custom_text:
+                        triggered = trigger_workflow_custom_script(custom_text)
+                        preview = (custom_text[:80] + "...") if len(custom_text) > 80 else custom_text
+                        if triggered:
+                            send_msg(sender_chat, f"🚀 *Custom Video Generation Started!*\n\n📝 *Aapka Script:*\n\"{preview}\"\n\nVideo banna shuru ho gaya hai. Lagbhag 7-8 minute me Telegram par receive ho jayegi!")
+                        else:
+                            send_msg(sender_chat, f"✅ *Custom Script Queued!*\n\n📝 *Aapka Script:*\n\"{preview}\"\n\nNext video ke liye yeh script save ho gaya hai! Agle run me yeh video generate hogi.")
+                    else:
+                        send_msg(sender_chat, "⚠️ Kripya apna script ya topic likhein.\nExample: `/script Subah jaldi uthne ke 3 sabse bade fayde...`")
+
                 elif cmd_lower.startswith("/make ") or cmd_lower.startswith("/next ") or cmd_lower.startswith("make "):
                     book_query = raw_cmd.split(" ", 1)[1].strip()
                     if book_query:
