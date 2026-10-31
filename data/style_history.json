@@ -75,5 +75,12 @@
     "date": "2026-10-31",
     "book": "The Compound Effect",
     "seed": 966132635
+  },
+  {
+    "style_id": "s002",
+    "variant": 2,
+    "date": "2026-10-31",
+    "book": "Grit",
+    "seed": 275443655
   }
 ]
