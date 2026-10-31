@@ -6,3 +6,4 @@ echo  🚀 MindSpark Telegram Review Bot (Local Host)
 echo ========================================================
 python -u src\telegram_bot.py
 pause
+

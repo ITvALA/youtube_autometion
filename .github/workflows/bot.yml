@@ -1,8 +1,8 @@
-name: Telegram Bot (Optional CI Fallback)
+name: Telegram Bot 24x7
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: "*/30 * * * *"       # Disabled: Hosted locally on local machine
+  schedule:
+    - cron: "0 */5 * * *"
 
 concurrency:
   group: telegram-bot
@@ -41,7 +41,8 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: timeout 21000 python src/telegram_bot.py || true
 
-      # - name: Restart myself (no gap)
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: gh workflow run bot.yml
+      - name: Restart myself (no gap)
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run bot.yml || true

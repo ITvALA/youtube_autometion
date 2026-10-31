@@ -24,8 +24,8 @@ from common import ROOT, load_env, jload, jsave
 import youtube_upload
 
 load_env()
-TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-ALLOWED_CHAT = str(os.environ.get("TELEGRAM_CHAT_ID", ""))
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip().strip('"').strip("'")
+ALLOWED_CHAT = str(os.environ.get("TELEGRAM_CHAT_ID", "")).strip().strip('"').strip("'")
 BASE_URL = f"https://api.telegram.org/bot{TOKEN}"
 OUT_DIR = ROOT / "data" / "output"
 PENDING_FILE = ROOT / "data" / "pending_video.json"
@@ -294,7 +294,23 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
             })
 
     except Exception as e:
-        err_text = f"❌ *Upload Failed:*\n`{str(e)}`"
+        err_msg = str(e)
+        if "uploadLimitExceeded" in err_msg or "exceeded the number of videos" in err_msg:
+            err_text = (
+                "⚠️ *YouTube Daily Upload Limit Reached!*\n\n"
+                "Aapke YouTube channel ki daily video upload limit aaj ke liye khatam ho chuki hai.\n\n"
+                "📌 *Reason:* YouTube unverified/new channels par per day 5-10 videos ki limit rakhta hai.\n"
+                "⏳ *Solution:* Yeh limit agle 24 ghante me auto-reset ho jayegi. Video safe hai, kal dobara *PASS* daba kar upload kar sakte hain!"
+            )
+        elif "quotaExceeded" in err_msg:
+            err_text = (
+                "⚠️ *YouTube API Quota Reached!*\n\n"
+                "YouTube Data API ki daily 10,000 units quota limit reach ho chuki hai.\n"
+                "Midnight PST par yeh auto-reset ho jayegi."
+            )
+        else:
+            err_text = f"❌ *Upload Failed:*\n`{err_msg}`"
+        print(f"❌ Upload error: {err_msg}")
         if status_msg_id:
             edit_msg(chat_id, status_msg_id, err_text)
         else:
@@ -343,7 +359,9 @@ def start_bot():
                     cb_data = cb.get("data", "")
                     sender_chat = str(cb["message"]["chat"]["id"])
                     
-                    if ALLOWED_CHAT and sender_chat != ALLOWED_CHAT:
+                    print(f"📥 Callback query: '{cb_data}' from chat {sender_chat}")
+                    if ALLOWED_CHAT and sender_chat.strip() != ALLOWED_CHAT:
+                        print(f"⚠️ Ignored callback from unauthorized chat: {sender_chat} (expected {ALLOWED_CHAT})")
                         continue
                         
                     # Immediate instant feedback via toast notification
@@ -380,7 +398,9 @@ def start_bot():
                 
                 if not text:
                     continue
-                if ALLOWED_CHAT and sender_chat != ALLOWED_CHAT:
+                print(f"💬 Text message: '{text}' from chat {sender_chat}")
+                if ALLOWED_CHAT and sender_chat.strip() != ALLOWED_CHAT:
+                    print(f"⚠️ Ignored text message from unauthorized chat: {sender_chat} (expected {ALLOWED_CHAT})")
                     continue
                 
                 cmd = text.lower()
