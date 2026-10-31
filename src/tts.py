@@ -107,7 +107,7 @@ def _synth_kokoro(text, cfg, out):
     available = k.get_voices()
     if voice not in available:
         voice = "hm_omega" if "hm_omega" in available else (available[0] if available else "af")
-    speed = float(cfg.get("speed", 0.93))
+    speed = float(cfg.get("speed", 1.0))
     lang = cfg.get("lang", "hi")
     
     samples, sample_rate = k.create(text, voice=voice, speed=speed, lang=lang)
@@ -185,7 +185,7 @@ async def _synth_edge(text, cfg, out):
     # If Wavenet requested without Google key, fall back to high-fidelity Madhur Neural
     if "wavenet" in voice.lower() or not voice.startswith(("en-", "hi-", "Microsoft")):
         voice = cfg.get("fallback_voice", "hi-IN-MadhurNeural")
-    kw = dict(rate=cfg.get("rate", "-7%"), pitch=cfg.get("pitch", "+0Hz"))
+    kw = dict(rate=cfg.get("rate", "+0%"), pitch=cfg.get("pitch", "+0Hz"))
     try:
         import edge_tts
         try:
