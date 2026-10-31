@@ -35,6 +35,12 @@ jobs:
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: python src/youtube_upload.py data/output/*/
+      - name: Upload to Instagram
+        continue-on-error: true
+        env:
+          IG_USERNAME: ${{ secrets.IG_USERNAME }}
+          IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
+        run: python src/instagram_upload.py data/output/*/
       - name: Save completed book
         run: |
           git config user.name "studio-bot"

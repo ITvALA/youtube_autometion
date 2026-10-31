@@ -276,9 +276,26 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
         except Exception as git_err:
             print(f"⚠️ Git push completed_books.md error: {git_err}")
 
+        # Execute Instagram Upload if credentials configured
+        ig_url = None
+        if os.environ.get("IG_USERNAME"):
+            try:
+                import instagram_upload
+                ig_url = instagram_upload.upload_reel(
+                    target_dir / "final.mp4",
+                    meta=meta,
+                    book_title=meta.get("book", target_dir.name)
+                )
+            except Exception as ig_err:
+                print(f"[Instagram Upload] Error: {ig_err}")
+
+        links_text = f"🎬 *YouTube Shorts:* {yt_url}\n"
+        if ig_url:
+            links_text += f"📸 *Instagram Reel:* {ig_url}\n"
+
         final_success_text = (
-            f"🎉 *SUCCESS! Video is LIVE on YouTube!*\n\n"
-            f"🎬 *Watch:* {yt_url}\n"
+            f"🎉 *SUCCESS! Reel Published!*\n\n"
+            f"{links_text}\n"
             f"📌 *Title:* {title}\n"
             f"📊 *Progress:* `[{get_progress_bar(100)}] 100% Complete` ✅"
         )
@@ -287,11 +304,17 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
         else:
             send_msg(chat_id, final_success_text)
 
-        # Update original video button with direct YouTube link
-        if orig_msg_id and yt_url.startswith("http"):
-            edit_reply_markup(chat_id, orig_msg_id, {
-                "inline_keyboard": [[{"text": "🎬 Watch on YouTube ↗", "url": yt_url}]]
-            })
+        # Update original video buttons with direct links
+        action_buttons = []
+        if orig_msg_id:
+            if yt_url.startswith("http"):
+                action_buttons.append({"text": "🎬 Watch on YouTube ↗", "url": yt_url})
+            if ig_url and ig_url.startswith("http"):
+                action_buttons.append({"text": "📸 View on Instagram ↗", "url": ig_url})
+            if action_buttons:
+                edit_reply_markup(chat_id, orig_msg_id, {
+                    "inline_keyboard": [action_buttons]
+                })
 
     except Exception as e:
         err_msg = str(e)
