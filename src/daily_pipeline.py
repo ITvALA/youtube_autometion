@@ -1,7 +1,7 @@
 """Daily pipeline: book -> template & theme -> plan (Claude) -> voice+BGM -> Remotion -> final.mp4
 Strictly 9:16 vertical 1080x1920 with 22 dynamic visual templates.
 """
-import sys, re, random, shutil, argparse, datetime, subprocess, pathlib
+import os, sys, re, random, shutil, argparse, datetime, subprocess, pathlib
 from pathlib import Path
 
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
