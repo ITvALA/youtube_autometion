@@ -26,5 +26,12 @@
     "date": "2026-10-31",
     "book": "The Intelligent Investor",
     "seed": 499736155
+  },
+  {
+    "style_id": "swiss_poster",
+    "variant": 0,
+    "date": "2026-10-31",
+    "book": "The Power of Now",
+    "seed": 658197934
   }
 ]
