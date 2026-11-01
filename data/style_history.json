@@ -236,5 +236,12 @@
     "date": "2026-11-01",
     "book": "Range",
     "seed": 968369375
+  },
+  {
+    "style_id": "v156",
+    "variant": 3,
+    "date": "2026-11-01",
+    "book": "Sapiens",
+    "seed": 848228019
   }
 ]
