@@ -8,15 +8,12 @@ demo = json.loads(demo_path.read_text(encoding="utf-8"))
 stills_dir = ROOT / "data" / "stills"
 stills_dir.mkdir(parents=True, exist_ok=True)
 
-STYLE_IDS = [
-    "motion_graphics", "perspective_3d", "cutout_collage",
-    "blueprint", "swiss_poster", "isometric"
-]
+STYLE_IDS = [f"v{i:03d}" for i in range(1, 213, 12)]  # har 12vi style; sab 212 ke liye range(1, 213)
 
 results = []
 
 for sid in STYLE_IDS:
-    for variant in [0, 1, 2]:
+    for variant in [0]:
         name = f"{sid}_var{variant}"
         plan = dict(demo)
         plan["style"] = {"id": sid, "variant": variant, "seed": 42 + variant * 100}

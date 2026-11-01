@@ -21,6 +21,55 @@ TYPES = {
     "paperCut", "gradientFlow"
 }
 
+# Vox SVG icon keys: remotion/src/vox/icons.tsx ke ICONS ke barabar (tests/test_vox_icons.py check karta hai)
+VOX_ICONS = [
+    "coins",
+    "money",
+    "bag",
+    "chartUp",
+    "chartDown",
+    "pie",
+    "brain",
+    "bulb",
+    "book",
+    "clock",
+    "hourglass",
+    "person",
+    "people",
+    "building",
+    "house",
+    "phone",
+    "laptop",
+    "heart",
+    "target",
+    "rocket",
+    "lock",
+    "trophy",
+    "gear",
+    "shield",
+    "fire",
+    "plant",
+    "sun",
+    "calendar",
+    "megaphone",
+    "magnifier",
+    "scale",
+    "steps",
+    "check",
+    "cross",
+    "question",
+    "arrow",
+    "globe",
+    "chat",
+    "dumbbell",
+    "coffee",
+    "key",
+    "battery",
+    "mountain",
+    "moon",
+    "bars",
+]
+
 SETTINGS = ["mountains", "city", "forest", "ocean", "night_sky"]
 MOODS = ["happy", "thinking", "surprised", "determined"]
 PROPS = ["none", "book", "bulb", "coin"]
@@ -165,6 +214,30 @@ def normalize(p):
             if list_key in d and isinstance(d[list_key], list):
                 d[list_key] = [" ".join(str(item).split()[:8]) for item in d[list_key][:4]]
             
+    # Vox visuals: invalid icons / lambe labels saaf karo
+    for sc_ in scenes:
+        if not isinstance(sc_, dict) or not isinstance(sc_.get("data"), dict):
+            continue
+        d_ = sc_["data"]
+        v_ = d_.get("visual")
+        if v_ is None:
+            continue
+        items_ = []
+        if isinstance(v_, dict) and isinstance(v_.get("items"), list):
+            for it in v_["items"][:4]:
+                if not isinstance(it, dict):
+                    continue
+                ic = str(it.get("icon", ""))
+                if ic not in VOX_ICONS and not ic.startswith("map:"):
+                    ic = "bulb"
+                items_.append({"icon": ic, "label": " ".join(str(it.get("label", "")).split()[:3])})
+        if items_:
+            d_["visual"] = {"items": items_}
+            if isinstance(v_, dict) and v_.get("country"):
+                d_["visual"]["country"] = str(v_["country"])
+        else:
+            d_.pop("visual", None)
+
     # Guarantee strict 9:16 vertical 1080x1920 format
     if "theme" in p and isinstance(p["theme"], dict):
         p["theme"]["format"] = {"name": "vertical", "width": 1080, "height": 1920}
@@ -261,6 +334,12 @@ STYLE MODE REQUIREMENTS:
 9. BRANDING MANDATES:
    - {hook_start_req}
    - Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...aise aur powerful insights ke liye MindSpark ko subscribe karein!").
+
+10. VOX VISUALS (har scene ke data me "visual" do): {{"items":[{{"icon":"<icon>","label":"<1-3 shabd, Devanagari me>"}}], "country":"<English country name, sirf jab koi desh central ho>"}}.
+   - 1 item = ek bada illustration, 2 items = compare (jaise desh ka map + paisa), 3 items = list.
+   - Agar koi desh central hai to pehla item icon "map:<English country name>" rakho (e.g. "map:India", "map:China"), label us desh ka Hindi naam.
+   - Allowed icons ONLY: {", ".join(VOX_ICONS)}.
+   - quote scene me "visual" mat do. Label hamesha chhota (<= 3 words).
 
 Available Scene types in Style Mode and their data:
 - hook: {{"title":"MAX 4 WORDS CAPS", "sub":"{book['title']}, {book.get('author', 'Author')}"}}

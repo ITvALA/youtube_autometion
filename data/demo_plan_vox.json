@@ -1,0 +1,453 @@
+{
+ "book": {
+  "title": "Atomic Habits",
+  "author": "James Clear"
+ },
+ "theme": {
+  "palette": "Neon Night",
+  "colors": {
+   "bg1": "#0B1020",
+   "bg2": "#1B1464",
+   "ac": "#00F5A0",
+   "tx": "#FFFFFF",
+   "cd": "rgba(255,255,255,0.10)"
+  },
+  "font": "Anton",
+  "layout": "left",
+  "pattern": "dots",
+  "transition": "flip",
+  "chart": "bars",
+  "formatName": "vertical",
+  "format": {
+   "name": "vertical",
+   "width": 1080,
+   "height": 1920
+  }
+ },
+ "style": {
+  "id": "v001",
+  "variant": 0,
+  "seed": 42
+ },
+ "scenes": [
+  {
+   "type": "hook",
+   "narration": "Paisa kahan jaata hai? Aaj ek simple sach samjhte hain.",
+   "durationSec": 4,
+   "words": [
+    {
+     "w": "Paisa",
+     "s": 0.3,
+     "e": 0.59
+    },
+    {
+     "w": "kahan",
+     "s": 0.64,
+     "e": 0.93
+    },
+    {
+     "w": "jaata",
+     "s": 0.98,
+     "e": 1.27
+    },
+    {
+     "w": "hai?",
+     "s": 1.32,
+     "e": 1.61
+    },
+    {
+     "w": "Aaj",
+     "s": 1.66,
+     "e": 1.95
+    },
+    {
+     "w": "ek",
+     "s": 2.0,
+     "e": 2.29
+    },
+    {
+     "w": "simple",
+     "s": 2.34,
+     "e": 2.63
+    },
+    {
+     "w": "sach",
+     "s": 2.68,
+     "e": 2.97
+    },
+    {
+     "w": "samjhte",
+     "s": 3.02,
+     "e": 3.31
+    },
+    {
+     "w": "hain.",
+     "s": 3.36,
+     "e": 3.65
+    }
+   ],
+   "data": {
+    "title": "PAISA KAHAN JAATA HAI",
+    "sub": "MindSpark",
+    "visual": {
+     "items": [
+      {
+       "icon": "coins",
+       "label": "MindSpark"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "type": "gradientFlow",
+   "narration": "China ke paas karodon rupye ki bachat hai, par bahut kam log ye jaante hain.",
+   "durationSec": 6,
+   "words": [
+    {
+     "w": "China",
+     "s": 0.3,
+     "e": 0.61
+    },
+    {
+     "w": "ke",
+     "s": 0.66,
+     "e": 0.97
+    },
+    {
+     "w": "paas",
+     "s": 1.02,
+     "e": 1.33
+    },
+    {
+     "w": "karodon",
+     "s": 1.38,
+     "e": 1.69
+    },
+    {
+     "w": "rupye",
+     "s": 1.74,
+     "e": 2.05
+    },
+    {
+     "w": "ki",
+     "s": 2.1,
+     "e": 2.41
+    },
+    {
+     "w": "bachat",
+     "s": 2.46,
+     "e": 2.77
+    },
+    {
+     "w": "hai,",
+     "s": 2.82,
+     "e": 3.13
+    },
+    {
+     "w": "par",
+     "s": 3.18,
+     "e": 3.49
+    },
+    {
+     "w": "bahut",
+     "s": 3.54,
+     "e": 3.85
+    },
+    {
+     "w": "kam",
+     "s": 3.9,
+     "e": 4.21
+    },
+    {
+     "w": "log",
+     "s": 4.26,
+     "e": 4.57
+    },
+    {
+     "w": "ye",
+     "s": 4.62,
+     "e": 4.93
+    },
+    {
+     "w": "jaante",
+     "s": 4.98,
+     "e": 5.29
+    },
+    {
+     "w": "hain.",
+     "s": 5.34,
+     "e": 5.65
+    }
+   ],
+   "data": {
+    "text": "China ke paas karodon rupye",
+    "sub": "",
+    "visual": {
+     "layout": "compare",
+     "items": [
+      {
+       "icon": "map:China",
+       "label": "चीन"
+      },
+      {
+       "icon": "coins",
+       "label": "करोड़ों रुपये"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "type": "card",
+   "narration": "Chhoti habits, roz ka system, aur bade results yahi asli formula hai.",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Chhoti",
+     "s": 0.3,
+     "e": 0.62
+    },
+    {
+     "w": "habits,",
+     "s": 0.67,
+     "e": 0.98
+    },
+    {
+     "w": "roz",
+     "s": 1.03,
+     "e": 1.35
+    },
+    {
+     "w": "ka",
+     "s": 1.4,
+     "e": 1.72
+    },
+    {
+     "w": "system,",
+     "s": 1.77,
+     "e": 2.08
+    },
+    {
+     "w": "aur",
+     "s": 2.13,
+     "e": 2.45
+    },
+    {
+     "w": "bade",
+     "s": 2.5,
+     "e": 2.82
+    },
+    {
+     "w": "results",
+     "s": 2.87,
+     "e": 3.18
+    },
+    {
+     "w": "yahi",
+     "s": 3.23,
+     "e": 3.55
+    },
+    {
+     "w": "asli",
+     "s": 3.6,
+     "e": 3.92
+    },
+    {
+     "w": "formula",
+     "s": 3.97,
+     "e": 4.28
+    },
+    {
+     "w": "hai.",
+     "s": 4.33,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "lines": [
+     "Chhoti habits",
+     "Roz ka system",
+     "Bade results"
+    ]
+   }
+  },
+  {
+   "type": "beforeAfter",
+   "narration": "Pehle sirf sochte the, ab roz thoda thoda karte hain.",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Pehle",
+     "s": 0.3,
+     "e": 0.69
+    },
+    {
+     "w": "sirf",
+     "s": 0.74,
+     "e": 1.13
+    },
+    {
+     "w": "sochte",
+     "s": 1.18,
+     "e": 1.57
+    },
+    {
+     "w": "the,",
+     "s": 1.62,
+     "e": 2.01
+    },
+    {
+     "w": "ab",
+     "s": 2.06,
+     "e": 2.45
+    },
+    {
+     "w": "roz",
+     "s": 2.5,
+     "e": 2.89
+    },
+    {
+     "w": "thoda",
+     "s": 2.94,
+     "e": 3.33
+    },
+    {
+     "w": "thoda",
+     "s": 3.38,
+     "e": 3.77
+    },
+    {
+     "w": "karte",
+     "s": 3.82,
+     "e": 4.21
+    },
+    {
+     "w": "hain.",
+     "s": 4.26,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "before": "Sirf sochna",
+    "after": "Roz karna"
+   }
+  },
+  {
+   "type": "gradientFlow",
+   "narration": "Sirf 365 din me aap 37 guna behtar ho sakte hain.",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Sirf",
+     "s": 0.3,
+     "e": 0.65
+    },
+    {
+     "w": "365",
+     "s": 0.7,
+     "e": 1.05
+    },
+    {
+     "w": "din",
+     "s": 1.1,
+     "e": 1.45
+    },
+    {
+     "w": "me",
+     "s": 1.5,
+     "e": 1.85
+    },
+    {
+     "w": "aap",
+     "s": 1.9,
+     "e": 2.25
+    },
+    {
+     "w": "37",
+     "s": 2.3,
+     "e": 2.65
+    },
+    {
+     "w": "guna",
+     "s": 2.7,
+     "e": 3.05
+    },
+    {
+     "w": "behtar",
+     "s": 3.1,
+     "e": 3.45
+    },
+    {
+     "w": "ho",
+     "s": 3.5,
+     "e": 3.85
+    },
+    {
+     "w": "sakte",
+     "s": 3.9,
+     "e": 4.25
+    },
+    {
+     "w": "hain.",
+     "s": 4.3,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "text": "365 din me 37x behtar"
+   }
+  },
+  {
+   "type": "quote",
+   "narration": "Choti aadatein, badi kamyabi. MindSpark ko subscribe karein!",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Choti",
+     "s": 0.3,
+     "e": 0.8
+    },
+    {
+     "w": "aadatein,",
+     "s": 0.85,
+     "e": 1.35
+    },
+    {
+     "w": "badi",
+     "s": 1.4,
+     "e": 1.9
+    },
+    {
+     "w": "kamyabi.",
+     "s": 1.95,
+     "e": 2.45
+    },
+    {
+     "w": "MindSpark",
+     "s": 2.5,
+     "e": 3.0
+    },
+    {
+     "w": "ko",
+     "s": 3.05,
+     "e": 3.55
+    },
+    {
+     "w": "subscribe",
+     "s": 3.6,
+     "e": 4.1
+    },
+    {
+     "w": "karein!",
+     "s": 4.15,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "quote": "Choti aadatein, badi kamyabi",
+    "by": "MindSpark"
+   }
+  }
+ ]
+}

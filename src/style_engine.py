@@ -1,9 +1,10 @@
-"""Style Engine for MindSpark StyleEngine integration.
-Supports 222 total visual styles:
-  - 10 original motion graphic styles (each with 3 custom color palettes)
-  - 200 procedural engine styles (s001 - s200) from Motion Graphics Atlas
-  - 12 'Thinking loader' styles (t01 - t12)
-Ensures no repetition within the last 10 videos via state/recent-styles.json.
+"""Style Engine: Vox-style explainer looks.
+
+Sirf EK art direction hai (Vox-type explainer: paper texture + flat SVG illustrations + hand-drawn labels),
+lekin 212 alag styles: 8 paper x 14 palette x 7 font ke 212 unique combos, upar se label / caption /
+camera / transition ka alag mix. Table remotion/src/vox/styleTable.ts me hai; yahan same formula se
+traits nikalte hain taaki lagataar do videos ek jaise na lagein.
+Ensures no repetition within the last N videos via state/recent-styles.json.
 """
 import sys, random, datetime
 from pathlib import Path
@@ -16,16 +17,21 @@ if str(ROOT / "src") not in sys.path:
 
 from common import ROOT, jload, jsave
 
-EXISTING_STYLE_IDS = [
-    "motion_graphics", "perspective_3d", "cutout_collage",
-    "blueprint", "swiss_poster", "isometric",
-    "tech_glow", "cyber_terminal", "flat_vector", "cinematic_noir"
-]
-ENGINE_200_IDS = [f"s{i:03d}" for i in range(1, 201)]
-THINKING_12_IDS = [f"t{i:02d}" for i in range(1, 13)]
+VOX_COUNT = 212
+N_PAPERS, N_PALS, N_FONTS = 8, 14, 7
+_TOTAL = N_PAPERS * N_PALS * N_FONTS
+_STRIDE = 37  # styleTable.ts ke STRIDE ke barabar (coprime with _TOTAL)
 
-ALL_STYLE_IDS = EXISTING_STYLE_IDS + ENGINE_200_IDS + THINKING_12_IDS
+ALL_STYLE_IDS = [f"v{i:03d}" for i in range(1, VOX_COUNT + 1)]
 STYLE_IDS = ALL_STYLE_IDS
+
+
+def style_traits(style_id):
+    """(paper, palette, font) index for a style id. Same formula as styleTable.ts."""
+    i = int(style_id[1:]) - 1
+    idx = (i * _STRIDE) % _TOTAL
+    return (idx % N_PAPERS, (idx // N_PAPERS) % N_PALS, idx // (N_PAPERS * N_PALS) % N_FONTS)
+
 
 STYLE_HIST_FILE = ROOT / "data" / "style_history.json"
 STYLE_CFG_FILE = ROOT / "config" / "style.json"
@@ -83,6 +89,10 @@ def pick_style(history=None, cfg=None, rng=None, forced_style=None, recent_ids=N
                 recents = [h.get("style_id") for h in hist[-no_repeat:] if isinstance(h, dict) and "style_id" in h]
 
         eligible = [s for s in ALL_STYLE_IDS if s not in recents]
+        if recents and recents[-1] in ALL_STYLE_IDS:
+            lp, lc, _ = style_traits(recents[-1])
+            varied = [s for s in eligible if style_traits(s)[0] != lp and style_traits(s)[1] != lc]
+            eligible = varied or eligible
         if not eligible:
             eligible = [s for s in ALL_STYLE_IDS if s != (recents[-1] if recents else None)]
         if not eligible:
@@ -97,7 +107,7 @@ def pick_style(history=None, cfg=None, rng=None, forced_style=None, recent_ids=N
         if isinstance(h, dict) and h.get("style_id") == sid and "variant" in h:
             last_variant_for_style = h.get("variant")
             break
-    variants = [0, 1, 2] if sid in EXISTING_STYLE_IDS else [0, 1, 2, 3, 4]
+    variants = [0, 1, 2, 3, 4]
     if last_variant_for_style is not None and len(variants) > 1:
         variants = [v for v in variants if v != last_variant_for_style]
     r2 = rng or random.SystemRandom()

@@ -4,7 +4,7 @@ import {loadFont as archivo} from "@remotion/google-fonts/ArchivoBlack";
 import {loadFont as space} from "@remotion/google-fonts/SpaceGrotesk";
 import {loadFont as anton} from "@remotion/google-fonts/Anton";
 
-import {StyleScene, hasStyle} from "./styles/StyleEngine";
+import {StyleScene, hasStyle} from "./vox/VoxScene";
 
 const FONT: Record<string, string> = {
   ArchivoBlack: archivo("normal", {weights: ["400"], subsets: ["latin"]}).fontFamily,
@@ -270,7 +270,7 @@ const SceneWrap: React.FC<{plan: Plan; scene: Scene; index: number}> = ({plan, s
   const f = useCurrentFrame();
   const u = useU();
 
-  // StyleEngine: completely different art direction per style
+  // Vox engine: 212 Vox-style explainer looks (paper + flat SVG illustrations)
   if (hasStyle(plan)) return <StyleScene plan={plan} scene={scene} index={index} />;
 
   const t = plan.theme;

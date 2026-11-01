@@ -4,17 +4,12 @@ from src.style_engine import STYLE_IDS, pick_style, record_style
 from src.llm import validate, normalize
 
 def test_style_ids_count():
-    assert len(STYLE_IDS) == 222
-    expected_original = [
-        "motion_graphics", "perspective_3d", "cutout_collage", "blueprint", "swiss_poster", "isometric",
-        "tech_glow", "cyber_terminal", "flat_vector", "cinematic_noir"
-    ]
-    for s in expected_original:
-        assert s in STYLE_IDS
-    assert "s001" in STYLE_IDS
-    assert "s200" in STYLE_IDS
-    assert "t01" in STYLE_IDS
-    assert "t12" in STYLE_IDS
+    assert len(STYLE_IDS) == 212
+    assert STYLE_IDS[0] == "v001" and STYLE_IDS[-1] == "v212"
+    assert len(set(STYLE_IDS)) == 212
+    # purane art-direction / procedural / thinking ids ab nahi hain
+    for gone in ["motion_graphics", "cutout_collage", "blueprint", "s001", "s200", "t01", "t12"]:
+        assert gone not in STYLE_IDS
 
 def test_10_simulated_runs_no_repeat_within_last_4():
     """Verify that 10 consecutive simulated runs never repeat within last 4."""
@@ -23,7 +18,7 @@ def test_10_simulated_runs_no_repeat_within_last_4():
     rng = random.Random(12345)
 
     for i in range(10):
-        style = pick_style(history=history, cfg=cfg, rng=rng)
+        style = pick_style(history=history, cfg=cfg, rng=rng, recent_ids=[h["style_id"] for h in history])
         sid = style["id"]
         variant = style["variant"]
 
@@ -55,7 +50,7 @@ def test_30_simulated_runs():
     rng = random.Random(999)
 
     for i in range(30):
-        style = pick_style(history=history, cfg=cfg, rng=rng)
+        style = pick_style(history=history, cfg=cfg, rng=rng, recent_ids=[h["style_id"] for h in history])
         recent_4 = [h["style_id"] for h in history[-4:]]
         assert style["id"] not in recent_4
 
@@ -76,12 +71,12 @@ def test_30_simulated_runs():
         })
 
 def test_forced_style():
-    cfg = {"style_no_repeat_last": 4, "style_fixed_id": "blueprint"}
+    cfg = {"style_no_repeat_last": 4, "style_fixed_id": "v007"}
     st = pick_style(history=[], cfg=cfg)
-    assert st["id"] == "blueprint"
+    assert st["id"] == "v007"
 
-    st_arg = pick_style(history=[], cfg={"style_no_repeat_last": 4}, forced_style="isometric")
-    assert st_arg["id"] == "isometric"
+    st_arg = pick_style(history=[], cfg={"style_no_repeat_last": 4}, forced_style="v150")
+    assert st_arg["id"] == "v150"
 
 def test_style_mode_plan_validation():
     valid_plan = {
