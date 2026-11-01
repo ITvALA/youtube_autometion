@@ -103,5 +103,12 @@
     "date": "2026-11-01",
     "book": "Outliers",
     "seed": 198990449
+  },
+  {
+    "style_id": "v027",
+    "variant": 2,
+    "date": "2026-11-01",
+    "book": "The 48 Laws of Power",
+    "seed": 897878818
   }
 ]
