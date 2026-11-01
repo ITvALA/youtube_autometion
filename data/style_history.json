@@ -124,5 +124,12 @@
     "date": "2026-11-01",
     "book": "Ikigai",
     "seed": 619942698
+  },
+  {
+    "style_id": "v128",
+    "variant": 1,
+    "date": "2026-11-01",
+    "book": "Sapiens",
+    "seed": 343211758
   }
 ]
