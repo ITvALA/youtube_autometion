@@ -18,3 +18,4 @@
 | 12 | 2026-10-31 | Rich Dad Poor Dad | Unknown | Self Improvement | https://youtu.be/LE0jQHt-c6k |
 | 13 | 2026-10-31 | The Compound Effect | Unknown | Self Improvement | https://youtu.be/ROsEtBSjbMI |
 | 14 | 2026-11-01 | Ikigai | Unknown | Self Improvement | https://youtu.be/39SqpZc9MJQ |
+| 15 | 2026-11-01 | Mindset | Unknown | Self Improvement | https://youtu.be/Sh6biSN0v3A |
