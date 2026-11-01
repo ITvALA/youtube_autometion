@@ -1,5 +1,7 @@
 import React from "react";
 import {VoxPal, shade} from "./types";
+import {ICONS_2} from "./icons2";
+import {ICONS_3} from "./icons3";
 
 /*
  * VOX ICON LIBRARY: flat illustrations, 200x200 viewBox, sab SVG code me (koi image/API nahi).
@@ -18,7 +20,7 @@ const coin = (cx: number, cy: number, r: number, c: string, sym = "₹") => (
   </g>
 );
 
-export const ICONS: Record<string, IconFn> = {
+const BASE_ICONS: Record<string, IconFn> = {
   coins: (p) => (
     <g>
       {coin(100, 150, 56, p.c3)}{coin(100, 128, 56, l(p.c3))}{coin(100, 106, 56, p.c3)}
@@ -277,7 +279,8 @@ export const ICONS: Record<string, IconFn> = {
   globe: (p, f) => (
     <g>
       <circle cx="100" cy="100" r="72" fill={p.c2} />
-      <g transform={`translate(${((f * 0.4) % 160) - 40} 0)`}><path d="M30 74 Q50 56 70 70 Q80 90 60 100 Q44 96 30 74 Z M96 110 Q122 98 134 126 Q120 150 100 140 Z M110 52 Q130 40 148 56 Q140 74 116 70 Z" fill={p.c3} /></g>
+      <clipPath id="vox-globe-clip"><circle cx="100" cy="100" r="70" /></clipPath>
+      <g clipPath="url(#vox-globe-clip)"><g transform={`translate(${((f * 0.4) % 160) - 40} 0)`}><path d="M30 74 Q50 56 70 70 Q80 90 60 100 Q44 96 30 74 Z M96 110 Q122 98 134 126 Q120 150 100 140 Z M110 52 Q130 40 148 56 Q140 74 116 70 Z M190 74 Q210 56 230 70 Q240 90 220 100 Q204 96 190 74 Z" fill={p.c3} /></g></g>
       <circle cx="100" cy="100" r="72" fill="none" stroke={p.ink} strokeWidth="7" />
       <ellipse cx="100" cy="100" rx="30" ry="72" fill="none" stroke={p.ink} strokeWidth="3" opacity="0.5" /><line x1="28" y1="100" x2="172" y2="100" stroke={p.ink} strokeWidth="3" opacity="0.5" />
     </g>
@@ -334,6 +337,8 @@ export const ICONS: Record<string, IconFn> = {
   ),
 };
 
+/** 45 base + 36 + 45 niche icons = 126. */
+export const ICONS: Record<string, IconFn> = {...BASE_ICONS, ...ICONS_2, ...ICONS_3};
 export const ICON_KEYS = Object.keys(ICONS);
 
 /** Chhota helper: ek icon ko 200x200 SVG me draw karo. */

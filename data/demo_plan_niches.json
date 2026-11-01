@@ -1,0 +1,503 @@
+{
+ "book": {
+  "title": "Niche Demo",
+  "author": "MindSpark"
+ },
+ "theme": {
+  "palette": "Neon Night",
+  "colors": {
+   "bg1": "#0B1020",
+   "bg2": "#1B1464",
+   "ac": "#00F5A0",
+   "tx": "#FFFFFF",
+   "cd": "rgba(255,255,255,0.10)"
+  },
+  "font": "Anton",
+  "layout": "left",
+  "pattern": "dots",
+  "transition": "flip",
+  "chart": "bars",
+  "formatName": "vertical",
+  "format": {
+   "name": "vertical",
+   "width": 1080,
+   "height": 1920
+  }
+ },
+ "style": {
+  "id": "v050",
+  "variant": 0,
+  "seed": 7
+ },
+ "scenes": [
+  {
+   "type": "hook",
+   "narration": "Bas ek look, saare niches. Ye hai naya Vox style.",
+   "durationSec": 4,
+   "words": [
+    {
+     "w": "Bas",
+     "s": 0.3,
+     "e": 0.59
+    },
+    {
+     "w": "ek",
+     "s": 0.64,
+     "e": 0.93
+    },
+    {
+     "w": "look,",
+     "s": 0.98,
+     "e": 1.27
+    },
+    {
+     "w": "saare",
+     "s": 1.32,
+     "e": 1.61
+    },
+    {
+     "w": "niches.",
+     "s": 1.66,
+     "e": 1.95
+    },
+    {
+     "w": "Ye",
+     "s": 2.0,
+     "e": 2.29
+    },
+    {
+     "w": "hai",
+     "s": 2.34,
+     "e": 2.63
+    },
+    {
+     "w": "naya",
+     "s": 2.68,
+     "e": 2.97
+    },
+    {
+     "w": "Vox",
+     "s": 3.02,
+     "e": 3.31
+    },
+    {
+     "w": "style.",
+     "s": 3.36,
+     "e": 3.65
+    }
+   ],
+   "data": {
+    "title": "SAARE NICHES ONE LOOK",
+    "sub": "Vox Style",
+    "visual": {
+     "items": [
+      {
+       "icon": "sparkle",
+       "label": "Vox Style"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "type": "gradientFlow",
+   "narration": "Horror stories ki raat, ek bhootiya haveli ka raaz.",
+   "durationSec": 4.5,
+   "words": [
+    {
+     "w": "Horror",
+     "s": 0.3,
+     "e": 0.68
+    },
+    {
+     "w": "stories",
+     "s": 0.73,
+     "e": 1.12
+    },
+    {
+     "w": "ki",
+     "s": 1.17,
+     "e": 1.55
+    },
+    {
+     "w": "raat,",
+     "s": 1.6,
+     "e": 1.98
+    },
+    {
+     "w": "ek",
+     "s": 2.03,
+     "e": 2.42
+    },
+    {
+     "w": "bhootiya",
+     "s": 2.47,
+     "e": 2.85
+    },
+    {
+     "w": "haveli",
+     "s": 2.9,
+     "e": 3.28
+    },
+    {
+     "w": "ka",
+     "s": 3.33,
+     "e": 3.72
+    },
+    {
+     "w": "raaz.",
+     "s": 3.77,
+     "e": 4.15
+    }
+   ],
+   "data": {
+    "text": "Horror stories ki raat, ek bhootiya haveli"
+   }
+  },
+  {
+   "type": "gradientFlow",
+   "narration": "Space me ek million se zyada planets hain.",
+   "durationSec": 4.5,
+   "words": [
+    {
+     "w": "Space",
+     "s": 0.3,
+     "e": 0.74
+    },
+    {
+     "w": "me",
+     "s": 0.79,
+     "e": 1.23
+    },
+    {
+     "w": "ek",
+     "s": 1.28,
+     "e": 1.71
+    },
+    {
+     "w": "million",
+     "s": 1.76,
+     "e": 2.2
+    },
+    {
+     "w": "se",
+     "s": 2.25,
+     "e": 2.69
+    },
+    {
+     "w": "zyada",
+     "s": 2.74,
+     "e": 3.18
+    },
+    {
+     "w": "planets",
+     "s": 3.23,
+     "e": 3.66
+    },
+    {
+     "w": "hain.",
+     "s": 3.71,
+     "e": 4.15
+    }
+   ],
+   "data": {
+    "text": "Space me planets ka brahmand"
+   }
+  },
+  {
+   "type": "gradientFlow",
+   "narration": "Street food ka asli swaad, mumbai ka vada pav.",
+   "durationSec": 4.5,
+   "words": [
+    {
+     "w": "Street",
+     "s": 0.3,
+     "e": 0.68
+    },
+    {
+     "w": "food",
+     "s": 0.73,
+     "e": 1.12
+    },
+    {
+     "w": "ka",
+     "s": 1.17,
+     "e": 1.55
+    },
+    {
+     "w": "asli",
+     "s": 1.6,
+     "e": 1.98
+    },
+    {
+     "w": "swaad,",
+     "s": 2.03,
+     "e": 2.42
+    },
+    {
+     "w": "mumbai",
+     "s": 2.47,
+     "e": 2.85
+    },
+    {
+     "w": "ka",
+     "s": 2.9,
+     "e": 3.28
+    },
+    {
+     "w": "vada",
+     "s": 3.33,
+     "e": 3.72
+    },
+    {
+     "w": "pav.",
+     "s": 3.77,
+     "e": 4.15
+    }
+   ],
+   "data": {
+    "text": "Street food: mumbai ka vada pav"
+   }
+  },
+  {
+   "type": "gradientFlow",
+   "narration": "Wildlife me sher aur hathi ki ajeeb dosti.",
+   "durationSec": 4.5,
+   "words": [
+    {
+     "w": "Wildlife",
+     "s": 0.3,
+     "e": 0.74
+    },
+    {
+     "w": "me",
+     "s": 0.79,
+     "e": 1.23
+    },
+    {
+     "w": "sher",
+     "s": 1.28,
+     "e": 1.71
+    },
+    {
+     "w": "aur",
+     "s": 1.76,
+     "e": 2.2
+    },
+    {
+     "w": "hathi",
+     "s": 2.25,
+     "e": 2.69
+    },
+    {
+     "w": "ki",
+     "s": 2.74,
+     "e": 3.18
+    },
+    {
+     "w": "ajeeb",
+     "s": 3.23,
+     "e": 3.66
+    },
+    {
+     "w": "dosti.",
+     "s": 3.71,
+     "e": 4.15
+    }
+   ],
+   "data": {
+    "text": "Wildlife: sher aur hathi ki dosti"
+   }
+  },
+  {
+   "type": "card",
+   "narration": "Cricket ke records, gaming ke tips aur yoga se shanti.",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Cricket",
+     "s": 0.3,
+     "e": 0.69
+    },
+    {
+     "w": "ke",
+     "s": 0.74,
+     "e": 1.13
+    },
+    {
+     "w": "records,",
+     "s": 1.18,
+     "e": 1.57
+    },
+    {
+     "w": "gaming",
+     "s": 1.62,
+     "e": 2.01
+    },
+    {
+     "w": "ke",
+     "s": 2.06,
+     "e": 2.45
+    },
+    {
+     "w": "tips",
+     "s": 2.5,
+     "e": 2.89
+    },
+    {
+     "w": "aur",
+     "s": 2.94,
+     "e": 3.33
+    },
+    {
+     "w": "yoga",
+     "s": 3.38,
+     "e": 3.77
+    },
+    {
+     "w": "se",
+     "s": 3.82,
+     "e": 4.21
+    },
+    {
+     "w": "shanti.",
+     "s": 4.26,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "lines": [
+     "Cricket ke records",
+     "Gaming ke tips",
+     "Yoga se shanti"
+    ]
+   }
+  },
+  {
+   "type": "gradientFlow",
+   "narration": "Fashion trends aur interior design, sab kuch ek hi style me.",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Fashion",
+     "s": 0.3,
+     "e": 0.65
+    },
+    {
+     "w": "trends",
+     "s": 0.7,
+     "e": 1.05
+    },
+    {
+     "w": "aur",
+     "s": 1.1,
+     "e": 1.45
+    },
+    {
+     "w": "interior",
+     "s": 1.5,
+     "e": 1.85
+    },
+    {
+     "w": "design,",
+     "s": 1.9,
+     "e": 2.25
+    },
+    {
+     "w": "sab",
+     "s": 2.3,
+     "e": 2.65
+    },
+    {
+     "w": "kuch",
+     "s": 2.7,
+     "e": 3.05
+    },
+    {
+     "w": "ek",
+     "s": 3.1,
+     "e": 3.45
+    },
+    {
+     "w": "hi",
+     "s": 3.5,
+     "e": 3.85
+    },
+    {
+     "w": "style",
+     "s": 3.9,
+     "e": 4.25
+    },
+    {
+     "w": "me.",
+     "s": 4.3,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "text": "Fashion trends aur interior design"
+   }
+  },
+  {
+   "type": "quote",
+   "narration": "Har niche, ek hi Vox look. MindSpark ko subscribe karein!",
+   "durationSec": 5,
+   "words": [
+    {
+     "w": "Har",
+     "s": 0.3,
+     "e": 0.69
+    },
+    {
+     "w": "niche,",
+     "s": 0.74,
+     "e": 1.13
+    },
+    {
+     "w": "ek",
+     "s": 1.18,
+     "e": 1.57
+    },
+    {
+     "w": "hi",
+     "s": 1.62,
+     "e": 2.01
+    },
+    {
+     "w": "Vox",
+     "s": 2.06,
+     "e": 2.45
+    },
+    {
+     "w": "look.",
+     "s": 2.5,
+     "e": 2.89
+    },
+    {
+     "w": "MindSpark",
+     "s": 2.94,
+     "e": 3.33
+    },
+    {
+     "w": "ko",
+     "s": 3.38,
+     "e": 3.77
+    },
+    {
+     "w": "subscribe",
+     "s": 3.82,
+     "e": 4.21
+    },
+    {
+     "w": "karein!",
+     "s": 4.26,
+     "e": 4.65
+    }
+   ],
+   "data": {
+    "quote": "Har niche, ek hi Vox look",
+    "by": "MindSpark"
+   }
+  }
+ ]
+}

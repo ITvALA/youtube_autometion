@@ -36,7 +36,10 @@ export type VoxStyle = {
 
 export const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 
-const hx = (h: string) => {const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255];};
+const hx = (h: string) => {
+  if (h.startsWith("rgb")) {const m = h.match(/[\d.]+/g) || ["0", "0", "0"]; return [Number(m[0]), Number(m[1]), Number(m[2])];}
+  const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
 /** k < 1 = darker, k > 1 = lighter */
 export const shade = (hex: string, k: number) => {
   const [r, g, b] = hx(hex);

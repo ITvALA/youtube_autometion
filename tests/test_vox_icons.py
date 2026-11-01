@@ -9,9 +9,12 @@ VOX = ROOT / "remotion" / "src" / "vox"
 
 
 def test_icon_list_matches_remotion():
-    src = (VOX / "icons.tsx").read_text(encoding="utf-8")
-    keys = re.findall(r"^  (\w+): \(p", src, flags=re.M)
+    keys = []
+    for name in ("icons.tsx", "icons2.tsx", "icons3.tsx"):
+        src = (VOX / name).read_text(encoding="utf-8")
+        keys += re.findall(r"^  (\w+): \(p", src, flags=re.M)
     assert keys == VOX_ICONS
+    assert len(keys) == len(set(keys)) == 126
 
 
 def test_212_unique_paper_palette_font_triples():
