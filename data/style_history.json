@@ -222,5 +222,12 @@
     "date": "2026-11-01",
     "book": "The Alchemist",
     "seed": 60205620
+  },
+  {
+    "style_id": "v202",
+    "variant": 4,
+    "date": "2026-11-01",
+    "book": "Man's Search for Meaning",
+    "seed": 798752036
   }
 ]
