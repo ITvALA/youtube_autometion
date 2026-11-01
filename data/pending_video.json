@@ -1,33 +1,36 @@
 {
-  "dir_name": "2026-11-01_072034_essentialism",
-  "file_id": "BAACAgUAAxkDAAOjaubosObFqxc9PMyT_ism2zf92ZcAAjgjAAKrQThXtbC4MxSUEsc9BA",
-  "file_unique_id": "AgADOCMAAqtBOFc",
-  "message_id": 163,
-  "caption": "🎬 *New Reel Ready for Review!*\n\nEssentialism: Less But Better Kaise Jiye? | Greg McKeown\n\n🎨 Style: *V136* (variant 0)\n✨ 9:16 Vertical | Seed: 781989534\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
+  "dir_name": "2026-11-01_073312_ikigai",
+  "file_id": "BAACAgUAAxkDAAOlaubr81Muuwm91GVwx-Q5bk7xRcUAAkkjAAKrQThXHTSbU1KNNqg9BA",
+  "file_unique_id": "AgADSSMAAqtBOFc",
+  "message_id": 165,
+  "caption": "🎬 *New Reel Ready for Review!*\n\nIkigai: Lambi Zindagi Ka Japanese Raaz | Book Summary Hindi\n\n🎨 Style: *V071* (variant 2)\n✨ 9:16 Vertical | Seed: 408677360\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
   "meta": {
-    "book": "Essentialism",
-    "title": "Essentialism: Less But Better Kaise Jiye? | Greg McKeown",
-    "description": "Essentialism sikhati hai kaise kam cheezein kar ke zyada achieve karein.\nEssential vs Non-essential mindset samjhiye! #Essentialism #Productivity #BookSummary #MindSpark #HinglishBooks",
+    "book": "Ikigai",
+    "title": "Ikigai: Lambi Zindagi Ka Japanese Raaz | Book Summary Hindi",
+    "description": "Japan ki lambi zindagi ka secret: Ikigai! Apna purpose dhundho aur khush raho.\n#Ikigai #BookSummary #SelfHelp #Japanese #MindSpark #Hinglish",
     "tags": [
-      "Essentialism",
-      "Greg McKeown",
+      "Ikigai",
       "Book Summary",
+      "Hindi",
       "Hinglish",
-      "Productivity",
       "Self Help",
-      "Minimalism",
-      "Focus",
-      "Priority",
-      "Life Lessons"
+      "Japanese Secret",
+      "Longevity",
+      "Purpose",
+      "MindSpark",
+      "Hector Garcia",
+      "Francesc Miralles",
+      "Life Lessons",
+      "Motivation"
     ],
     "privacy": "public",
-    "template_id": "style_v136",
-    "template_name": "Style: V136",
-    "style_id": "v136",
-    "style_variant": 0,
-    "style_seed": 781989534
+    "template_id": "style_v071",
+    "template_name": "Style: V071",
+    "style_id": "v071",
+    "style_variant": 2,
+    "style_seed": 408677360
   },
-  "timestamp": 1793517745,
+  "timestamp": 1793518579,
   "status": "pending_review",
-  "run_id": "41284210132"
+  "run_id": "41285055203"
 }
