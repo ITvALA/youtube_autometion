@@ -110,5 +110,12 @@
     "date": "2026-11-01",
     "book": "The 48 Laws of Power",
     "seed": 897878818
+  },
+  {
+    "style_id": "v111",
+    "variant": 1,
+    "date": "2026-11-01",
+    "book": "How to Win Friends and Influence People",
+    "seed": 774360249
   }
 ]
