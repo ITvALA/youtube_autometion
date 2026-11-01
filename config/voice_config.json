@@ -1,3 +1,4 @@
+
 {
   "provider": "hybrid_studio",
   "selected_voice_id": "hybrid_madhur_omega",
@@ -9,5 +10,9 @@
   "speed": 1.0,
   "pitch": "+0Hz",
   "rate": "+0%",
-  "description": "Madhur Neural for powerful Hook & Outro, Kokoro hm_omega for body scenes with Madhur fallback for any complex words."
-}
+  "description": "Madhur Neural for powerful Hook & Outro, Kokoro hm_omega for body scenes with Madhur fallback for any complex words. Reel-style pacing: tempo 1.1x, short gaps (lead/tail), lambi pauses squeeze.",
+  "tempo": 1.1,
+  "lead": 0.05,
+  "tail": 0.15,
+  "tail_last": 0.45,
+  "squeeze_pauses": 0.2
