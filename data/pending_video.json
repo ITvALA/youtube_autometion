@@ -1,35 +1,33 @@
 {
-  "dir_name": "2026-11-01_133338_the-alchemist",
-  "file_id": "BAACAgUAAxkDAAOsaudAc_vsWICyrWlGMxGIlE8ZuvwAAmEkAAKrQThXbSvA_VkaqWM9BA",
-  "file_unique_id": "AgADYSQAAqtBOFc",
-  "message_id": 172,
-  "caption": "🎬 *New Reel Ready for Review!*\n\nThe Alchemist Ki 4 Life-Changing Lessons | Paulo Coelho\n\n🎨 Style: *V146* (variant 4)\n✨ 9:16 Vertical | Seed: 421058775\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
+  "dir_name": "2026-11-01_141159_how-to-win-friends-and-influence-people",
+  "file_id": "BAACAgUAAxkDAAOuaudJoNu5ewyQndabnwnwPlR1ifQAAnckAAKrQThXilbqLmGDHig9BA",
+  "file_unique_id": "AgADdyQAAqtBOFc",
+  "message_id": 174,
+  "caption": "🎬 *New Reel Ready for Review!*\n\nDosti Banane Ka Secret Formula | Dale Carnegie | MindSpark\n\n🎨 Style: *V192* (variant 1)\n✨ 9:16 Vertical | Seed: 390932851\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
   "meta": {
-    "book": "The Alchemist",
-    "title": "The Alchemist Ki 4 Life-Changing Lessons | Paulo Coelho",
-    "description": "The Alchemist se seekho powerful life lessons jo tumhari zindagi badal denge.\n\n#TheAlchemist #PauloCoelho #BookSummary #HindiShorts #LifeLessons #MindSpark #Motivation #SelfHelp #Wisdom",
+    "book": "How to Win Friends and Influence People",
+    "title": "Dosti Banane Ka Secret Formula | Dale Carnegie | MindSpark",
+    "description": "How to Win Friends and Influence People ke sabse powerful lessons jo aapki relationships transform kar denge.\n\n#DaleCarnegie #Friendship #Communication #PeopleSkills #BookSummary #MindSpark #Hinglish #SelfImprovement",
     "tags": [
-      "The Alchemist",
-      "Paulo Coelho",
+      "Dale Carnegie",
+      "How to Win Friends",
+      "friendship tips",
+      "communication skills",
       "book summary",
-      "hindi",
-      "life lessons",
-      "motivation",
-      "self help",
-      "book review",
       "hinglish",
-      "wisdom",
-      "personal growth",
-      "mindset"
+      "self help",
+      "relationships",
+      "people skills",
+      "influence"
     ],
     "privacy": "public",
-    "template_id": "style_v146",
-    "template_name": "Style: V146",
-    "style_id": "v146",
-    "style_variant": 4,
-    "style_seed": 421058775
+    "template_id": "style_v192",
+    "template_name": "Style: V192",
+    "style_id": "v192",
+    "style_variant": 1,
+    "style_seed": 390932851
   },
-  "timestamp": 1793540212,
+  "timestamp": 1793542560,
   "status": "pending_review",
-  "run_id": "41311623396"
+  "run_id": "41314745995"
 }
