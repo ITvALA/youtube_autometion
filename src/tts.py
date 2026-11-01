@@ -298,10 +298,25 @@ def synth_speech(text, cfg, out):
     # 4. Edge-TTS Studio Neural
     return asyncio.run(_synth_edge(text, cfg, out))
 
+LEAD = 0.12   # scene shuru hone ke baad voice kitni der me aaye (sec)
+TAIL = 0.30   # voice ke baad kitni khaali awaaz (sec)
+TAIL_LAST = 0.55  # aakhri scene: video voice ke turant baad khatam ho, bas thodi si saans
+
+def _tighten(raw, out, tempo, lead, tail):
+    """TTS clip ke aage-peeche ki khaali awaaz hatao, tempo thoda badhao, phir chhota fixed lead/tail lagao.
+    (TTS har clip me ~0.3-1 sec khaali awaaz chhodta hai: wahi 'late aa raha' aur 'break' lagta tha.)"""
+    trim = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.04"
+    af = f"{trim},areverse,{trim},areverse"
+    if abs(tempo - 1.0) > 0.01:
+        af += f",atempo={tempo:.3f}"
+    af += f",adelay={int(lead * 1000)}:all=1,apad=pad_dur={tail}"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-af", af, "-ar", "44100", "-ac", "2", str(out)], check=True)
+
 def narrate(scenes, workdir, cfg, pad=0.45):
     """Synthesizes speech using dual scripts: tts_text (Devanagari Hindi) for audio voice, narration (Hinglish) for on-screen lyrics."""
     workdir.mkdir(parents=True, exist_ok=True)
     parts = []
+    tempo = float(cfg.get("tempo", 1.1))  # voice_config.json me "tempo" se badal sakte ho (1.0 = original speed)
     for i, s in enumerate(scenes):
         raw, padded = workdir / f"s{i}_raw.mp3", workdir / f"s{i}.mp3"
         # 1. Voice audio: Use tts_text (Devanagari Hindi) if provided for 100% natural pronunciation
@@ -323,14 +338,28 @@ def narrate(scenes, workdir, cfg, pad=0.45):
             print(f"[TTS] Scene {i} synthesis fallback to MadhurNeural due to: {e}")
             fallback_cfg = {"provider": "edge-tts", "voice": "hi-IN-MadhurNeural", "speed": 1.0, "rate": "+0%"}
             synth_speech(voice_text, fallback_cfg, raw)
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-af", f"apad=pad_dur={pad}", "-ar", "44100", "-ac", "2", padded], check=True)
+        tail = TAIL_LAST if i == len(scenes) - 1 else TAIL
+        try:
+            _tighten(raw, padded, tempo, LEAD, tail)
+            if dur(padded) < LEAD + tail + 0.4:  # zyada trim ho gaya: purana tareeka
+                raise RuntimeError("over-trimmed")
+        except Exception as e:
+            print(f"[TTS] Scene {i}: silence trim skipped ({e})")
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-af", f"apad=pad_dur={pad}", "-ar", "44100", "-ac", "2", padded], check=True)
+            tail = pad
         s["durationSec"] = round(dur(padded), 3)
 
-        # 2. Screen Lyrics / Captions: Always use Hinglish 'narration' for modern on-screen reading
+        # 2. Screen Lyrics / Captions: Hinglish 'narration', shabd ki lambai ke hisaab se voice ke andar baante
         hinglish_tokens = s["narration"].split()
         if hinglish_tokens:
-            step = (s["durationSec"] - pad) / max(1, len(hinglish_tokens))
-            words = [{"w": t, "s": round(k * step, 3), "e": round((k + 1) * step, 3)} for k, t in enumerate(hinglish_tokens)]
+            speech = max(0.3, s["durationSec"] - LEAD - tail)
+            weights = [len(t) + 2 for t in hinglish_tokens]
+            tot = float(sum(weights))
+            words, cur = [], LEAD
+            for t, wgt in zip(hinglish_tokens, weights):
+                d = speech * wgt / tot
+                words.append({"w": t, "s": round(cur, 3), "e": round(cur + d, 3)})
+                cur += d
         else:
             words = []
         s["words"] = words

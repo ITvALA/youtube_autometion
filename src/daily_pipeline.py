@@ -205,11 +205,24 @@ def main():
     ], cwd=ROOT / "remotion", check=True)
 
     # 5. Final Video Assembly
+    # Telegram bot sirf 20 MB tak ki file download kar sakta hai (getFile limit), isliye
+    # video ko ~16 MB ke target bitrate par re-encode karte hain (paper grain se file bahut bhaari ho jaati hai).
     final = out / "final.mp4"
+    dur = 35.0
+    try:
+        dur = float(subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", str(silent)],
+            capture_output=True, text=True, check=True).stdout.strip())
+    except Exception:
+        pass
+    v_kbps = int(max(800, min(5000, (16 * 8 * 1024) / max(dur, 1.0) - 128)))
     subprocess.run([
         "ffmpeg", "-y", "-loglevel", "error", "-i", str(silent), "-i", str(work / "audio.mp3"),
-        "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(final)
+        "-c:v", "libx264", "-preset", "medium", "-b:v", f"{v_kbps}k", "-maxrate", f"{int(v_kbps * 1.3)}k",
+        "-bufsize", f"{v_kbps * 2}k", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+        "-c:a", "aac", "-b:a", "128k", "-shortest", str(final)
     ], check=True)
+    print(f"📦 Final video: {final.stat().st_size / 1048576:.1f} MB ({v_kbps} kbps video)")
 
     # 6. Strict Format Verification with ffprobe
     w, h = verify_resolution(final)
