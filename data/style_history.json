@@ -117,5 +117,12 @@
     "date": "2026-11-01",
     "book": "How to Win Friends and Influence People",
     "seed": 774360249
+  },
+  {
+    "style_id": "v187",
+    "variant": 4,
+    "date": "2026-11-01",
+    "book": "Ikigai",
+    "seed": 619942698
   }
 ]
