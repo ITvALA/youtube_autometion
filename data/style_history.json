@@ -96,5 +96,12 @@
     "date": "2026-10-31",
     "book": "Can't Hurt Me",
     "seed": 801081996
+  },
+  {
+    "style_id": "v093",
+    "variant": 0,
+    "date": "2026-11-01",
+    "book": "Outliers",
+    "seed": 198990449
   }
 ]
