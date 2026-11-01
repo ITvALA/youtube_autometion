@@ -97,6 +97,22 @@ jobs:
             python src/daily_pipeline.py --headless
           fi
 
+      # ── NEW: run_id save karo taaki bot artifact se full-quality video utha sake ──
+      - name: Stamp run id into pending_video.json
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          python3 - <<'EOF'
+          import json, os
+          p = "data/pending_video.json"
+          if os.path.exists(p):
+              d = json.load(open(p, encoding="utf-8"))
+              d["run_id"] = os.environ["GITHUB_RUN_ID"]
+              json.dump(d, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+              print("run_id stamped:", d["run_id"])
+          else:
+              print("pending_video.json not found, skipping")
+          EOF
+
       - if: steps.guard.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
