@@ -1,33 +1,32 @@
 {
-  "dir_name": "2026-11-01_113412_the-power-of-now",
-  "file_id": "BAACAgUAAxkDAAOqauckWJUHDOyIbRStRJe6Dx-LZ1wAAtUjAAKrQThXEf_SXv0GMpE9BA",
-  "file_unique_id": "AgAD1SMAAqtBOFc",
-  "message_id": 170,
-  "caption": "🎬 *New Reel Ready for Review!*\n\nThe Power of Now: 4 Life-Changing Lessons | Eckhart Tolle\n\n🎨 Style: *V083* (variant 1)\n✨ 9:16 Vertical | Seed: 793846894\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
+  "dir_name": "2026-11-01_123445_how-to-win-friends-and-influence-people",
+  "file_id": "BAACAgUAAxkDAAOraucysC8H-AxS-b__rhfQOC5-mhEAAigkAAKrQThXlrUn7BGnqHE9BA",
+  "file_unique_id": "AgADKCQAAqtBOFc",
+  "message_id": 171,
+  "caption": "🎬 *New Reel Ready for Review!*\n\nDale Carnegie se Dosti ki 3 Powerful Lessons | MindSpark\n\n🎨 Style: *V175* (variant 2)\n✨ 9:16 Vertical | Seed: 569991878\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
   "meta": {
-    "book": "The Power of Now",
-    "title": "The Power of Now: 4 Life-Changing Lessons | Eckhart Tolle",
-    "description": "Present moment mein jeene ki power discover karo. Ego aur pain body se mukt hoke apni true self ko jaano.\n\n#ThePowerOfNow #EckhartTolle #MindSpark #HindiBookSummary #Spirituality #Mindfulness",
+    "book": "How to Win Friends and Influence People",
+    "title": "Dale Carnegie se Dosti ki 3 Powerful Lessons | MindSpark",
+    "description": "Dale Carnegie ki kitaab How to Win Friends and Influence People ke teen aasan lessons seekhein.\nDusron ka dil jeetne ki asli kala, 30 second mein. #MindSpark #DaleCarnegie #BookLessons #Shorts",
     "tags": [
-      "The Power of Now",
-      "Eckhart Tolle",
-      "Hindi Book Summary",
-      "Hinglish",
-      "Spirituality",
-      "Mindfulness",
-      "Present Moment",
-      "Self Help",
-      "Book Summary",
-      "MindSpark"
+      "Dale Carnegie",
+      "How to Win Friends and Influence People",
+      "book summary hindi",
+      "self improvement",
+      "dosti",
+      "personality development",
+      "hinglish book lessons",
+      "MindSpark",
+      "Shorts"
     ],
     "privacy": "public",
-    "template_id": "style_v083",
-    "template_name": "Style: V083",
-    "style_id": "v083",
-    "style_variant": 1,
-    "style_seed": 793846894
+    "template_id": "style_v175",
+    "template_name": "Style: V175",
+    "style_id": "v175",
+    "style_variant": 2,
+    "style_seed": 569991878
   },
-  "timestamp": 1793533016,
+  "timestamp": 1793536688,
   "status": "pending_review",
-  "run_id": "41302210039"
+  "run_id": "41306857857"
 }
