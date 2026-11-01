@@ -229,5 +229,12 @@
     "date": "2026-11-01",
     "book": "Man's Search for Meaning",
     "seed": 798752036
+  },
+  {
+    "style_id": "v001",
+    "variant": 1,
+    "date": "2026-11-01",
+    "book": "Range",
+    "seed": 968369375
   }
 ]
