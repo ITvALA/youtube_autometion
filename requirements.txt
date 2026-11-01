@@ -13,3 +13,4 @@ espeakng-loader>=0.2.4
 phonemizer>=3.4.0
 kokoro-onnx>=0.4.7
 instagrapi>=2.1.2
+pyotp>=2.9.0
