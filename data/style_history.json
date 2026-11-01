@@ -243,5 +243,12 @@
     "date": "2026-11-01",
     "book": "Sapiens",
     "seed": 848228019
+  },
+  {
+    "style_id": "v145",
+    "variant": 1,
+    "date": "2026-11-01",
+    "book": "The 48 Laws of Power",
+    "seed": 147200131
   }
 ]

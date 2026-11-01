@@ -1,32 +1,33 @@
 {
-  "dir_name": "2026-11-01_173350_sapiens",
-  "file_id": "BAACAgUAAxkDAAOyaud4tnJ9zEQg_mvDcy5cP2kg3-0AAsokAAKrQThXm5GVEZLBaSA9BA",
-  "file_unique_id": "AgADyiQAAqtBOFc",
-  "message_id": 178,
-  "caption": "🎬 *New Reel Ready for Review!*\n\nSapiens ke 4 Powerful Lessons | Yuval Noah Harari | Book Summary\n\n🎨 Style: *V156* (variant 3)\n✨ 9:16 Vertical | Seed: 848228019\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
+  "dir_name": "2026-11-01_183420_the-48-laws-of-power",
+  "file_id": "BAACAgUAAxkDAAOzaueGy_5drPR41l9x1LUSazSeKoEAAs4kAAKrQThXA7YvKwR0nLk9BA",
+  "file_unique_id": "AgADziQAAqtBOFc",
+  "message_id": 179,
+  "caption": "🎬 *New Reel Ready for Review!*\n\n48 Laws of Power ke 4 Sabse Powerful Laws | Robert Greene\n\n🎨 Style: *V145* (variant 1)\n✨ 9:16 Vertical | Seed: 147200131\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
   "meta": {
-    "book": "Sapiens",
-    "title": "Sapiens ke 4 Powerful Lessons | Yuval Noah Harari | Book Summary",
-    "description": "Sapiens book ke sabse powerful lessons jo aapki thinking badal denge!\n\n#Sapiens #YuvalNoahHarari #BookSummary #Hinglish #MindSpark #SelfImprovement",
+    "book": "The 48 Laws of Power",
+    "title": "48 Laws of Power ke 4 Sabse Powerful Laws | Robert Greene",
+    "description": "The 48 Laws of Power ki sabse powerful lessons jo aapki life change kar degi.\n\n#48LawsOfPower #RobertGreene #PowerLaws #BookSummary #HindiSummary #SelfImprovement #MindSpark #Motivation #Success #Strategy",
     "tags": [
-      "Sapiens",
-      "Yuval Noah Harari",
-      "Book Summary",
-      "Hinglish",
-      "Self Improvement",
-      "Philosophy",
-      "History",
-      "Human Evolution",
-      "MindSpark"
+      "48 laws of power",
+      "robert greene",
+      "book summary",
+      "hindi book summary",
+      "power laws",
+      "success tips",
+      "self improvement",
+      "motivation",
+      "strategy",
+      "hinglish"
     ],
     "privacy": "public",
-    "template_id": "style_v156",
-    "template_name": "Style: V156",
-    "style_id": "v156",
-    "style_variant": 3,
-    "style_seed": 848228019
+    "template_id": "style_v145",
+    "template_name": "Style: V145",
+    "style_id": "v145",
+    "style_variant": 1,
+    "style_seed": 147200131
   },
-  "timestamp": 1793554614,
+  "timestamp": 1793558220,
   "status": "pending_review",
-  "run_id": "41331882529"
+  "run_id": "41337041352"
 }
