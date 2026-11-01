@@ -257,5 +257,12 @@
     "date": "2026-11-01",
     "book": "Zero to One",
     "seed": 688403049
+  },
+  {
+    "style_id": "v015",
+    "variant": 0,
+    "date": "2026-11-01",
+    "book": "Rich Dad Poor Dad",
+    "seed": 504312429
   }
 ]
