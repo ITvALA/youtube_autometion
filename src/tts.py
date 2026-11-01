@@ -1,379 +1,359 @@
-"""Voice synthesis with KittenTTS (neural local), Edge-TTS, and ElevenLabs + word timings for captions."""
-import os, sys, json, base64, asyncio, subprocess, requests
+"""MINDSPARK voice synthesis.
+
+Chain (config "providers"): Gemini TTS (AI Studio key, no card) -> Google Chirp 3 HD -> Edge-TTS Madhur
+Each Gemini key (GEMINI_API_KEY, GEMINI_API_KEY_2 ...) and model is tried in order.
+Optional: ElevenLabs, OpenAI (gpt-4o-mini-tts)
+
+Features: per-scene cache (re-runs cost 0 chars), monthly quota guard,
+natural-pause friendly post-processing, loudness normalisation.
+"""
+import os, json, time, wave, base64, shutil, hashlib, asyncio, subprocess, requests
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+CACHE_DIR = ROOT / "data" / "tts_cache"
+USAGE_FILE = ROOT / "data" / "tts_usage.json"
 
-# Ensure espeak-ng paths are configured on Windows
-try:
-    import espeakng_loader, phonemizer
-    if hasattr(espeakng_loader, "get_data_path") and not os.environ.get("ESPEAK_DATA_PATH"):
-        os.environ["ESPEAK_DATA_PATH"] = str(espeakng_loader.get_data_path())
-    if hasattr(espeakng_loader, "get_library_path"):
-        try:
-            phonemizer.backend.espeak.wrapper.EspeakWrapper.set_library(espeakng_loader.get_library_path())
-        except Exception:
-            pass
-except Exception:
-    pass
+LEAD, TAIL, TAIL_LAST = 0.12, 0.30, 0.50
 
-_kitten_model = None
-_kokoro_model = None
 
-def get_kokoro_model(model_path=None, voices_path=None):
-    """Loads and caches Kokoro-82M ONNX model instance."""
-    global _kokoro_model
-    if _kokoro_model is None:
-        try:
-            from kokoro_onnx import Kokoro
-            m_path = model_path or (ROOT / "data" / "models" / "kokoro" / "kokoro-v1.0.int8.onnx")
-            v_path = voices_path or (ROOT / "data" / "models" / "kokoro" / "voices-v1.0.bin")
-            if Path(m_path).exists() and Path(v_path).exists():
-                _kokoro_model = Kokoro(str(m_path), str(v_path))
-            else:
-                print(f"[Kokoro] Model files not found at {m_path} or {v_path}")
-        except Exception as e:
-            print(f"[Kokoro] Initialization error: {e}")
-            _kokoro_model = None
-    return _kokoro_model
-
-def get_kitten_model(model_name="KittenML/kitten-tts-nano-0.8"):
-    """Loads and caches KittenTTS model instance for low-latency generation."""
-    global _kitten_model
-    if _kitten_model is None:
-        try:
-            from kittenml import KittenTTS
-            _kitten_model = KittenTTS(model_name)
-            # Check for custom Hindi voice sample in data/voices
-            voices_dir = ROOT / "data" / "voices"
-            custom_npz = voices_dir / "hindi_sample.npz"
-            if custom_npz.exists() and hasattr(_kitten_model, "model") and hasattr(_kitten_model.model, "voices"):
-                import numpy as np
-                custom_data = np.load(str(custom_npz))
-                for k in custom_data.files:
-                    _kitten_model.model.voices["hindi_custom"] = custom_data[k]
-                    if "hindi_custom" not in _kitten_model.model.available_voices:
-                        _kitten_model.model.available_voices.append("hindi_custom")
-                print(f"[KittenTTS] Loaded custom Hindi voice sample from {custom_npz}")
-        except Exception as e:
-            print(f"[KittenTTS] Initialization error: {e}")
-            _kitten_model = None
-    return _kitten_model
-
+# ----------------------------------------------------------------- helpers
 def dur(p):
-    return float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(p)]))
+    return float(subprocess.check_output(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(p)]))
 
-def parse_elevenlabs_alignment(alignment):
-    chars = alignment.get("characters", [])
-    starts = alignment.get("character_start_times_seconds", [])
-    ends = alignment.get("character_end_times_seconds", [])
-    words = []
-    curr_w, curr_start, curr_end = [], None, None
-    for c, s, e in zip(chars, starts, ends):
-        if c.isspace():
-            if curr_w:
-                words.append({"w": "".join(curr_w), "s": round(curr_start, 3), "e": round(curr_end, 3)})
-                curr_w, curr_start = [], None
-        else:
-            if curr_start is None:
-                curr_start = s
-            curr_end = e
-            curr_w.append(c)
-    if curr_w:
-        words.append({"w": "".join(curr_w), "s": round(curr_start, 3), "e": round(curr_end, 3)})
-    return words
 
-def _synth_elevenlabs(text, voice_id, api_key, out):
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/with-timestamps"
-    headers = {"xi-api-key": api_key, "Content-Type": "application/json"}
-    payload = {
-        "text": text,
-        "model_id": "eleven_multilingual_v2",
-        "voice_settings": {"stability": 0.5, "similarity_boost": 0.8}
-    }
-    resp = requests.post(url, json=payload, headers=headers, timeout=60)
-    resp.raise_for_status()
-    data = resp.json()
-    with open(out, "wb") as f:
-        f.write(base64.b64decode(data["audio_base64"]))
-    return parse_elevenlabs_alignment(data.get("alignment", {}))
+def _usage_month():
+    return time.strftime("%Y-%m")
 
-def _synth_kokoro(text, cfg, out):
-    """Synthesizes speech using hexgrad/Kokoro-82M ONNX with native Hindi voices."""
-    k = get_kokoro_model()
-    if not k:
-        raise RuntimeError("Kokoro ONNX model failed to load")
-    voice = cfg.get("voice", "hm_omega")
-    available = k.get_voices()
-    if voice not in available:
-        voice = "hm_omega" if "hm_omega" in available else (available[0] if available else "af")
-    speed = float(cfg.get("speed", 1.0))
-    lang = cfg.get("lang", "hi")
-    
-    samples, sample_rate = k.create(text, voice=voice, speed=speed, lang=lang)
-    
-    import soundfile as sf
-    wav_out = Path(out).with_suffix(".wav")
-    sf.write(str(wav_out), samples, sample_rate)
-    
-    subprocess.run([
-        "ffmpeg", "-y", "-loglevel", "error",
-        "-i", str(wav_out),
-        "-ar", "44100", "-ac", "2",
-        "-b:a", "192k",
-        str(out)
-    ], check=True)
-    
-    if wav_out.exists() and str(wav_out) != str(out):
-        try:
-            wav_out.unlink()
-        except Exception:
-            pass
-    return []
 
-def _synth_kitten(text, cfg, out):
-    """Synthesizes speech using KittenTTS with optional custom Hindi voice sample."""
-    model_name = cfg.get("voice_model", "KittenML/kitten-tts-nano-0.8")
-    model = get_kitten_model(model_name)
-    if not model:
-        raise RuntimeError("KittenTTS model failed to load")
-
-    # Select voice: check if custom Hindi voice exists, else use selected voice or default
-    voice = cfg.get("voice", "Bruno")
-    if hasattr(model, "model") and hasattr(model.model, "available_voices"):
-        if "hindi_custom" in model.model.available_voices:
-            voice = "hindi_custom"
-        elif voice not in model.model.available_voices:
-            voice = model.model.available_voices[0] if model.model.available_voices else "Bruno"
-
-    speed = float(cfg.get("speed", 1.0))
-    wav_out = Path(out).with_suffix(".wav")
-    
-    # Generate WAV via KittenTTS
-    model.generate_to_file(text, str(wav_out), voice=voice, speed=speed, sample_rate=24000)
-
-    # Convert to MP3
-    subprocess.run([
-        "ffmpeg", "-y", "-loglevel", "error",
-        "-i", str(wav_out),
-        "-ar", "44100", "-ac", "2",
-        "-b:a", "192k",
-        str(out)
-    ], check=True)
-
-    if wav_out.exists() and str(wav_out) != str(out):
-        try:
-            wav_out.unlink()
-        except Exception:
-            pass
-
-    # Build aligned word timings for Remotion vertical captions
-    audio_duration = dur(out)
-    tokens = text.split()
-    words = []
-    if tokens:
-        total_chars = sum(len(t) for t in tokens)
-        curr = 0.0
-        for t in tokens:
-            w_dur = max(0.12, (len(t) / max(1, total_chars)) * audio_duration)
-            words.append({"w": t, "s": round(curr, 3), "e": round(curr + w_dur, 3)})
-            curr += w_dur
-    return words
-
-async def _synth_edge(text, cfg, out):
-    voice = cfg.get("voice_model") or cfg.get("voice") or "hi-IN-MadhurNeural"
-    # If Wavenet requested without Google key, fall back to high-fidelity Madhur Neural
-    if "wavenet" in voice.lower() or not voice.startswith(("en-", "hi-", "Microsoft")):
-        voice = cfg.get("fallback_voice", "hi-IN-MadhurNeural")
-    kw = dict(rate=cfg.get("rate", "+0%"), pitch=cfg.get("pitch", "+0Hz"))
+def _usage_read():
     try:
-        import edge_tts
-        try:
-            comm = edge_tts.Communicate(text, voice, boundary="WordBoundary", **kw)
-        except TypeError:
-            comm = edge_tts.Communicate(text, voice, **kw)
-        words = []
-        with open(out, "wb") as f:
-            async for ch in comm.stream():
-                if ch["type"] == "audio":
-                    f.write(ch["data"])
-                elif ch["type"] == "WordBoundary":
-                    words.append({"w": ch["text"], "s": round(ch["offset"] / 1e7, 3), "e": round((ch["offset"] + ch["duration"]) / 1e7, 3)})
-        return words
-    except Exception as e:
-        print(f"[TTS] Edge-TTS error: {e}")
-        return []
+        d = json.loads(USAGE_FILE.read_text())
+    except Exception:
+        d = {}
+    m = d.get(_usage_month(), {})
+    if isinstance(m, int):  # old format
+        m = {"key1": m}
+    return d, m
 
-def _synth_google_wavenet(text, cfg, out):
-    """Google Cloud Text-to-Speech API for hi-IN-Wavenet-C."""
-    api_key = os.getenv("GOOGLE_TTS_API_KEY") or os.getenv("GCP_API_KEY") or os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise RuntimeError("GOOGLE_TTS_API_KEY is not set for Wavenet-C")
-    voice_name = cfg.get("voice", "hi-IN-Wavenet-C")
-    url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api_key}"
+
+def _usage_get(slot="key1"):
+    return int(_usage_read()[1].get(slot, 0))
+
+
+def _usage_add(n, slot="key1"):
+    d, m = _usage_read()
+    m[slot] = int(m.get(slot, 0)) + int(n)
+    d[_usage_month()] = m
+    USAGE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    USAGE_FILE.write_text(json.dumps(d))
+
+
+def _google_keys():
+    """[(slot, key)] in priority order: GOOGLE_TTS_API_KEY, GOOGLE_TTS_API_KEY_2, _3 ..."""
+    keys = []
+    k1 = os.getenv("GOOGLE_TTS_API_KEY") or os.getenv("GCP_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if k1:
+        keys.append(("key1", k1))
+    for n in range(2, 6):
+        k = os.getenv(f"GOOGLE_TTS_API_KEY_{n}")
+        if k:
+            keys.append((f"key{n}", k))
+    return keys
+
+
+# --------------------------------------------------------------- providers
+def _synth_google_chirp(text, cfg, out):
+    """Google Cloud TTS - Chirp 3 HD. Tries key 1, then key 2 (3, 4, 5) if a key is
+    over quota / billing-disabled / invalid / failing."""
+    keys = _google_keys()
+    if not keys:
+        raise RuntimeError("GOOGLE_TTS_API_KEY is not set")
+
+    limit = int(cfg.get("monthly_char_limit", 950000))  # per key
     payload = {
         "input": {"text": text},
-        "voice": {
-            "languageCode": "hi-IN",
-            "name": voice_name
-        },
-        "audioConfig": {
-            "audioEncoding": "MP3",
-            "speakingRate": float(cfg.get("speed", 0.93))
-        }
+        "voice": {"languageCode": cfg.get("language_code", "hi-IN"),
+                  "name": cfg.get("voice", "hi-IN-Chirp3-HD-Charon")},
+        "audioConfig": {"audioEncoding": "MP3", "speakingRate": float(cfg.get("speed", 1.0))},
     }
-    r = requests.post(url, json=payload, timeout=30)
-    r.raise_for_status()
-    audio_content = base64.b64decode(r.json()["audioContent"])
+    errors = []
+    for slot, key in keys:
+        used = _usage_get(slot)
+        if used + len(text) > limit:
+            errors.append(f"{slot}: local quota guard ({used:,}/{limit:,})")
+            print(f"[TTS] {slot} quota guard hit, trying next key")
+            continue
+        url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={key}"
+        for attempt in range(2):
+            try:
+                r = requests.post(url, json=payload, timeout=40)
+                if r.status_code in (400, 401, 403):      # bad key / billing off / quota exhausted
+                    raise PermissionError(f"HTTP {r.status_code} {r.text[:120]}")
+                if r.status_code in (429, 500, 502, 503):  # transient or quota: retry once
+                    raise RuntimeError(f"HTTP {r.status_code}")
+                r.raise_for_status()
+                Path(out).write_bytes(base64.b64decode(r.json()["audioContent"]))
+                _usage_add(len(text), slot)
+                if slot != "key1":
+                    print(f"[TTS] used backup {slot}")
+                return []
+            except PermissionError as e:
+                errors.append(f"{slot}: {e}")
+                break                                       # no point retrying this key
+            except Exception as e:
+                errors.append(f"{slot}: {e}")
+                time.sleep(1.5)
+        print(f"[TTS] {slot} failed, trying next key")
+    raise RuntimeError("all Google keys failed: " + " | ".join(errors))
+
+
+def _gemini_keys():
+    keys = []
+    k1 = os.getenv("GEMINI_API_KEY")
+    if k1:
+        keys.append(("gkey1", k1))
+    for n in range(2, 6):
+        k = os.getenv(f"GEMINI_API_KEY_{n}")
+        if k:
+            keys.append((f"gkey{n}", k))
+    return keys
+
+
+def _synth_gemini(text, cfg, out):
+    """Gemini TTS via AI Studio key (no billing card needed for free-tier models).
+    Rotates: key1 -> key2 ..., and for each key: models in cfg['gemini_models'] order."""
+    keys = _gemini_keys()
+    if not keys:
+        raise RuntimeError("GEMINI_API_KEY is not set")
+    models = cfg.get("gemini_models") or ["gemini-3.8-flash-tts"]
+    style = (cfg.get("style") or "").strip()
+    prompt = f"{style}: {text}" if style else text
+    body = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "responseModalities": ["AUDIO"],
+            "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": cfg.get("voice", "Charon")}}},
+        },
+    }
+    errors = []
+    for slot, key in keys:
+        for model in models:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+            for attempt in range(2):
+                try:
+                    r = requests.post(url, json=body, headers={"x-goog-api-key": key}, timeout=90)
+                    if r.status_code in (400, 401, 403, 404, 429):   # bad key/model, no access, quota
+                        raise PermissionError(f"HTTP {r.status_code} {r.text[:140]}")
+                    if r.status_code >= 500:
+                        raise RuntimeError(f"HTTP {r.status_code}")
+                    r.raise_for_status()
+                    part = r.json()["candidates"][0]["content"]["parts"][0]
+                    inline = part.get("inlineData") or part.get("inline_data")
+                    if not inline:
+                        raise RuntimeError("no audio in response")
+                    pcm = base64.b64decode(inline["data"])
+                    mime = inline.get("mimeType") or inline.get("mime_type") or ""
+                    rate = 24000
+                    if "rate=" in mime:
+                        try:
+                            rate = int(mime.split("rate=")[1].split(";")[0])
+                        except Exception:
+                            pass
+                    wav = Path(out).with_suffix(".gem.wav")
+                    with wave.open(str(wav), "wb") as w:
+                        w.setnchannels(1); w.setsampwidth(2); w.setframerate(rate)
+                        w.writeframes(pcm)
+                    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav),
+                                    "-ar", "44100", "-ac", "2", "-b:a", "192k", str(out)], check=True)
+                    try:
+                        wav.unlink()
+                    except Exception:
+                        pass
+                    if slot != "gkey1" or model != models[0]:
+                        print(f"[TTS] gemini ok via {slot} / {model}")
+                    return []
+                except PermissionError as e:
+                    errors.append(f"{slot}/{model}: {e}")
+                    break                       # don't retry this key+model, go next
+                except Exception as e:
+                    errors.append(f"{slot}/{model}: {e}")
+                    time.sleep(1.5)
+            print(f"[TTS] {slot}/{model} failed, trying next")
+    raise RuntimeError("all Gemini keys/models failed: " + " | ".join(errors[-4:]))
+
+
+async def _synth_edge_async(text, cfg, out):
+    import edge_tts
+    voice = cfg.get("voice") or "hi-IN-MadhurNeural"
+    comm = edge_tts.Communicate(text, voice, rate=cfg.get("rate", "+0%"), pitch=cfg.get("pitch", "+0Hz"))
     with open(out, "wb") as f:
-        f.write(audio_content)
+        async for ch in comm.stream():
+            if ch["type"] == "audio":
+                f.write(ch["data"])
     return []
+
+
+def _synth_edge(text, cfg, out):
+    return asyncio.run(_synth_edge_async(text, cfg, out))
+
+
+def _synth_elevenlabs(text, cfg, out):
+    key = os.getenv("ELEVENLABS_API_KEY") or os.getenv("XI_API_KEY")
+    if not key:
+        raise RuntimeError("ELEVENLABS_API_KEY is not set")
+    voice_id = cfg.get("elevenlabs_voice_id") or "AZnzlk1XvdvUeBnXmlld"
+    r = requests.post(
+        f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
+        headers={"xi-api-key": key, "Content-Type": "application/json"},
+        json={"text": text, "model_id": cfg.get("voice_model", "eleven_multilingual_v2"),
+              "voice_settings": {"stability": 0.35, "similarity_boost": 0.75,
+                                 "style": 0.3, "use_speaker_boost": True}},
+        timeout=60)
+    r.raise_for_status()
+    Path(out).write_bytes(r.content)
+    return []
+
 
 def _synth_openai(text, cfg, out):
-    """OpenAI TTS (powers openai.fm) with native Hindi support."""
-    api_key = os.getenv("OPENAI_API_KEY") or cfg.get("openai_api_key")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY is not set in .env for OpenAI TTS (openai.fm)")
-    model = cfg.get("voice_model", "tts-1")  # tts-1 or tts-1-hd
-    voice = cfg.get("voice", "onyx")        # onyx (deep male), echo, alloy, nova, shimmer
-    speed = float(cfg.get("speed", 0.95))
-    url = "https://api.openai.com/v1/audio/speech"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": model,
-        "input": text,
-        "voice": voice,
-        "speed": speed
-    }
-    r = requests.post(url, headers=headers, json=payload, timeout=60)
+    key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise RuntimeError("OPENAI_API_KEY is not set")
+    payload = {"model": cfg.get("voice_model", "gpt-4o-mini-tts"), "voice": cfg.get("voice", "onyx"),
+               "input": text, "response_format": "mp3"}
+    if cfg.get("instructions"):
+        payload["instructions"] = cfg["instructions"]
+    r = requests.post("https://api.openai.com/v1/audio/speech",
+                      headers={"Authorization": f"Bearer {key}"}, json=payload, timeout=60)
     r.raise_for_status()
-    with open(out, "wb") as f:
-        f.write(r.content)
+    Path(out).write_bytes(r.content)
     return []
 
+
+PROVIDERS = {
+    "gemini_tts": _synth_gemini, "gemini": _synth_gemini,
+    "google_chirp": _synth_google_chirp, "google": _synth_google_chirp, "chirp3": _synth_google_chirp,
+    "edge-tts": _synth_edge, "edge": _synth_edge,
+    "elevenlabs": _synth_elevenlabs,
+    "openai": _synth_openai,
+}
+
+
+# ------------------------------------------------------ cache + fallback
+def _run_cached(provider, text, cfg, out):
+    fn = PROVIDERS[provider]
+    use_cache = bool(cfg.get("cache", True))
+    sig = f"{provider}|{cfg.get('voice')}|{cfg.get('speed')}|{cfg.get('rate')}|{cfg.get('pitch')}|{text}"
+    path = CACHE_DIR / (hashlib.sha1(sig.encode("utf-8")).hexdigest() + ".mp3")
+    if use_cache and path.exists():
+        shutil.copyfile(path, out)
+        return []
+    words = fn(text, cfg, out)
+    if use_cache:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(out, path)
+    return words
+
+
+def _cfg_for(prov, cfg):
+    voices = cfg.get("voices") or {}
+    if prov in ("edge-tts", "edge"):
+        v = voices.get(prov) or cfg.get("fallback_voice", "hi-IN-MadhurNeural")
+    else:
+        v = voices.get(prov) or cfg.get("voice")
+    return dict(cfg, voice=v)
+
+
 def synth_speech(text, cfg, out):
-    provider = cfg.get("provider", "edge-tts").lower()
-    voice = cfg.get("voice", "").lower()
-
-    # 1. Kokoro-82M (Top Trending Hindi Open-Weights Model on Hugging Face)
-    if provider in ("kokoro", "kokoro-82m", "kokoro_onnx", "hexgrad/kokoro-82m") or voice.startswith(("hm_", "hf_")):
+    """Walk the provider chain: cfg['providers'] (list) or provider -> fallback_provider."""
+    if cfg.get("providers"):
+        names = [str(p).lower() for p in cfg["providers"]]
+    else:
+        names = [str(cfg.get("provider", "gemini_tts")).lower(),
+                 str(cfg.get("fallback_provider", "edge-tts")).lower()]
+    seen, chain = set(), []
+    for n in names:
+        if n not in seen:
+            seen.add(n); chain.append(n)
+    last = None
+    for prov in chain:
+        if prov not in PROVIDERS:
+            print(f"[TTS] unknown provider '{prov}', skipping")
+            continue
         try:
-            return _synth_kokoro(text, cfg, out)
+            return _run_cached(prov, text, _cfg_for(prov, cfg), out)
         except Exception as e:
-            print(f"[TTS] Kokoro-82M failed ({e}), falling back to studio neural voice: {cfg.get('fallback_voice', 'hi-IN-MadhurNeural')}")
+            last = e
+            print(f"[TTS] {prov} failed ({e})")
+    raise RuntimeError(f"All TTS providers failed: {last}")
 
-    # 1. OpenAI TTS (openai.fm)
-    if provider in ("openai", "openaifm", "openai.fm") or voice in ("onyx", "echo", "alloy", "fable", "nova", "shimmer"):
-        try:
-            return _synth_openai(text, cfg, out)
-        except Exception as e:
-            print(f"[TTS] OpenAI TTS (openai.fm) failed: {e}. Falling back to studio neural voice: {cfg.get('fallback_voice', 'hi-IN-MadhurNeural')}")
 
-    # 2. KittenTTS (if provider is kittentts)
-    if provider in ("kittentts", "kitten", "kitten_tts"):
-        try:
-            return _synth_kitten(text, cfg, out)
-        except Exception as e:
-            print(f"[TTS] KittenTTS synthesis failed ({e}), falling back to Edge-TTS.")
-
-    # 3. Google Wavenet-C (if requested and API key available)
-    if "wavenet" in voice or provider == "google":
-        try:
-            return _synth_google_wavenet(text, cfg, out)
-        except Exception as e:
-            print(f"[TTS] Google Wavenet-C unavailable ({e}), using studio neural fallback: {cfg.get('fallback_voice', 'hi-IN-MadhurNeural')}")
-
-    # 3. ElevenLabs
-    el_key = os.getenv("ELEVENLABS_API_KEY") or os.getenv("XI_API_KEY") or cfg.get("elevenlabs_api_key")
-    if (provider == "elevenlabs" or cfg.get("voice") == "elevenlabs_neil") and el_key:
-        voice_id = cfg.get("elevenlabs_voice_id") or "AZnzlk1XvdvUeBnXmlld"
-        try:
-            return _synth_elevenlabs(text, voice_id, el_key, out)
-        except Exception as e:
-            print(f"[TTS] ElevenLabs call failed ({e}), falling back to Edge-TTS.")
-
-    # 4. Edge-TTS Studio Neural
-    return asyncio.run(_synth_edge(text, cfg, out))
-
-LEAD = 0.12   # scene shuru hone ke baad voice kitni der me aaye (sec)
-TAIL = 0.30   # voice ke baad kitni khaali awaaz (sec)
-TAIL_LAST = 0.55  # aakhri scene: video voice ke turant baad khatam ho, bas thodi si saans
-
-def _tighten(raw, out, tempo, lead, tail, squeeze=0.0):
-    """TTS clip ke aage-peeche ki khaali awaaz hatao, tempo thoda badhao, phir chhota fixed lead/tail lagao.
-    (TTS har clip me ~0.3-1 sec khaali awaaz chhodta hai: wahi 'late aa raha' aur 'break' lagta tha.)
-    squeeze > 0: clip ke beech ki 'squeeze' sec se lambi pauses ko ~0.1 sec tak chhota karo (reel jaisa tez flow)."""
-    trim = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.04"
+# ------------------------------------------------------- post-processing
+def _tighten(raw, out, tempo, lead, tail, squeeze=0.0, normalize=True):
+    """Trim leading/trailing silence, optional gentle pause squeeze, tempo, loudness, lead/tail pad."""
+    trim = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05"
     af = f"{trim},areverse,{trim},areverse"
     if squeeze and squeeze > 0:
-        af += f",silenceremove=stop_periods=-1:stop_duration={squeeze}:stop_threshold=-42dB:stop_silence=0.1"
+        # only shorten pauses longer than `squeeze` sec, down to 0.25s (keeps natural breathing)
+        af += f",silenceremove=stop_periods=-1:stop_duration={squeeze}:stop_threshold=-42dB:stop_silence=0.25"
     if abs(tempo - 1.0) > 0.01:
         af += f",atempo={tempo:.3f}"
+    if normalize:
+        af += ",loudnorm=I=-16:TP=-1.5:LRA=11"
     af += f",adelay={int(lead * 1000)}:all=1,apad=pad_dur={tail}"
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-af", af, "-ar", "44100", "-ac", "2", str(out)], check=True)
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-af", af,
+                    "-ar", "44100", "-ac", "2", str(out)], check=True)
+
 
 def narrate(scenes, workdir, cfg, pad=0.45):
-    """Synthesizes speech using dual scripts: tts_text (Devanagari Hindi) for audio voice, narration (Hinglish) for on-screen lyrics."""
+    """tts_text (Devanagari) -> voice. narration (Hinglish) -> on-screen caption word timings."""
     workdir.mkdir(parents=True, exist_ok=True)
     parts = []
-    # voice_config.json se badal sakte ho: tempo (1.0 = original), lead, tail, tail_last, squeeze_pauses (0 = band)
-    tempo = float(cfg.get("tempo", 1.1))
+    tempo = float(cfg.get("tempo", 1.0))
     lead_s = float(cfg.get("lead", LEAD))
     tail_s = float(cfg.get("tail", TAIL))
     tail_last_s = float(cfg.get("tail_last", TAIL_LAST))
     squeeze = float(cfg.get("squeeze_pauses", 0.0))
+    normalize = bool(cfg.get("normalize", True))
+
     for i, s in enumerate(scenes):
         raw, padded = workdir / f"s{i}_raw.mp3", workdir / f"s{i}.mp3"
-        # 1. Voice audio: Use tts_text (Devanagari Hindi) if provided for 100% natural pronunciation
-        voice_text = s.get("tts_text") or s["narration"]
-        scene_cfg = dict(cfg)
-        # Hybrid Architecture: Hook (scene 0) & Outro (last scene) use Madhur Neural
-        is_hybrid = scene_cfg.get("provider") in ("hybrid", "hybrid_studio") or "hook_outro_voice" in scene_cfg
-        if is_hybrid and (i == 0 or i == len(scenes) - 1):
-            scene_cfg["provider"] = "edge-tts"
-            scene_cfg["voice"] = scene_cfg.get("hook_outro_voice", "hi-IN-MadhurNeural")
-        elif is_hybrid:
-            scene_cfg["provider"] = "kokoro"
-            scene_cfg["voice"] = scene_cfg.get("body_voice", "hm_omega")
-            scene_cfg["fallback_voice"] = "hi-IN-MadhurNeural"
+        voice_text = (s.get("tts_text") or s["narration"]).strip()
+        synth_speech(voice_text, cfg, raw)
 
-        try:
-            synth_speech(voice_text, scene_cfg, raw)
-        except Exception as e:
-            print(f"[TTS] Scene {i} synthesis fallback to MadhurNeural due to: {e}")
-            fallback_cfg = {"provider": "edge-tts", "voice": "hi-IN-MadhurNeural", "speed": 1.0, "rate": "+0%"}
-            synth_speech(voice_text, fallback_cfg, raw)
         tail = tail_last_s if i == len(scenes) - 1 else tail_s
         try:
-            _tighten(raw, padded, tempo, lead_s, tail, squeeze)
-            if dur(padded) < lead_s + tail + 0.4:  # zyada trim ho gaya: purana tareeka
+            _tighten(raw, padded, tempo, lead_s, tail, squeeze, normalize)
+            if dur(padded) < lead_s + tail + 0.4:
                 raise RuntimeError("over-trimmed")
         except Exception as e:
-            print(f"[TTS] Scene {i}: silence trim skipped ({e})")
-            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-af", f"apad=pad_dur={pad}", "-ar", "44100", "-ac", "2", padded], check=True)
+            print(f"[TTS] Scene {i}: trim skipped ({e})")
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-af",
+                            f"apad=pad_dur={pad}", "-ar", "44100", "-ac", "2", str(padded)], check=True)
             tail = pad
         s["durationSec"] = round(dur(padded), 3)
 
-        # 2. Screen Lyrics / Captions: Hinglish 'narration', shabd ki lambai ke hisaab se voice ke andar baante
-        hinglish_tokens = s["narration"].split()
-        if hinglish_tokens:
+        tokens = s["narration"].split()
+        words = []
+        if tokens:
             speech = max(0.3, s["durationSec"] - lead_s - tail)
-            weights = [len(t) + 2 for t in hinglish_tokens]
-            tot = float(sum(weights))
-            words, cur = [], lead_s
-            for t, wgt in zip(hinglish_tokens, weights):
-                d = speech * wgt / tot
+            weights = [len(t) + 2 for t in tokens]
+            tot, cur = float(sum(weights)), lead_s
+            for t, w in zip(tokens, weights):
+                d = speech * w / tot
                 words.append({"w": t, "s": round(cur, 3), "e": round(cur + d, 3)})
                 cur += d
-        else:
-            words = []
         s["words"] = words
         parts.append(padded)
+
     lst = workdir / "list.txt"
     lst.write_text("".join(f"file '{p.resolve().as_posix()}'\n" for p in parts))
     out = workdir / "voice.mp3"
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c:a", "libmp3lame", "-q:a", "3", out], check=True)
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst),
+                    "-c:a", "libmp3lame", "-q:a", "3", str(out)], check=True)
+    for slot, _ in _google_keys():
+        used = _usage_get(slot)
+        if used:
+            print(f"[TTS] {slot} chars used this month: {used:,}")
     return out
