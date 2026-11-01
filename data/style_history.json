@@ -173,5 +173,12 @@
     "date": "2026-11-01",
     "book": "The Obstacle Is the Way",
     "seed": 840990582
+  },
+  {
+    "style_id": "v158",
+    "variant": 1,
+    "date": "2026-11-01",
+    "book": "Essentialism",
+    "seed": 30842799
   }
 ]

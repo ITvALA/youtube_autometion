@@ -1,35 +1,33 @@
 {
-  "dir_name": "2026-11-01_083325_the-obstacle-is-the-way",
-  "file_id": "BAACAgUAAxkDAAOnaub6Sg8NcZHJ5CRplOaRfLxKiDQAAlIjAAKrQThX6fNVoBDOKZc9BA",
-  "file_unique_id": "AgADUiMAAqtBOFc",
-  "message_id": 167,
-  "caption": "🎬 *New Reel Ready for Review!*\n\nObstacle = Opportunity | The Obstacle Is the Way Book Summary\n\n🎨 Style: *V077* (variant 3)\n✨ 9:16 Vertical | Seed: 840990582\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
+  "dir_name": "2026-11-01_093309_essentialism",
+  "file_id": "BAACAgUAAxkDAAOoaucH_uyuxpofH5aI7AS_6PuksQQAAocjAAKrQThX-1J_UATnqFI9BA",
+  "file_unique_id": "AgADhyMAAqtBOFc",
+  "message_id": 168,
+  "caption": "🎬 *New Reel Ready for Review!*\n\nEssentialism: Less But Better | Greg McKeown Book Summary\n\n🎨 Style: *V158* (variant 1)\n✨ 9:16 Vertical | Seed: 30842799\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
   "meta": {
-    "book": "The Obstacle Is the Way",
-    "title": "Obstacle = Opportunity | The Obstacle Is the Way Book Summary",
-    "description": "Ryan Holiday ki powerful book se 3 life-changing lessons jo har mushkil ko mauke mein badal denge.\n\n#TheObstacleIsTheWay #RyanHoliday #StoicPhilosophy #BookSummary #HindiSummary #MindSpark #Motivation #SelfHelp #PhilosophyBooks #PersonalGrowth",
+    "book": "Essentialism",
+    "title": "Essentialism: Less But Better | Greg McKeown Book Summary",
+    "description": "Essentialism sikhati hai focus aur priority ki power.\nKam karo, behtar karo.\n#Essentialism #GregMcKeown #BookSummary #MindSpark #SelfHelp #Productivity",
     "tags": [
-      "The Obstacle Is the Way",
-      "Ryan Holiday",
+      "Essentialism",
+      "Greg McKeown",
       "Book Summary",
-      "Hindi",
-      "Stoicism",
-      "Philosophy",
+      "Hinglish",
       "Self Help",
-      "Motivation",
-      "Personal Growth",
-      "MindSpark",
-      "Book Summary Hindi",
-      "Hinglish"
+      "Productivity",
+      "Focus",
+      "Priority",
+      "Less But Better",
+      "MindSpark"
     ],
     "privacy": "public",
-    "template_id": "style_v077",
-    "template_name": "Style: V077",
-    "style_id": "v077",
-    "style_variant": 3,
-    "style_seed": 840990582
+    "template_id": "style_v158",
+    "template_name": "Style: V158",
+    "style_id": "v158",
+    "style_variant": 1,
+    "style_seed": 30842799
   },
-  "timestamp": 1793522251,
+  "timestamp": 1793525758,
   "status": "pending_review",
-  "run_id": "41289156806"
+  "run_id": "41293436347"
 }
