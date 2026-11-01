@@ -159,5 +159,12 @@
     "date": "2026-11-01",
     "book": "Ikigai",
     "seed": 408677360
+  },
+  {
+    "style_id": "v092",
+    "variant": 4,
+    "date": "2026-11-01",
+    "book": "Atomic Habits",
+    "seed": 441943962
   }
 ]
