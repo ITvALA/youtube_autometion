@@ -70,7 +70,7 @@ def main():
     ap.add_argument("--book")
     ap.add_argument("--script", help="Custom user script or arbitrary topic")
     ap.add_argument("--template")
-    ap.add_argument("--style", help="Force style ID (motion_graphics, perspective_3d, cutout_collage, blueprint, swiss_poster, isometric)")
+    ap.add_argument("--style", help="Force Vox style ID (v001 ... v212)")
     ap.add_argument("--headless", action="store_true", help="CI mode (kept for clarity)")
     a = ap.parse_args()
     load_env()
