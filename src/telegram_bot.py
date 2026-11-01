@@ -31,7 +31,7 @@ BASE_URL = f"https://api.telegram.org/bot{TOKEN}"
 OUT_DIR = ROOT / "data" / "output"
 PENDING_FILE = ROOT / "data" / "pending_video.json"
 
-# NEW: GitHub artifact download config
+# GitHub artifact download config
 GH_TOKEN = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
 REPO = "ITvALA/youtube_autometion"
 
@@ -39,7 +39,7 @@ active_uploads = 0
 upload_lock = threading.Lock()
 shutdown_requested = False
 
-# NEW: file_ids jinka download fail ho chuka (taaki har 10 sec retry na ho)
+# file_ids jinka download fail ho chuka (taaki har 10 sec retry na ho)
 failed_ids = set()
 
 
@@ -104,7 +104,7 @@ def get_latest_output_dir():
     return dirs[-1] if dirs else None
 
 
-# ───────────────────────── NEW: GitHub artifact download ─────────────────────────
+# ───────────── GitHub artifact download ─────────────
 def download_from_artifact(run_id, dir_name):
     """GitHub Actions 'video' artifact se full-quality video laata hai (size limit nahi)."""
     if not GH_TOKEN:
@@ -471,4 +471,6 @@ def trigger_workflow_custom_script(script_text):
                 print(f"[GH Trigger Custom Script] Status {r.status_code}: {r.text}")
         except Exception as ge:
             print(f"[GH Trigger Custom Script Error]: {ge}")
-   
+    return False
+
+def trigger_workflow_mak
