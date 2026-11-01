@@ -1,32 +1,32 @@
 {
-  "dir_name": "2026-11-01_061056_sapiens",
-  "file_id": "BAACAgUAAxkDAAObaubYs87tWrwNM7H3oTgJwk97BMQAAhUjAAKrQThXUiAlh2wfNx89BA",
-  "file_unique_id": "AgADFSMAAqtBOFc",
-  "message_id": 155,
-  "caption": "🎬 *New Reel Ready for Review!*\n\nSapiens ke 4 Sabse Powerful Lessons | Yuval Noah Harari\n\n🎨 Style: *V128* (variant 1)\n✨ 9:16 Vertical | Seed: 343211758\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
+  "dir_name": "2026-11-01_063308_mindset",
+  "file_id": "BAACAgUAAxkDAAOdaubd9n3sm6vFYP6Fr_oNo__uClIAAiIjAAKrQThXxfuCgkaUlpA9BA",
+  "file_unique_id": "AgADIiMAAqtBOFc",
+  "message_id": 157,
+  "caption": "🎬 *New Reel Ready for Review!*\n\nGrowth Mindset की Power 🧠 | Mindset by Carol Dweck | MindSpark\n\n🎨 Style: *V062* (variant 3)\n✨ 9:16 Vertical | Seed: 320677922\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
   "meta": {
-    "book": "Sapiens",
-    "title": "Sapiens ke 4 Sabse Powerful Lessons | Yuval Noah Harari",
-    "description": "Sapiens book ke sabse important lessons jo aapki thinking badal denge.\n\n#Sapiens #YuvalNoahHarari #BookSummary #MindSpark #Hinglish #Philosophy #History",
+    "book": "Mindset",
+    "title": "Growth Mindset की Power 🧠 | Mindset by Carol Dweck | MindSpark",
+    "description": "Fixed vs Growth Mindset ke beech ka fark samjho aur apni capabilities transform karo!\n\n#GrowthMindset #CarolDweck #MindSpark #BookSummary #SelfImprovement #Motivation #HindiShorts",
     "tags": [
-      "Sapiens",
-      "Yuval Noah Harari",
-      "Book Summary",
-      "Hinglish",
-      "Philosophy",
-      "History",
-      "Life Lessons",
-      "MindSpark",
-      "Shorts"
+      "growth mindset",
+      "carol dweck",
+      "mindset book",
+      "self improvement",
+      "motivation hindi",
+      "book summary",
+      "personal development",
+      "success mindset",
+      "hinglish"
     ],
     "privacy": "public",
-    "template_id": "style_v128",
-    "template_name": "Style: V128",
-    "style_id": "v128",
-    "style_variant": 1,
-    "style_seed": 343211758
+    "template_id": "style_v062",
+    "template_name": "Style: V062",
+    "style_id": "v062",
+    "style_variant": 3,
+    "style_seed": 320677922
   },
-  "timestamp": 1793513651,
+  "timestamp": 1793514998,
   "status": "pending_review",
-  "run_id": "41279580446"
+  "run_id": "41281114547"
 }

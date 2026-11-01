@@ -131,5 +131,12 @@
     "date": "2026-11-01",
     "book": "Sapiens",
     "seed": 343211758
+  },
+  {
+    "style_id": "v062",
+    "variant": 3,
+    "date": "2026-11-01",
+    "book": "Mindset",
+    "seed": 320677922
   }
 ]
