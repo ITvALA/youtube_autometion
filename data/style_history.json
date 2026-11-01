@@ -180,5 +180,12 @@
     "date": "2026-11-01",
     "book": "Essentialism",
     "seed": 30842799
+  },
+  {
+    "style_id": "v168",
+    "variant": 3,
+    "date": "2026-11-01",
+    "book": "Ikigai",
+    "seed": 967678068
   }
 ]

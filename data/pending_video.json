@@ -1,33 +1,33 @@
 {
-  "dir_name": "2026-11-01_093309_essentialism",
-  "file_id": "BAACAgUAAxkDAAOoaucH_uyuxpofH5aI7AS_6PuksQQAAocjAAKrQThX-1J_UATnqFI9BA",
-  "file_unique_id": "AgADhyMAAqtBOFc",
-  "message_id": 168,
-  "caption": "🎬 *New Reel Ready for Review!*\n\nEssentialism: Less But Better | Greg McKeown Book Summary\n\n🎨 Style: *V158* (variant 1)\n✨ 9:16 Vertical | Seed: 30842799\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
+  "dir_name": "2026-11-01_103348_ikigai",
+  "file_id": "BAACAgUAAxkDAAOpaucV_dtmHuPRiBjiXzMRWOwhIE0AArIjAAKrQThXvjG-j5oYUxg9BA",
+  "file_unique_id": "AgADsiMAAqtBOFc",
+  "message_id": 169,
+  "caption": "🎬 *New Reel Ready for Review!*\n\nIkigai Ka Raaz: 3 Life-Changing Lessons | Book Summary Hindi\n\n🎨 Style: *V168* (variant 3)\n✨ 9:16 Vertical | Seed: 967678068\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
   "meta": {
-    "book": "Essentialism",
-    "title": "Essentialism: Less But Better | Greg McKeown Book Summary",
-    "description": "Essentialism sikhati hai focus aur priority ki power.\nKam karo, behtar karo.\n#Essentialism #GregMcKeown #BookSummary #MindSpark #SelfHelp #Productivity",
+    "book": "Ikigai",
+    "title": "Ikigai Ka Raaz: 3 Life-Changing Lessons | Book Summary Hindi",
+    "description": "Discover Ikigai's powerful lessons for purpose and happiness.\nJapanese secret to a fulfilling life. #Ikigai #BookSummary #MindSpark #SelfHelp #Hinglish",
     "tags": [
-      "Essentialism",
-      "Greg McKeown",
+      "Ikigai",
       "Book Summary",
+      "Hindi",
       "Hinglish",
       "Self Help",
-      "Productivity",
-      "Focus",
-      "Priority",
-      "Less But Better",
-      "MindSpark"
+      "Purpose",
+      "Japanese Philosophy",
+      "Life Lessons",
+      "Motivation",
+      "Personal Growth"
     ],
     "privacy": "public",
-    "template_id": "style_v158",
-    "template_name": "Style: V158",
-    "style_id": "v158",
-    "style_variant": 1,
-    "style_seed": 30842799
+    "template_id": "style_v168",
+    "template_name": "Style: V168",
+    "style_id": "v168",
+    "style_variant": 3,
+    "style_seed": 967678068
   },
-  "timestamp": 1793525758,
+  "timestamp": 1793529341,
   "status": "pending_review",
-  "run_id": "41293436347"
+  "run_id": "41297812817"
 }
