@@ -1,0 +1,66 @@
+name: Apply Niche Icons
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip files into repo
+        run: |
+          test -f vox-niche-icons.zip
+          unzip -o vox-niche-icons.zip
+          rm vox-niche-icons.zip
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+
+      - name: Install and typecheck
+        working-directory: remotion
+        run: |
+          npm install
+          npm run check
+
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+
+      - name: Python tests
+        run: |
+          pip install pytest requests
+          python -m pytest tests/test_style_engine.py tests/test_vox_icons.py -q
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git commit -m "Vox niche icons: 126 icons for 12 categories"
+          git pull --rebase
+          git push
+
+      - name: Render niche demo video
+        continue-on-error: true
+        working-directory: remotion
+        run: npx remotion render src/index.ts Main out/demo_niches.mp4 --props=../data/demo_plan_niches.json
+
+      - name: Send demo to Telegram
+        continue-on-error: true
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -F chat_id="$TELEGRAM_CHAT_ID" -F video=@remotion/out/demo_niches.mp4 -F caption="Niche icons demo (v050)" "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendVideo" | head -c 300
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: demo_niches
+          path: remotion/out/demo_niches.mp4
+          if-no-files-found: ignore
