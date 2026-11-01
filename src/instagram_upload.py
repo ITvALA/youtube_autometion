@@ -1,15 +1,92 @@
 """Instagram Reels uploader using instagrapi.
-Handles session persistence, auto-caption generation with viral hashtags,
-and error handling so it can run autonomously on PASS action.
+- Session persistence (config/ig_session.json)
+- Login challenge: code Telegram pe maanga jaata hai (tum reply me 6-digit code bhejte ho)
+- Optional: IG_TOTP_SECRET (authenticator 2FA) set ho to code bot khud banata hai
 """
 
 import os
 import sys
 import json
 import time
+import threading
 from pathlib import Path
 
+import requests
+
 ROOT = Path(__file__).resolve().parent.parent
+SESSION_PATH = Path(os.environ.get("IG_SESSION_PATH") or (ROOT / "config" / "ig_session.json"))
+
+# Last error text (bot isko Telegram message me dikhata hai)
+LAST_ERROR = None
+
+# ───────── Telegram se verification code lene ka shared state ─────────
+_code_event = threading.Event()
+_code_box = {"value": None, "waiting": False}
+
+
+def is_waiting_for_code():
+    """Bot ka main loop isse check karta hai ki Instagram code maang raha hai ya nahi."""
+    return _code_box["waiting"]
+
+
+def provide_code(code):
+    """Bot ka main loop yahan user ka bheja hua code deta hai."""
+    _code_box["value"] = str(code).strip()
+    _code_event.set()
+
+
+def _tg_send(text):
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip().strip('"').strip("'")
+    chat = str(os.environ.get("TELEGRAM_CHAT_ID", "")).strip().strip('"').strip("'")
+    if not token or not chat:
+        return
+    try:
+        requests.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            data={"chat_id": chat, "text": text},
+            timeout=20,
+        )
+    except Exception as e:
+        print(f"[Instagram] Telegram message failed: {e}")
+
+
+def telegram_code_handler(username, choice):
+    """instagrapi challenge handler: Telegram pe code maangta hai, 5 min wait karta hai."""
+    _code_event.clear()
+    _code_box["value"] = None
+    _code_box["waiting"] = True
+    _tg_send(
+        f"🔐 Instagram ({username}) verification code maang raha hai.\n"
+        f"Code email/SMS me aaya hoga ({choice}). 6-digit code yahan reply me bhejo.\n"
+        f"Time: 5 minute."
+    )
+    got = _code_event.wait(300)
+    _code_box["waiting"] = False
+    if got and _code_box["value"]:
+        return _code_box["value"]
+    _tg_send("⏰ Instagram code time par nahi mila, login cancel.")
+    return ""
+
+
+def _totp_code():
+    seed = os.environ.get("IG_TOTP_SECRET", "").replace(" ", "").strip()
+    if not seed:
+        return ""
+    try:
+        import pyotp
+        return pyotp.TOTP(seed).now()
+    except Exception as e:
+        print(f"[Instagram] TOTP generate failed: {e}")
+        return ""
+
+
+def _login(cl, username, password):
+    code = _totp_code()
+    if code:
+        cl.login(username, password, verification_code=code)
+    else:
+        cl.login(username, password)
+
 
 def get_ig_client():
     from instagrapi import Client
@@ -23,27 +100,34 @@ def get_ig_client():
 
     cl = Client()
     cl.delay_range = [1, 3]
+    cl.challenge_code_handler = telegram_code_handler
 
-    session_path = ROOT / "config" / "ig_session.json"
-    session_path.parent.mkdir(parents=True, exist_ok=True)
+    SESSION_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     logged_in = False
-    if session_path.exists():
+    if SESSION_PATH.exists():
         try:
-            print(f"[Instagram] Loading saved session from {session_path}...")
-            cl.load_settings(session_path)
-            cl.login(username, password)
+            print(f"[Instagram] Loading saved session from {SESSION_PATH}...")
+            cl.load_settings(SESSION_PATH)
+            _login(cl, username, password)
+            cl.get_timeline_feed()  # session valid hai ya nahi
             logged_in = True
             print("[Instagram] Logged in via saved session!")
         except Exception as se:
             print(f"[Instagram] Saved session expired/invalid ({se}). Re-authenticating...")
+            # Same device ids rakho, baaki session saaf (Instagram ko naya device na lage)
+            old_uuids = cl.get_settings().get("uuids")
+            cl.set_settings({})
+            if old_uuids:
+                cl.set_uuids(old_uuids)
 
     if not logged_in:
         print(f"[Instagram] Logging in as '{username}'...")
-        cl.login(username, password)
-        cl.dump_settings(session_path)
-        print(f"[Instagram] Session saved to {session_path}")
+        _login(cl, username, password)
+        print("[Instagram] Fresh login OK")
 
+    cl.dump_settings(SESSION_PATH)
+    print(f"[Instagram] Session saved to {SESSION_PATH}")
     return cl
 
 
@@ -71,11 +155,15 @@ def generate_reel_caption(meta, book_title=None):
 def upload_reel(video_path, meta=None, book_title=None, progress_callback=None):
     """Uploads final.mp4 as an Instagram Reel.
 
-    Returns the reel URL on success, or None on skip/failure.
+    Returns the reel URL on success, or None on skip/failure (reason: LAST_ERROR).
     """
+    global LAST_ERROR
+    LAST_ERROR = None
+
     video_path = Path(video_path)
     if not video_path.exists():
-        print(f"[Instagram] Video not found: {video_path}")
+        LAST_ERROR = f"Video not found: {video_path}"
+        print(f"[Instagram] {LAST_ERROR}")
         return None
 
     meta = meta or {}
@@ -87,6 +175,7 @@ def upload_reel(video_path, meta=None, book_title=None, progress_callback=None):
 
         cl = get_ig_client()
         if not cl:
+            LAST_ERROR = "IG_USERNAME/IG_PASSWORD set nahi hain"
             print("[Instagram] Skipping Instagram upload (credentials not configured).")
             return None
 
@@ -99,6 +188,11 @@ def upload_reel(video_path, meta=None, book_title=None, progress_callback=None):
             caption=caption
         )
 
+        try:
+            cl.dump_settings(SESSION_PATH)
+        except Exception:
+            pass
+
         if progress_callback:
             progress_callback(100)
 
@@ -108,6 +202,7 @@ def upload_reel(video_path, meta=None, book_title=None, progress_callback=None):
         return reel_url
 
     except Exception as e:
+        LAST_ERROR = str(e)
         print(f"[Instagram] ❌ Error uploading reel: {e}")
         return None
 
@@ -127,4 +222,3 @@ if __name__ == "__main__":
         print("Result:", res)
     else:
         print("Usage: python src/instagram_upload.py <path_to_video_or_dir>")
-
