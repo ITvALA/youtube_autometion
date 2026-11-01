@@ -271,5 +271,12 @@
     "date": "2026-11-01",
     "book": "The 7 Habits of Highly Effective People",
     "seed": 526464098
+  },
+  {
+    "style_id": "v048",
+    "variant": 3,
+    "date": "2026-11-01",
+    "book": "Ikigai",
+    "seed": 557346833
   }
 ]
