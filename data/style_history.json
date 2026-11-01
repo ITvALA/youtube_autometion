@@ -250,5 +250,12 @@
     "date": "2026-11-01",
     "book": "The 48 Laws of Power",
     "seed": 147200131
+  },
+  {
+    "style_id": "v043",
+    "variant": 4,
+    "date": "2026-11-01",
+    "book": "Zero to One",
+    "seed": 688403049
   }
 ]
