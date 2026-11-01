@@ -215,5 +215,12 @@
     "date": "2026-11-01",
     "book": "How to Win Friends and Influence People",
     "seed": 390932851
+  },
+  {
+    "style_id": "v142",
+    "variant": 0,
+    "date": "2026-11-01",
+    "book": "The Alchemist",
+    "seed": 60205620
   }
 ]
