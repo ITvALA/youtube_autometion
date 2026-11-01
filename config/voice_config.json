@@ -1,18 +1,29 @@
-
 {
-  "provider": "hybrid_studio",
-  "selected_voice_id": "hybrid_madhur_omega",
-  "selected_voice_name": "Hybrid Studio (Madhur Hook/Outro + Kokoro Omega Body)",
-  "hook_outro_voice": "hi-IN-MadhurNeural",
-  "body_voice": "hm_omega",
-  "fallback_voice": "hi-IN-MadhurNeural",
+  "providers": ["gemini_tts", "google_chirp", "edge-tts"],
+  "provider": "gemini_tts",
+  "selected_voice_id": "gemini_charon",
+  "selected_voice_name": "Gemini TTS - Charon (fallback: Chirp 3 HD, then Edge Madhur)",
+  "voice": "Charon",
+  "voices": {
+    "gemini_tts": "Charon",
+    "google_chirp": "hi-IN-Chirp3-HD-Charon",
+    "edge-tts": "hi-IN-MadhurNeural"
+  },
+  "gemini_models": ["gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts"],
+  "style": "Say in a warm, natural, conversational Hindi storyteller voice with natural pauses",
   "language": "hi",
+  "language_code": "hi-IN",
+  "fallback_voice": "hi-IN-MadhurNeural",
   "speed": 1.0,
-  "pitch": "+0Hz",
   "rate": "+0%",
-  "description": "Madhur Neural for powerful Hook & Outro, Kokoro hm_omega for body scenes with Madhur fallback for any complex words. Reel-style pacing: tempo 1.1x, short gaps (lead/tail), lambi pauses squeeze.",
-  "tempo": 1.1,
-  "lead": 0.05,
-  "tail": 0.15,
-  "tail_last": 0.45,
-  "squeeze_pauses": 0.2
+  "pitch": "+0Hz",
+  "monthly_char_limit": 950000,
+  "cache": true,
+  "normalize": true,
+  "tempo": 1.0,
+  "lead": 0.12,
+  "tail": 0.3,
+  "tail_last": 0.5,
+  "squeeze_pauses": 0,
+  "description": "No-card setup: Gemini TTS (GEMINI_API_KEY, GEMINI_API_KEY_2) -> Chirp 3 HD (only if a Google key exists) -> Edge Madhur (always works). One voice per reel, natural pacing."
+}
