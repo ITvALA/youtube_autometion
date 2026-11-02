@@ -189,7 +189,7 @@ def _call_gemini(prompt):
     if not key:
         raise ValueError("GEMINI_API_KEY is not set.")
     
-    models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"]
+    models = ["gemini-2.5-flash", "gemini-3.8-flash", "gemini-2.5-pro"]
     headers = {"Content-Type": "application/json"}
     
     last_err = None
@@ -206,7 +206,8 @@ def _call_gemini(prompt):
                 ],
                 "generationConfig": {
                     "temperature": 0.7,
-                    "maxOutputTokens": 3000
+                    "maxOutputTokens": 3500,
+                    "responseMimeType": "application/json"
                 }
             }
             try:
@@ -597,7 +598,10 @@ youtube.title under 70 chars, description 2 short lines + hashtags."""
     for attempt in range(3):
         try:
             txt = _call(prompt + (f"\nYour previous answer was invalid: {err}. Fix it." if err else ""))
-            plan = json.loads(txt[txt.index("{"): txt.rindex("}") + 1])
+            raw = txt.strip()
+            if "{" in raw and "}" in raw:
+                raw = raw[raw.index("{"): raw.rindex("}") + 1]
+            plan = json.loads(raw)
             plan = normalize(plan)
 
             # Programmatically guarantee book name at start and MindSpark at end
