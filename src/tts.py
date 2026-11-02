@@ -332,17 +332,17 @@ def _synth_raju_clone(text, cfg, out):
                     res = cl.predict(
                         text=clean_text,
                         reference_audio_url=ref_url,
-                        example_audio_name=None,
                         language="Hindi",
                         temperature=float(cfg.get("temperature", 0.75)),
                         speed=float(cfg.get("speed", 1.0)),
                         api_name="/voice_clone_synthesis"
                     )
                 except Exception as pe:
-                    # In case space rejects example_audio_name=None, omit it
+                    # In case space requires example_audio_name or different signature
                     res = cl.predict(
                         text=clean_text,
                         reference_audio_url=ref_url,
+                        example_audio_name=None,
                         language="Hindi",
                         temperature=float(cfg.get("temperature", 0.75)),
                         speed=float(cfg.get("speed", 1.0)),

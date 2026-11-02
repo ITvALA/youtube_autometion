@@ -132,6 +132,8 @@ const Quote: React.FC<SP> = ({s, u}) => {
   </>);
 };
 
+import {MovieStoryScene} from "./components/scenes/MovieStoryScene";
+import {CutoutPuppetScene} from "./components/scenes/CutoutPuppetScene";
 import {AnimeStoryScene} from "./components/scenes/AnimeStoryScene";
 import {AnimeParallaxScene} from "./components/scenes/AnimeParallaxScene";
 import {MotionComicScene} from "./components/scenes/MotionComicScene";
@@ -271,6 +273,18 @@ const Captions: React.FC<{scene: Scene; plan: Plan; u: number}> = ({scene, plan,
 const SceneWrap: React.FC<{plan: Plan; scene: Scene; index: number}> = ({plan, scene, index}) => {
   const f = useCurrentFrame();
   const u = useU();
+
+  const bookTitle = (plan.book?.title || "").toLowerCase();
+  const isCutoutPuppet = plan.template?.id?.includes("puppet") || plan.template?.id?.includes("cutout") || bookTitle.includes("shivaji") || bookTitle.includes("afzal") || bookTitle.includes("pratap") || bookTitle.includes("wagh");
+
+  if (isCutoutPuppet) {
+    return (
+      <AbsoluteFill style={{overflow: "hidden"}}>
+        <MovieStoryScene s={scene} plan={plan} u={u} />
+        <Captions scene={scene} plan={plan} u={u} />
+      </AbsoluteFill>
+    );
+  }
 
   // Vox engine: 212 Vox-style explainer looks (paper + flat SVG illustrations)
   if (hasStyle(plan)) return <StyleScene plan={plan} scene={scene} index={index} />;
