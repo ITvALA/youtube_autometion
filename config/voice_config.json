@@ -1,16 +1,24 @@
 {
-  "providers": ["gemini_tts", "google_chirp", "edge-tts"],
-  "provider": "gemini_tts",
-  "selected_voice_id": "gemini_charon",
-  "selected_voice_name": "Gemini TTS - Charon (fallback: Chirp 3 HD, then Edge Madhur)",
-  "voice": "Charon",
+  "providers": ["elevenlabs", "gemini_tts", "edge-tts"],
+  "provider": "elevenlabs",
+  "selected_voice_id": "3AMU7jXQuQa3oRvRqUmb",
+  "selected_voice_name": "ElevenLabs - Viraj (Rich, Expressive Hindi Storyteller)",
+  "voice": "viraj",
+  "elevenlabs_voice": "viraj",
+  "elevenlabs_voice_id": "3AMU7jXQuQa3oRvRqUmb",
+  "elevenlabs_voices": {
+    "viraj": "3AMU7jXQuQa3oRvRqUmb",
+    "raju": "zT03pEAEi0VHKciJODfn"
+  },
   "voices": {
+    "elevenlabs": "3AMU7jXQuQa3oRvRqUmb",
     "gemini_tts": "Charon",
     "google_chirp": "hi-IN-Chirp3-HD-Charon",
     "edge-tts": "hi-IN-MadhurNeural"
   },
-  "gemini_models": ["gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts"],
-  "style": "Say in a warm, natural, conversational Hindi storyteller voice with natural pauses",
+  "voice_model": "eleven_multilingual_v2",
+  "gemini_models": ["gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts", "gemini-2.5-flash-tts"],
+  "style": "Say in an intense, dramatic, natural, conversational Hindi storyteller voice with emotional pauses",
   "language": "hi",
   "language_code": "hi-IN",
   "fallback_voice": "hi-IN-MadhurNeural",
@@ -25,5 +33,5 @@
   "tail": 0.3,
   "tail_last": 0.5,
   "squeeze_pauses": 0,
-  "description": "No-card setup: Gemini TTS (GEMINI_API_KEY, GEMINI_API_KEY_2) -> Chirp 3 HD (only if a Google key exists) -> Edge Madhur (always works). One voice per reel, natural pacing."
+  "description": "Multi-tier voice chain: ElevenLabs (Viraj: 3AMU7jXQuQa3oRvRqUmb / Raju: zT03pEAEi0VHKciJODfn) -> Gemini TTS (Charon) -> Edge-TTS Madhur (100% free fallback)."
 }

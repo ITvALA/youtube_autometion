@@ -199,18 +199,38 @@ def _synth_edge(text, cfg, out):
     return asyncio.run(_synth_edge_async(text, cfg, out))
 
 
+ELEVENLABS_VOICES = {
+    "viraj": "3AMU7jXQuQa3oRvRqUmb",  # Expressive Hindi Storyteller / YouTube Narration
+    "raju": "zT03pEAEi0VHKciJODfn",   # Clear, Natural & Warm Conversational Hindi
+}
+
 def _synth_elevenlabs(text, cfg, out):
     key = os.getenv("ELEVENLABS_API_KEY") or os.getenv("XI_API_KEY")
     if not key:
         raise RuntimeError("ELEVENLABS_API_KEY is not set")
-    voice_id = cfg.get("elevenlabs_voice_id") or "AZnzlk1XvdvUeBnXmlld"
+    v = str(cfg.get("voice") or cfg.get("elevenlabs_voice") or "").lower().strip()
+    voice_id = (
+        ELEVENLABS_VOICES.get(v)
+        or cfg.get("elevenlabs_voice_id")
+        or os.getenv("ELEVENLABS_VOICE_ID")
+        or ELEVENLABS_VOICES["viraj"]
+    )
+    print(f"[TTS] ElevenLabs synthesizing via voice_id='{voice_id}'...")
     r = requests.post(
         f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
         headers={"xi-api-key": key, "Content-Type": "application/json"},
-        json={"text": text, "model_id": cfg.get("voice_model", "eleven_multilingual_v2"),
-              "voice_settings": {"stability": 0.35, "similarity_boost": 0.75,
-                                 "style": 0.3, "use_speaker_boost": True}},
-        timeout=60)
+        json={
+            "text": text,
+            "model_id": cfg.get("voice_model", "eleven_multilingual_v2"),
+            "voice_settings": {
+                "stability": 0.40,
+                "similarity_boost": 0.80,
+                "style": 0.45,
+                "use_speaker_boost": True,
+            },
+        },
+        timeout=60,
+    )
     r.raise_for_status()
     Path(out).write_bytes(r.content)
     return []

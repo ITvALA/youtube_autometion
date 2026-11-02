@@ -64,7 +64,7 @@ def test_template_recipe_plan_validation():
         "youtube": {"title": "Pop Quiz On Atomic Habits"},
         "scenes": [
             {"type": "hook", "narration": "Yeh video dekho.", "data": {"title": "WHICH HABIT WINS"}},
-            {"type": "quiz", "narration": "Option A ya Option B?", "data": {"question": "What brings 37x growth?", "options": ["A", "B", "C"]}},
+            {"type": "quiz", "narration": "Option A ya Option B?", "data": {"question": "What brings 37x growth?", "options": ["A", "B", "C"], "correct": 0}},
             {"type": "card", "narration": "System beats goals.", "data": {"lines": ["Make cue obvious", "Make craving attractive"]}},
             {"type": "quote", "narration": "Final wisdom quote.", "data": {"quote": "Every action is a vote for who you want to be."}}
         ]
