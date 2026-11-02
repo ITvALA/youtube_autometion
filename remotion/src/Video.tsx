@@ -133,6 +133,7 @@ const Quote: React.FC<SP> = ({s, u}) => {
 };
 
 import {MovieStoryScene} from "./components/scenes/MovieStoryScene";
+import {PuppetKitScene} from "./components/PuppetKit";
 import {CutoutPuppetScene} from "./components/scenes/CutoutPuppetScene";
 import {AnimeStoryScene} from "./components/scenes/AnimeStoryScene";
 import {AnimeParallaxScene} from "./components/scenes/AnimeParallaxScene";
@@ -275,13 +276,14 @@ const SceneWrap: React.FC<{plan: Plan; scene: Scene; index: number}> = ({plan, s
   const u = useU();
 
   const bookTitle = (plan.book?.title || "").toLowerCase();
-  const isCutoutPuppet = plan.template?.id?.includes("puppet") || plan.template?.id?.includes("cutout") || bookTitle.includes("shivaji") || bookTitle.includes("afzal") || bookTitle.includes("pratap") || bookTitle.includes("wagh");
-
-  if (isCutoutPuppet) {
+  const templateId = (plan.template?.id || "").toLowerCase();
+  
+  // PuppetKit is our confirmed FINAL animation engine!
+  const isPuppetStory = true;
+  if (isPuppetStory) {
     return (
       <AbsoluteFill style={{overflow: "hidden"}}>
-        <MovieStoryScene s={scene} plan={plan} u={u} />
-        <Captions scene={scene} plan={plan} u={u} />
+        <PuppetKitScene s={scene} plan={plan} index={index} />
       </AbsoluteFill>
     );
   }

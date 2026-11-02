@@ -656,6 +656,150 @@ export const StoryScene: React.FC<{scene: SceneSpec}> = ({scene}) => (
   </AbsoluteFill>
 );
 
+export const PuppetKitScene: React.FC<{s: any; plan?: any; index?: number}> = ({s, plan, index = 0}) => {
+  const {fps} = useVideoConfig();
+  const dur = Math.max(30, Math.round((s.durationSec || 4) * fps));
+  const text = s.narration || s.tts_text || "";
+
+  let characters: CharSpec[] = [];
+  let camera: CameraSpec = {z0: 1.08, z1: 1.08};
+
+  if (index === 0) {
+    camera = {x0: -60, x1: 50, z0: 1.14, z1: 1.08};
+    characters = [
+      {
+        x: 540,
+        look: "warrior",
+        scale: 1.55,
+        enterAt: 4,
+        speaking: true,
+        keys: [
+          {f: 0, pose: "mace"},
+          {f: Math.round(dur * 0.4), pose: "mace"},
+          {f: Math.round(dur * 0.7), pose: "raiseA"},
+          {f: dur, pose: "raiseA"},
+        ],
+      },
+    ];
+  } else if (index === 1) {
+    camera = {z0: 1.0, z1: 1.12, y0: 0, y1: 30};
+    characters = [
+      {
+        x: 320,
+        look: "warrior",
+        scale: 1.35,
+        speaking: true,
+        keys: [
+          {f: 0, pose: "mace"},
+          {f: Math.round(dur * 0.5), pose: "point"},
+          {f: dur, pose: "point"},
+        ],
+      },
+      {
+        x: 780,
+        look: "king",
+        scale: 1.35,
+        flip: true,
+        enterAt: 6,
+        keys: [
+          {f: 0, pose: "idle"},
+          {f: Math.round(dur * 0.5), pose: "guard"},
+          {f: dur, pose: "guard"},
+        ],
+      },
+    ];
+  } else if (index === 2) {
+    camera = {x0: 40, x1: -40, z0: 1.1, z1: 1.1};
+    characters = [
+      {
+        x: 310,
+        look: "warrior",
+        scale: 1.35,
+        speaking: true,
+        keys: [
+          {f: 0, pose: "point"},
+          {f: Math.round(dur * 0.4), pose: "angry"},
+          {f: dur, pose: "angry"},
+        ],
+      },
+      {
+        x: 770,
+        look: "king",
+        scale: 1.35,
+        flip: true,
+        keys: [
+          {f: 0, pose: "guard"},
+          {f: Math.round(dur * 0.5), pose: "bow"},
+          {f: dur, pose: "bow"},
+        ],
+      },
+    ];
+  } else if (index === 3) {
+    camera = {z0: 1.08, z1: 1.15, shake: 5};
+    characters = [
+      {
+        x: 330,
+        look: "warrior",
+        scale: 1.4,
+        speaking: true,
+        keys: [
+          {f: 0, pose: "mace"},
+          {f: Math.round(dur * 0.3), pose: "angry"},
+          {f: Math.round(dur * 0.7), pose: "raiseA"},
+          {f: dur, pose: "raiseA"},
+        ],
+      },
+      {
+        x: 760,
+        look: "king",
+        scale: 1.35,
+        flip: true,
+        keys: [
+          {f: 0, pose: "guard"},
+          {f: Math.round(dur * 0.6), pose: "guard"},
+          {f: dur, pose: "idle"},
+        ],
+      },
+    ];
+  } else {
+    camera = {x0: 0, x1: 0, z0: 1.05, z1: 1.12};
+    characters = [
+      {
+        x: 350,
+        look: "warrior",
+        scale: 1.4,
+        speaking: true,
+        keys: [
+          {f: 0, pose: "mace"},
+          {f: Math.round(dur * 0.5), pose: "raiseA"},
+          {f: dur, pose: "raiseA"},
+        ],
+      },
+      {
+        x: 750,
+        look: "king",
+        scale: 1.4,
+        flip: true,
+        keys: [
+          {f: 0, pose: "idle"},
+          {f: Math.round(dur * 0.5), pose: "bow"},
+          {f: dur, pose: "bow"},
+        ],
+      },
+    ];
+  }
+
+  const spec: SceneSpec = {
+    text,
+    duration: dur,
+    characters,
+    camera,
+    subtitleStart: 4,
+  };
+
+  return <StoryScene scene={spec} />;
+};
+
 export const totalFrames = (scenes: SceneSpec[]) => scenes.reduce((a, s) => a + s.duration, 0);
 
 export const PuppetStory: React.FC<{scenes?: SceneSpec[]}> = ({scenes = DEMO_SCENES}) => {
@@ -735,3 +879,4 @@ export const DEMO_SCENES: SceneSpec[] = [
     ],
   },
 ];
+
