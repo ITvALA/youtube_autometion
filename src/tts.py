@@ -303,7 +303,50 @@ def _synth_openai(text, cfg, out):
     return []
 
 
+
+def _synth_raju_clone(text, cfg, out):
+    """Zero-shot voice cloning using Hugging Face XTTS-v2 with native Hindi support and Demo 3 Level 1 EQ."""
+    import time
+    from gradio_client import Client
+    space = cfg.get("xtts_space") or "hasanbasbunar/Voice-Cloning-XTTS-v2"
+    ref_url = cfg.get("reference_audio_url") or "https://raw.githubusercontent.com/ITvALA/youtube_autometion/main/data/voice_references/slice_5s.wav"
+    clean_text = strip_tags(text)
+    token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN") or None
+
+    last_err = None
+    res = None
+    for attempt in range(1, 6):
+        try:
+            print(f"[XTTS-v2] Synthesizing scene via {space} (attempt {attempt}/5)...")
+            cl = Client(space, token=token)
+            res = cl.predict(
+                text=clean_text,
+                reference_audio_url=ref_url,
+                example_audio_name=None,
+                language="Hindi",
+                temperature=float(cfg.get("temperature", 0.75)),
+                speed=float(cfg.get("speed", 1.0)),
+                api_name="/voice_clone_synthesis"
+            )
+            if res and Path(res).exists() and Path(res).stat().st_size > 1000:
+                print(f"[XTTS-v2] Success on attempt {attempt}!")
+                break
+        except Exception as se:
+            print(f"[XTTS-v2] Attempt {attempt} failed: {se}")
+            last_err = se
+            time.sleep(5 * attempt)
+
+    if not res or not Path(res).exists():
+        raise RuntimeError(f"XTTS-v2 synthesis failed after retries: {last_err}")
+
+    af = "equalizer=f=130:t=q:w=1.4:g=3.5,equalizer=f=240:t=q:w=1.2:g=2.0,equalizer=f=650:t=q:w=1.0:g=-1.5,equalizer=f=3800:t=q:w=1.0:g=1.2,loudnorm=I=-16:TP=-1.5:LRA=10"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(res), "-af", af,
+                    "-ar", "44100", "-ac", "2", "-b:a", "192k", str(out)], check=True)
+    return []
+
+
 PROVIDERS = {
+    "raju_clone": _synth_raju_clone, "xtts_clone": _synth_raju_clone, "voice_clone": _synth_raju_clone,
     "gemini_tts": _synth_gemini, "gemini": _synth_gemini,
     "google_chirp": _synth_google_chirp, "google": _synth_google_chirp, "chirp3": _synth_google_chirp,
     "edge-tts": _synth_edge, "edge": _synth_edge,

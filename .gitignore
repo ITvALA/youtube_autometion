@@ -17,3 +17,5 @@ data/test_renders/
 data/stills/
 output/
 data/models/
+data/tts_cache/
+data/voice_references/*.mp3

@@ -4,6 +4,7 @@ import type {Plan, Scene} from "../Video";
 import {CameraRig, Particles} from "./motion";
 import {ICONS, Icon} from "./icons";
 import {CountryMap} from "./geo";
+import {SvgCharacter} from "./SvgCharacter";
 import {PaperBG} from "./paper";
 import {Label} from "./labels";
 import {FAMILY} from "./fonts";
@@ -31,11 +32,18 @@ const Piece: React.FC<{item: VoxItem; st: VoxStyle; size: number; labelSize: num
   const lt = clamp((f - delay - 8) / 14);
   const bob = Math.sin(f * 0.06 + phase) * size * 0.015;
   const isMap = item.icon.startsWith("map:");
+  const isChar = item.icon.startsWith("char:") || ["raja", "king", "krishna", "warrior", "yoddha", "senapati"].includes(item.icon);
   const ink = st.paper.ink;
   return (
     <div style={{display: "flex", flexDirection: "column", alignItems: "center", gap: labelSize * 0.55, width: maxLabelW}}>
       <div style={{width: size, height: size, transform: `translateY(${bob}px) scale(${s}) rotate(${(1 - clamp(s)) * -8}deg)`, filter: `drop-shadow(0 ${size * 0.03}px ${size * 0.04}px ${rgba(ink, 0.22)})`}}>
-        {isMap ? <CountryMap name={item.icon.slice(4)} p={st.pal} size={size} f={f} /> : <Icon name={ICONS[item.icon] ? item.icon : "question"} p={st.pal} f={f} size={size} />}
+        {isChar ? (
+          <SvgCharacter name={item.icon} p={st.pal} size={size} f={f} />
+        ) : isMap ? (
+          <CountryMap name={item.icon.slice(4)} p={st.pal} size={size} f={f} />
+        ) : (
+          <Icon name={ICONS[item.icon] ? item.icon : "question"} p={st.pal} f={f} size={size} />
+        )}
       </div>
       {item.label ? (
         <div style={{maxWidth: maxLabelW ?? size * 1.5, textAlign: "center"}}>

@@ -429,7 +429,7 @@ def normalize(p):
                 if not isinstance(it, dict):
                     continue
                 ic = str(it.get("icon", ""))
-                if ic not in VOX_ICONS and not ic.startswith("map:"):
+                if ic not in VOX_ICONS and not ic.startswith("map:") and not ic.startswith("char:"):
                     ic = "bulb"
                 items_.append({"icon": ic, "label": " ".join(str(it.get("label", "")).split()[:3])})
         if items_:

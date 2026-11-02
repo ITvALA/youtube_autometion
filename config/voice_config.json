@@ -1,14 +1,13 @@
 {
   "providers": [
-    "gemini_tts",
-    "google_chirp",
-    "edge-tts"
+    "raju_clone"
   ],
-  "provider": "gemini_tts",
-  "selected_voice_id": "gemini_charon",
-  "selected_voice_name": "Gemini TTS - Charon (fallback: Chirp 3 HD, then Edge Madhur)",
-  "voice": "Charon",
+  "provider": "raju_clone",
+  "selected_voice_id": "raju_xtts2_demo3",
+  "selected_voice_name": "Raju Clone XTTS-v2 (Level 1 Warm Studio Mic - Demo 3 Locked)",
+  "voice": "Raju_XTTS2",
   "voices": {
+    "raju_clone": "https://raw.githubusercontent.com/ITvALA/youtube_autometion/main/data/voice_references/slice_5s.wav",
     "gemini_tts": "Charon",
     "google_chirp": "hi-IN-Chirp3-HD-Charon",
     "edge-tts": "hi-IN-MadhurNeural"
@@ -17,7 +16,7 @@
     "gemini-3.8-flash-tts",
     "gemini-3.8-flash-lite-tts"
   ],
-  "style": "warm, conversational, like a friend telling a story",
+  "style": "warm, storytelling, engaging viral hook",
   "language": "hi",
   "language_code": "hi-IN",
   "fallback_voice": "hi-IN-MadhurNeural",
@@ -27,11 +26,11 @@
   "monthly_char_limit": 950000,
   "cache": true,
   "normalize": true,
-  "tempo": 1.0,
-  "lead": 0.12,
-  "tail": 0.3,
-  "tail_last": 0.5,
-  "squeeze_pauses": 0,
-  "description": "No-card setup: Gemini TTS (GEMINI_API_KEY, GEMINI_API_KEY_2) -> Chirp 3 HD (only if a Google key exists) -> Edge Madhur (always works). One voice per reel, natural pacing.",
-  "style_note": "Gemini 3.8 TTS: style chhota rakho (turn-level delivery). Scene-wise style LLM ke 'delivery' field se aata hai. Permanent custom awaaz ke liye voices -> gemini_tts me voice_... ID daalo (Voice Tools workflow se design karo)."
+  "tempo": 1.1,
+  "lead": 0.5,
+  "tail": 0.7,
+  "tail_last": 0.9,
+  "squeeze_pauses": 1.0,
+  "eq_preset": "level1_warm",
+  "description": "Demo 3 Locked: Raju XTTS-v2 + Level 1 Warm Studio Mic EQ + 1.0 Tempo + 0.12s Lead + 0.5s Tail + -0.5 Squeeze."
 }
