@@ -313,5 +313,12 @@
     "date": "2026-11-02",
     "book": "Atomic Habits",
     "seed": 216857444
+  },
+  {
+    "style_id": "v180",
+    "variant": 2,
+    "date": "2026-11-02",
+    "book": "Deep Work",
+    "seed": 657529454
   }
 ]
