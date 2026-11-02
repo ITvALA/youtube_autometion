@@ -498,9 +498,13 @@ STYLE MODE REQUIREMENTS:
 5. NEVER use story, character, animeParallax, motionComic, or curve.
 6. Keep titles SHORT (hook title <= 4 words, each line item <= 8 words, max 3-4 lines).
 7. At least 3 different scene types.
-8. DUAL-SCRIPT SYSTEM + SPOKEN STYLE (insaani awaaz ke liye sabse zaroori):
-   - 'narration': Clean Hinglish (Roman letters, 12-22 words) on-screen subtitles ke liye. Isme koi <tag> mat likho.
-   - 'tts_text': Devanagari Hindi, narration ka hi matlab, lekin bilkul waise jaise insaan BOLTA hai (kitab ki bhasha nahi).
+8. 100% WORD-FOR-WORD SYNCHRONIZATION (AUDIO AUR ON-SCREEN HINGLISH LYRICS EK-DUM SAME):
+   - 'narration': Clean Hinglish (Roman letters, 12-22 words) jo screen par lyrics/subtitles ke roop me dikhega.
+   - 'tts_text': Devanagari Hindi me wahi EXACT shabdon ka 1:1 translation jo 'narration' me hain!
+     CRITICAL MANDATE: Jo shabd narration me hain, wahi shabd tts_text me bole jayenge! Bilkul 1:1 word-for-word match. Koi alag paryayavachi (synonym) mat likho taaki screen par jo shabd light-up ho, kaan me wahi shabd sunayi de!
+     Example:
+     Narration: "5000 sainik aur saamne 1 lakh ki fauj thi"
+     TTS_Text: "5000 सैनिक और सामने 1 लाख की फ़ौज थी"
    - 'delivery': 2-5 English words, is scene ko kaise bolna hai. e.g. "curious, leaning in", "warm and reassuring", "slow and reflective", "energetic, upbeat".
    tts_text rules:
    * Chhote vaakya (5-10 shabd). Ek chhota vaakya, phir thoda lamba. Kabhi ek lamba vaakya nahi.
@@ -653,8 +657,8 @@ def generate_fallback_plan(book, custom_script=None):
         "scenes": [
             {
                 "type": "hook",
-                "narration": f"{b_title}! 5000 sainik aur saamne 1 lakh ki fauj! Raja haarne wala tha, tab yaad aayi Krishna ki gupt neeti.",
-                "tts_text": "सामने एक लाख की फ़ौज और केवल पांच हज़ार सैनिक! <short pause> राजा हारने वाला था, तभी याद आई श्रीकृष्ण की गुप्त नीति।",
+                "narration": "5000 sainik aur saamne 1 lakh ki fauj! Raja haarne wala tha, tab yaad aayi Krishna ki gupt neeti.",
+                "tts_text": "5000 सैनिक और सामने 1 लाख की फ़ौज! राजा हारने वाला था, तब याद आई श्रीकृष्ण की गुप्त नीति।",
                 "delivery": "suspenseful, urgent",
                 "data": {
                     "title": "5000 VS 1 LAKH",
@@ -665,7 +669,7 @@ def generate_fallback_plan(book, custom_script=None):
             {
                 "type": "card",
                 "narration": "Gita me Krishna ne sikhaya tha: Yuddh shakti se nahi, dushman ke dimaag me bhay paida karke jeeto.",
-                "tts_text": "गीता में श्रीकृष्ण ने सिखाया था: युद्ध कभी संख्या से नहीं, <breath> शत्रु के दिमाग में भ्रम पैदा करके जीता जाता है।",
+                "tts_text": "गीता में श्रीकृष्ण ने सिखाया था: युद्ध शक्ति से नहीं, दुश्मन के दिमाग में भय पैदा करके जीतो।",
                 "delivery": "deep, strategic",
                 "data": {
                     "lines": ["Dushman ke dimaag ko todo", "Raat ke andhere ka istemaal", "Aapas me bhidwa do"],
@@ -674,8 +678,8 @@ def generate_fallback_plan(book, custom_script=None):
             },
             {
                 "type": "paper",
-                "narration": "Lok katha kehti hai: Raat ke andhere me raja ne pahadon par hazaron mashaalein jala di.",
-                "tts_text": "रात के सन्नाटे में राजा ने चारों तरफ हज़ारों मशालें जला दीं, <short pause> दुश्मन समझा कि दो लाख सैनिकों ने घेर लिया है।",
+                "narration": "Raat ke andhere me raja ne pahadon par hazaron mashaalein jala di, dushman me bhagdad mach gayi.",
+                "tts_text": "रात के अँधेरे में राजा ने पहाड़ों पर हज़ारों मशालें जला दीं, दुश्मन में भगदड़ मच गई।",
                 "delivery": "mysterious, intense",
                 "data": {
                     "title": "RAAT KA CHAKRAVYUH",
@@ -686,7 +690,7 @@ def generate_fallback_plan(book, custom_script=None):
             {
                 "type": "beforeAfter",
                 "narration": "Dushman aapas me hi ladkar khatam ho gaya, aur 5000 sainikon ne itihaas rach diya!",
-                "tts_text": "घबराहट में दुश्मन की पूरी सेना आपस में ही लड़कर ख़त्म हो गई, <breath> और पांच हज़ार जाંબાજો ने इतिहास रच दिया!",
+                "tts_text": "दुश्मन आपस में ही लड़कर ख़त्म हो गया, और 5000 सैनिकों ने इतिहास रच दिया!",
                 "delivery": "shocking, dramatic",
                 "data": {
                     "before": "1 Lakh Mughal Fauj",
@@ -696,8 +700,8 @@ def generate_fallback_plan(book, custom_script=None):
             },
             {
                 "type": "quote",
-                "narration": "Sankat chahe 1 lakh ka ho, Krishna ki neeti se 5000 bhi itihaas badal sakte hain. Follow MindSpark!",
-                "tts_text": "नीति और साहस हो तो असंभव भी संभव हो जाता है। <short pause> ऐसे ही ऐतिहासिक रहस्यों के लिए माइंडस्पार्क को सब्सक्राइब करें!",
+                "narration": "Sankat chahe 1 lakh ka ho, Krishna ki neeti se jeet nischit hai. Follow MindSpark!",
+                "tts_text": "संकट चाहे 1 लाख का हो, श्रीकृष्ण की नीति से जीत निश्चित है। फॉलो माइंडस्पार्क!",
                 "delivery": "powerful, inspiring",
                 "data": {
                     "quote": "Neeti Sahi Ho Toh Jeet Nischit Hai",
