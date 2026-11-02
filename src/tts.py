@@ -328,15 +328,26 @@ def _synth_raju_clone(text, cfg, out):
             try:
                 print(f"[XTTS-v2] Synthesizing scene via {space} (attempt {attempt}/2)...")
                 cl = Client(space, token=token)
-                res = cl.predict(
-                    text=clean_text,
-                    reference_audio_url=ref_url,
-                    example_audio_name=None,
-                    language="Hindi",
-                    temperature=float(cfg.get("temperature", 0.75)),
-                    speed=float(cfg.get("speed", 1.0)),
-                    api_name="/voice_clone_synthesis"
-                )
+                try:
+                    res = cl.predict(
+                        text=clean_text,
+                        reference_audio_url=ref_url,
+                        example_audio_name=None,
+                        language="Hindi",
+                        temperature=float(cfg.get("temperature", 0.75)),
+                        speed=float(cfg.get("speed", 1.0)),
+                        api_name="/voice_clone_synthesis"
+                    )
+                except Exception as pe:
+                    # In case space rejects example_audio_name=None, omit it
+                    res = cl.predict(
+                        text=clean_text,
+                        reference_audio_url=ref_url,
+                        language="Hindi",
+                        temperature=float(cfg.get("temperature", 0.75)),
+                        speed=float(cfg.get("speed", 1.0)),
+                        api_name="/voice_clone_synthesis"
+                    )
                 if res and Path(res).exists() and Path(res).stat().st_size > 1000:
                     print(f"[XTTS-v2] Success on {space}!")
                     break

@@ -132,6 +132,7 @@ const Quote: React.FC<SP> = ({s, u}) => {
   </>);
 };
 
+import {AnimeStoryScene} from "./components/scenes/AnimeStoryScene";
 import {AnimeParallaxScene} from "./components/scenes/AnimeParallaxScene";
 import {MotionComicScene} from "./components/scenes/MotionComicScene";
 import {StoryScene, CharacterScene} from "./Story";
@@ -160,6 +161,7 @@ const SCENES: Record<string, React.FC<SP>> = {
   quote: Quote,
   story: StoryScene,
   character: CharacterScene,
+  animeStory: AnimeStoryScene,
   animeParallax: AnimeParallaxScene,
   motionComic: MotionComicScene,
   quiz: QuizScene,
@@ -284,7 +286,11 @@ const SceneWrap: React.FC<{plan: Plan; scene: Scene; index: number}> = ({plan, s
   else if (transitionType === "zoom") tr = {transform: `scale(${1.5 - 0.5 * p})`, opacity: p};
   else tr = {transform: `perspective(${120 * u}px) rotateY(${(1 - p) * -90}deg)`, opacity: p > 0 ? 1 : 0};
 
-  const Comp = SCENES[scene.type] || Hook;
+  const title = (plan.book?.title || "").toLowerCase();
+  const isEpicAnime = title.includes("lakh") || title.includes("5000") || title.includes("war") || title.includes("krishna");
+  const Comp = (isEpicAnime && ["hook", "card", "paper", "beforeAfter", "quote"].includes(scene.type))
+    ? AnimeStoryScene
+    : (SCENES[scene.type] || Hook);
   const left = t.layout === "left";
 
   return (
