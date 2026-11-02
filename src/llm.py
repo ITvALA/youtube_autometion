@@ -183,77 +183,52 @@ NEED = {
     "gradientFlow": ["text", "sub"],
 }
 
-def _call_huggingface(prompt):
-    token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_API_KEY") or os.environ.get("HF_API_KEY", "").strip()
-    if not token:
-        raise ValueError("HF_TOKEN is not set.")
-    models = ["Qwen/Qwen2.5-72B-Instruct", "meta-llama/Llama-3.3-70B-Instruct", "Qwen/Qwen2.5-7B-Instruct"]
-    endpoints = [
-        "https://router.huggingface.co/hf-inference/v1/chat/completions",
-        "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-7B-Instruct/v1/chat/completions",
-    ]
-    for ep in endpoints:
-        for m in models:
-            try:
-                r = requests.post(
-                    ep,
-                    timeout=90,
-                    headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-                    json={
-                        "model": m,
-                        "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}],
-                        "max_tokens": 950,
-                        "temperature": 0.7,
-                    }
-                )
-                if r.status_code == 200:
-                    data = r.json()
-                    content = data["choices"][0]["message"]["content"]
-                    print(f"[LLM] Generated plan via Hugging Face '{m}'!")
-                    return content
-            except Exception:
-                continue
-    raise RuntimeError("Hugging Face API failed.")
-
-
 def _call_gemini(prompt):
-    key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY_2", "").strip()
+    raw_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY_2", "")
+    key = str(raw_key).strip().strip('"').strip("'")
     if not key:
         raise ValueError("GEMINI_API_KEY is not set.")
-    for m in ["gemini-2.0-flash", "gemini-1.5-flash"]:
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={key}"
+    
+    models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"]
+    headers = {"Content-Type": "application/json"}
+    
+    last_err = None
+    for m in models:
+        # Try v1beta then v1
+        for ver in ["v1beta", "v1"]:
+            url = f"https://generativelanguage.googleapis.com/{ver}/models/{m}:generateContent?key={key}"
             body = {
-                "contents": [{"parts": [{"text": SYSTEM + "\n\n" + prompt}]}],
-                "generationConfig": {"temperature": 0.7, "maxOutputTokens": 3000}
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [{"text": SYSTEM + "\n\n" + prompt}]
+                    }
+                ],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "maxOutputTokens": 3000
+                }
             }
-            r = requests.post(url, timeout=90, json=body)
-            if r.status_code == 200:
-                txt = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-                print(f"[LLM] Generated plan via Gemini '{m}'!")
-                return txt
-        except Exception:
-            continue
-    raise RuntimeError("Gemini API failed.")
-
-
-def _call_relay(prompt):
-    base = os.environ.get("LLM_BASE_URL", "https://api.llmsrelay.com").rstrip("/")
-    if base.endswith("/v1"):
-        base = base[:-3]
-    key, model = os.environ.get("LLM_API_KEY", ""), os.environ.get("LLM_MODEL", "claude-sonnet-5")
-    if not key:
-        raise RuntimeError("LLM_API_KEY is not set.")
-    if os.environ.get("LLM_API_STYLE", "openai") == "anthropic":
-        r = requests.post(base + "/v1/messages", timeout=180,
-            headers={"x-api-key": key, "anthropic-version": "2023-06-01"},
-            json={"model": model, "max_tokens": 3000, "system": SYSTEM, "messages": [{"role": "user", "content": prompt}]})
-        r.raise_for_status()
-        return r.json()["content"][0]["text"]
-    r = requests.post(base + "/v1/chat/completions", timeout=180, headers={"Authorization": "Bearer " + key},
-        json={"model": model, "max_tokens": 3000, "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}]})
-    r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"]
+            try:
+                r = requests.post(url, headers=headers, json=body, timeout=60)
+                if r.status_code == 200:
+                    data = r.json()
+                    candidates = data.get("candidates", [])
+                    if candidates and "content" in candidates[0]:
+                        parts = candidates[0]["content"].get("parts", [])
+                        if parts and "text" in parts[0]:
+                            txt = parts[0]["text"]
+                            print(f"[LLM] Generated plan via Gemini '{m}' ({ver})!")
+                            return txt
+                else:
+                    err_msg = f"{m} ({ver}) HTTP {r.status_code}: {r.text[:200]}"
+                    print(f"[Gemini] {err_msg}")
+                    last_err = err_msg
+            except Exception as e:
+                print(f"[Gemini] {m} ({ver}) error: {e}")
+                last_err = str(e)
+                
+    raise RuntimeError(f"Gemini API failed: {last_err}")
 
 
 def _call_groq(prompt):
@@ -285,29 +260,22 @@ def _call_groq(prompt):
 
 
 def _call(prompt):
+    """Primary LLM is Google Gemini (Free & Best for Indian stories). Groq is optional backup."""
     errors = []
-    # 1. Groq (Free & Instant Qwen 3)
-    try:
-        return _call_groq(prompt)
-    except Exception as e:
-        errors.append(f"Groq: {e}")
-    # 2. Hugging Face
-    try:
-        return _call_huggingface(prompt)
-    except Exception as e:
-        errors.append(f"HF: {e}")
-    # 3. Gemini
+    # 1. Primary: Google Gemini
     try:
         return _call_gemini(prompt)
     except Exception as e:
         errors.append(f"Gemini: {e}")
-    # 4. Relay
-    try:
-        return _call_relay(prompt)
-    except Exception as e:
-        errors.append(f"Relay: {e}")
-    raise RuntimeError("All LLMs failed: " + " | ".join(errors))
 
+    # 2. Backup: Groq (if key set)
+    if os.environ.get("GROQ_API_KEY"):
+        try:
+            return _call_groq(prompt)
+        except Exception as e:
+            errors.append(f"Groq: {e}")
+
+    raise RuntimeError("All LLMs failed: " + " | ".join(errors))
 
 
 def get_style():
