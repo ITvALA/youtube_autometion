@@ -5,9 +5,11 @@ from pathlib import Path
 def send(video, caption, video_dir=None):
     t, c = os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID")
     if not (t and c):
+        print(f"[Telegram Notify] ERROR: Missing TELEGRAM_BOT_TOKEN ({bool(t)}) or TELEGRAM_CHAT_ID ({bool(c)}) in environment/secrets!")
         return
     video_path = Path(video)
     if not video_path.exists():
+        print(f"[Telegram Notify] ERROR: Video file not found: {video}")
         return
 
     # Inline keyboard buttons for 1-tap mobile review
@@ -57,6 +59,8 @@ def send(video, caption, video_dir=None):
                 )
 
             # Record pending video info so telegram_bot can pre-load or instant PASS
+            if not r.ok:
+                print(f"[Telegram Notify] CRITICAL ERROR: Telegram sendVideo failed with code {r.status_code}: {r.text}")
             if r.ok:
                 resp_data = r.json()
                 res = resp_data.get("result", {})
