@@ -212,3 +212,47 @@ export const CharacterDemo: React.FC = () => {
     </AbsoluteFill>
   );
 };
+
+
+
+export const CharacterDemoVertical: React.FC = () => {
+  const frame = useCurrentFrame();
+  const emotion: Emotion =
+    frame < 60 ? "neutral" : frame < 120 ? "happy" : frame < 180 ? "scared" : frame < 240 ? "angry" : "sad";
+  const emotionLabel: string =
+    frame < 60 ? "😐 Neutral" : frame < 120 ? "😊 Happy" : frame < 180 ? "😱 Scared" : frame < 240 ? "😡 Angry" : "😢 Sad";
+
+  return (
+    <AbsoluteFill style={{backgroundColor: "#0d1117", display: "flex", flexDirection: "column", alignItems: "center"}}>
+      {/* Title & Emotion badge */}
+      <div style={{position: "absolute", top: 140, textAlign: "center", color: "#ffffff", fontFamily: "system-ui, sans-serif", zIndex: 10}}>
+        <div style={{fontSize: 52, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase", textShadow: "0 4px 12px rgba(0,0,0,0.6)"}}>
+          ✨ 2D Animated Character ✨
+        </div>
+        <div style={{marginTop: 24, display: "inline-block", background: "linear-gradient(135deg, #e4572e, #f28e2b)", color: "#fff", padding: "14px 40px", borderRadius: 50, fontSize: 38, fontWeight: 800, boxShadow: "0 8px 24px rgba(228,87,46,0.4)"}}>
+          {emotionLabel} | Talking: {frame % 80 < 50 ? "ON 🎙️" : "OFF 🤫"}
+        </div>
+      </div>
+      
+      <svg width={1080} height={1920} viewBox="0 0 1080 1920" style={{position: "absolute", top: 0, left: 0}}>
+        {/* Character 1 (Left speaker) */}
+        <Character x={350} y={1450} scale={2.2} emotion={emotion} talking={frame % 80 < 50} shirt="#e4572e" />
+        {/* Character 2 (Right responder) */}
+        <Character
+          x={760}
+          y={1450}
+          scale={2.2}
+          flip
+          seed={3}
+          enterFrame={10}
+          skin="#c68642"
+          hair="#111"
+          shirt="#2a9d8f"
+          pants="#3d405b"
+          emotion={emotion === "scared" ? "angry" : emotion === "happy" ? "happy" : "neutral"}
+          talking={frame % 80 >= 50}
+        />
+      </svg>
+    </AbsoluteFill>
+  );
+};
