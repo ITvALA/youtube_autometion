@@ -292,5 +292,12 @@
     "date": "2026-11-02",
     "book": "Meditations",
     "seed": 78080124
+  },
+  {
+    "style_id": "v013",
+    "variant": 1,
+    "date": "2026-11-02",
+    "book": "Atomic Habits",
+    "seed": 204547041
   }
 ]
