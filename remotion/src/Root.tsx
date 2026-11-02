@@ -4,6 +4,7 @@ import {Main, Plan} from "./Video";
 import demo from "../../data/demo_plan.json";
 import {CharacterDemoVertical} from "./components/Character";
 import {PuppetStory, DEMO_SCENES, totalFrames} from "./components/PuppetKit";
+import {PuppetWarStory, PUPPET_WAR_STORY_FRAMES} from "./components/PuppetWarStory";
 
 const FPS = 30;
 const calc: CalculateMetadataFunction<Plan> = ({props}) => ({
@@ -37,6 +38,14 @@ export const Root: React.FC = () => (
       id="PuppetStory"
       component={PuppetStory}
       durationInFrames={totalFrames(DEMO_SCENES)}
+      fps={FPS}
+      width={1080}
+      height={1920}
+    />
+    <Composition
+      id="PuppetWarStory"
+      component={PuppetWarStory}
+      durationInFrames={PUPPET_WAR_STORY_FRAMES}
       fps={FPS}
       width={1080}
       height={1920}
