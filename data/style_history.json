@@ -306,5 +306,12 @@
     "date": "2026-11-02",
     "book": "The 7 Habits of Highly Effective People",
     "seed": 906526077
+  },
+  {
+    "style_id": "v064",
+    "variant": 3,
+    "date": "2026-11-02",
+    "book": "Atomic Habits",
+    "seed": 216857444
   }
 ]

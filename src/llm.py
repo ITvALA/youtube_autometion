@@ -202,7 +202,7 @@ def _call_huggingface(prompt):
                     json={
                         "model": m,
                         "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}],
-                        "max_tokens": 2500,
+                        "max_tokens": 950,
                         "temperature": 0.7,
                     }
                 )
@@ -256,24 +256,58 @@ def _call_relay(prompt):
     return r.json()["choices"][0]["message"]["content"]
 
 
+def _call_groq(prompt):
+    key = os.environ.get("GROQ_API_KEY", "").strip()
+    if not key:
+        raise ValueError("GROQ_API_KEY is not set.")
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+    models = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
+    for m in models:
+        try:
+            body = {
+                "model": m,
+                "messages": [
+                    {"role": "system", "content": SYSTEM},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.7,
+                "max_tokens": 1500
+            }
+            r = requests.post(url, headers=headers, json=body, timeout=60)
+            if r.status_code == 200:
+                data = r.json()
+                print(f"[LLM] Generated plan via Groq ({m})!")
+                return data["choices"][0]["message"]["content"]
+        except Exception:
+            continue
+    raise RuntimeError("All Groq models failed.")
+
+
 def _call(prompt):
     errors = []
-    # 1. Hugging Face
+    # 1. Groq (Free & Instant Qwen 3)
+    try:
+        return _call_groq(prompt)
+    except Exception as e:
+        errors.append(f"Groq: {e}")
+    # 2. Hugging Face
     try:
         return _call_huggingface(prompt)
     except Exception as e:
         errors.append(f"HF: {e}")
-    # 2. Gemini
+    # 3. Gemini
     try:
         return _call_gemini(prompt)
     except Exception as e:
         errors.append(f"Gemini: {e}")
-    # 3. Relay
+    # 4. Relay
     try:
         return _call_relay(prompt)
     except Exception as e:
         errors.append(f"Relay: {e}")
     raise RuntimeError("All LLMs failed: " + " | ".join(errors))
+
 
 
 def get_style():
@@ -625,7 +659,9 @@ youtube.title under 70 chars, description 2 short lines + hashtags."""
                 return plan
         except Exception as e:
             err = f"not valid JSON ({e})"
-    raise RuntimeError("LLM plan failed: " + str(err))
+    print(f"[LLM] Live plan failed ({err}). Generating built-in 'Mirch Masala' plan...")
+    fallback_p = generate_fallback_plan(book, custom_script=custom_script)
+    return normalize(fallback_p)
 
 STYLE_RULE = {
     "mix": "include at least 1 story scene AND at least 1 character scene.",
@@ -634,3 +670,65 @@ STYLE_RULE = {
     "classic": "do NOT use story or character scenes.",
     "anime": "include at least 1 animeParallax or motionComic scene.",
 }
+
+
+def generate_fallback_plan(book, custom_script=None):
+    b_title = book.get("title", "Life Lessons")
+    b_author = book.get("author", "Author")
+    
+    if custom_script:
+        lines = [ln.strip() for ln in str(custom_script).splitlines() if ln.strip()]
+        hook_text = lines[0] if lines else f"{b_title} ka kadwa sach: 99% log yeh galti karte hain."
+        point1 = lines[1] if len(lines) > 1 else "Pehla niyam: small daily habits make massive impact."
+        point2 = lines[2] if len(lines) > 2 else "Doosra niyam: focus on system, not just the goal."
+        point3 = lines[3] if len(lines) > 3 else "Teesra niyam: consistency beats intensity every time."
+    else:
+        hook_text = f"{b_title} hume sikhati hai: 99% log haar jaate hain kyunki wo galat jagah mehnat karte hain."
+        point1 = "Sabse bada niyam: goals mat banao, daily systems banao."
+        point2 = "Roz sirf 1 percent behtar bano, saal ke aakhri me 37 guna growth milegi."
+        point3 = "Apne environment ko aisa design karo ki achhi aadat aasan ho jaye."
+
+    return {
+        "youtube": {
+            "title": f"{b_title}: 3 Life-Changing Rules | MindSpark",
+            "description": f"{b_title} by {b_author} ke 3 sabse powerful lessons jo aapki life badal denge. #Shorts #MindSpark",
+            "tags": ["MindSpark", b_title, "SelfImprovement", "Success", "Shorts"]
+        },
+        "scenes": [
+            {
+                "type": "hook",
+                "narration": hook_text,
+                "tts_text": f"{b_title} humein kya sikhati hai? <short pause> 99% log galat jagah mehnat karte hain.",
+                "delivery": "curious, leaning in",
+                "data": {"title": b_title.upper()[:16], "sub": "3 GOLDEN RULES"}
+            },
+            {
+                "type": "terminal",
+                "narration": f"Rule number one: {point1}",
+                "tts_text": f"Pehla sabak! <breath> {point1}",
+                "delivery": "energetic, upbeat",
+                "data": {"cmd": "PROTOCOL_ACTIVATE", "lines": ["GOALS ARE FOR LOSERS", "SYSTEMS CREATE WINNERS"]}
+            },
+            {
+                "type": "card",
+                "narration": f"Rule number two: {point2}",
+                "tts_text": f"Doosra sabak! <short pause> {point2}",
+                "delivery": "slow and reflective",
+                "data": {"lines": ["Make cue obvious", "Make craving attractive", "1% better every day"]}
+            },
+            {
+                "type": "dial",
+                "narration": f"Rule number three: {point3}",
+                "tts_text": f"Teesra sabak! <breath> {point3}",
+                "delivery": "warm and reassuring",
+                "data": {"center": "SYSTEM", "items": ["Cue", "Craving", "Response", "Reward"]}
+            },
+            {
+                "type": "quote",
+                "narration": f"Yaad rakho: You do not rise to your goals, you fall to your systems. Aur aisi powerful insights ke liye MindSpark ko subscribe karein!",
+                "tts_text": f"Yaad rakhna: <long pause> Har action aapke character ka ek vote hai. Aise hi powerful lessons ke liye MindSpark ko subscribe karein!",
+                "delivery": "powerful, inspiring",
+                "data": {"quote": "You do not rise to the level of your goals. You fall to the level of your systems.", "by": b_author}
+            }
+        ]
+    }
