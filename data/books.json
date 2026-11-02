@@ -1,126 +1,134 @@
 [
- {
-  "title": "Atomic Habits",
-  "author": "James Clear"
- },
- {
-  "title": "The Psychology of Money",
-  "author": "Morgan Housel"
- },
- {
-  "title": "Deep Work",
-  "author": "Cal Newport"
- },
- {
-  "title": "Almanack of Naval Ravikant",
-  "author": "Eric Jorgenson"
- },
- {
-  "title": "The 48 Laws of Power",
-  "author": "Robert Greene"
- },
- {
-  "title": "Rich Dad Poor Dad",
-  "author": "Robert Kiyosaki"
- },
- {
-  "title": "Think and Grow Rich",
-  "author": "Napoleon Hill"
- },
- {
-  "title": "The Power of Now",
-  "author": "Eckhart Tolle"
- },
- {
-  "title": "Thinking, Fast and Slow",
-  "author": "Daniel Kahneman"
- },
- {
-  "title": "Man's Search for Meaning",
-  "author": "Viktor Frankl"
- },
- {
-  "title": "Meditations",
-  "author": "Marcus Aurelius"
- },
- {
-  "title": "The Alchemist",
-  "author": "Paulo Coelho"
- },
- {
-  "title": "Can't Hurt Me",
-  "author": "David Goggins"
- },
- {
-  "title": "Essentialism",
-  "author": "Greg McKeown"
- },
- {
-  "title": "Mindset",
-  "author": "Carol Dweck"
- },
- {
-  "title": "Grit",
-  "author": "Angela Duckworth"
- },
- {
-  "title": "The 7 Habits of Highly Effective People",
-  "author": "Stephen Covey"
- },
- {
-  "title": "How to Win Friends and Influence People",
-  "author": "Dale Carnegie"
- },
- {
-  "title": "The Intelligent Investor",
-  "author": "Benjamin Graham"
- },
- {
-  "title": "Zero to One",
-  "author": "Peter Thiel"
- },
- {
-  "title": "The Lean Startup",
-  "author": "Eric Ries"
- },
- {
-  "title": "Outliers",
-  "author": "Malcolm Gladwell"
- },
- {
-  "title": "Ikigai",
-  "author": "Hector Garcia and Francesc Miralles"
- },
- {
-  "title": "The Richest Man in Babylon",
-  "author": "George S. Clason"
- },
- {
-  "title": "Sapiens",
-  "author": "Yuval Noah Harari"
- },
- {
-  "title": "Influence",
-  "author": "Robert Cialdini"
- },
- {
-  "title": "Range",
-  "author": "David Epstein"
- },
- {
-  "title": "The Compound Effect",
-  "author": "Darren Hardy"
- },
- {
-  "title": "Ego Is the Enemy",
-  "author": "Ryan Holiday"
- },
- {
-  "title": "The Obstacle Is the Way",
-  "author": "Ryan Holiday"
- },
- {
-  "title": "Hooked",
-  "author": "Nir Eyal"
- }
+  {
+    "title": "5,000 VS 1,00,000: Raja Ka Krishna War Secret",
+    "author": "Mahabharat & Royal Strategy"
+  },
+  {
+    "title": "Maharana Pratap Aur Chetak: Haldi Ghati Ka Amar Saahas",
+    "author": "Rajput Legends"
+  },
+  {
+    "title": "Chhatrapati Shivaji Maharaj: Guerrilla Yuddh Neeti",
+    "author": "Maratha Empire"
+  },
+  {
+    "title": "Shri Krishna Ki 3 Gupt Neeti Jo Kabhi Fail Nahi Hui",
+    "author": "Bhagavad Gita & Mahabharat"
+  },
+  {
+    "title": "Chakravyuh Ka Sabse Bada Rahasya: Abhimanyu Ki Veerta",
+    "author": "Mahabharat"
+  },
+  {
+    "title": "Raja Vikramaditya Aur Betaal: Nyaya Ki Gupt Kathayein",
+    "author": "Indian Lok Katha"
+  },
+  {
+    "title": "Karna Ka Kavach Kundal: Mahabharat Ka Sabse Bada Balidan",
+    "author": "Mahabharat"
+  },
+  {
+    "title": "Acharya Chanakya Ki 3 Shatru-Vinashak Neeti",
+    "author": "Chanakya Neeti"
+  },
+  {
+    "title": "Prithviraj Chauhan: Shabd-Bhedi Baan Ka Rahasya",
+    "author": "Rajput Warriors"
+  },
+  {
+    "title": "Rani Padmavati Aur Chittorgarh Ka Amar Itihaas",
+    "author": "Royal Rajasthan"
+  },
+  {
+    "title": "Bhishma Pitamah Ka Gupt Vachan Aur Ichha Mrityu",
+    "author": "Mahabharat"
+  },
+  {
+    "title": "Samrat Ashoka: Kalinga Yuddh Se Dharm Chakra Tak",
+    "author": "Maurya Empire"
+  },
+  {
+    "title": "Raja Bhoj Aur Sinhasan Battisi Ka Rahasya",
+    "author": "Ancient Legends"
+  },
+  {
+    "title": "Shri Krishna Aur Karna Ki Aakhri Gupt Mulaqat",
+    "author": "Mahabharat Rahasya"
+  },
+  {
+    "title": "Rana Sanga Ke 80 Ghav Aur Atal Yoddha Dharm",
+    "author": "Mewar History"
+  },
+  {
+    "title": "Kumbhalgarh Ka Kila: Kabhi Na Jeeta Ja Saka Yeh Durg",
+    "author": "Royal Architecture"
+  },
+  {
+    "title": "Duryodhan Ki Wo 1 Galti Jisne Mahabharat Ka Yuddh Hara Diya",
+    "author": "Mahabharat"
+  },
+  {
+    "title": "Baji Rao Peshwa: 41 Yuddh Aur Ek Bhi Haar Nahi",
+    "author": "Maratha Legends"
+  },
+  {
+    "title": "Gita Ka Sabse Bada Updesh: Karm Aur Nischit Vijay",
+    "author": "Bhagavad Gita"
+  },
+  {
+    "title": "Raja Harishchandra Ka Satya Aur Pariksha",
+    "author": "Ancient Lok Katha"
+  },
+  {
+    "title": "Arjuna Ka Gandiva Aur Shri Krishna Ka Rath",
+    "author": "Mahabharat"
+  },
+  {
+    "title": "Raat Ka Chakravyuh: 5000 Sainikon Ne Kaise Racha Itihaas",
+    "author": "Lok Katha & Strategy"
+  },
+  {
+    "title": "Dronacharya Ka Chakra Aur Eklavya Ka Samarpan",
+    "author": "Mahabharat"
+  },
+  {
+    "title": "Chhatrapati Sambhaji Maharaj Ka Atal Balidan",
+    "author": "Maratha History"
+  },
+  {
+    "title": "Rani Laxmibai: Jhansi Ki Rani Ka Antim Yuddh",
+    "author": "Indian Freedom Legends"
+  },
+  {
+    "title": "Tanaji Malusare: Kondhana Kile Ka Romanchak Yuddh",
+    "author": "Maratha Warriors"
+  },
+  {
+    "title": "Vidur Neeti: Sankat Me Dushman Ko Kaise Parast Karein",
+    "author": "Mahabharat Wisdom"
+  },
+  {
+    "title": "Raja Bharat: Jinke Naam Par Desh Ka Naam Bharat Pada",
+    "author": "Pauranik Itihaas"
+  },
+  {
+    "title": "Shri Krishna Ka Sudarshan Chakra: Kyun Aur Kaise Bana",
+    "author": "Pauranik Rahasya"
+  },
+  {
+    "title": "Veer Durgadas Rathore: Marwar Ke Swami-Bhakti Ki Amar Kahani",
+    "author": "Rajput History"
+  },
+  {
+    "title": "Samrat Chandragupta Maurya Aur Chanakya Ki Pehli Jeet",
+    "author": "Ancient Indian History"
+  },
+  {
+    "title": "Karna Aur Duryodhan Ki Dosti: Aisi Mitrata Dobara Nahi Hui",
+    "author": "Mahabharat"
+  },
+  {
+    "title": "Shri Ram Ki Yuddh Neeti: Ravan Ke Ahankar Ka Ant",
+    "author": "Ramayan & Strategy"
+  }
 ]

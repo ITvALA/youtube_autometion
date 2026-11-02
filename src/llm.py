@@ -12,7 +12,7 @@ if str(ROOT / "src") not in sys.path:
 
 from common import ROOT, jload
 
-SYSTEM = "You are the script writer of a Hinglish book-lessons YouTube Shorts studio. Reply with ONE JSON object only. No markdown, no explanation."
+SYSTEM = "You are the master script writer of an epic Indian Storytelling & History YouTube Shorts studio (MindSpark). You create high-suspense, gripping stories combining Mahabharat wisdom, royal Raja-Rajwade war strategies, and untold lok kathayein. You feature 2D characters: 'char:raja', 'char:krishna', and 'char:warrior'. Reply with ONE JSON object only. No markdown, no explanation."
 
 TYPES = {
     "hook", "curve", "dial", "card", "quote", "story", "character", "animeParallax", "motionComic",
@@ -612,14 +612,11 @@ youtube.title under 70 chars, description 2 short lines + hashtags."""
                 f_narr = first_s.get("narration", "").strip()
                 # Strip out any greetings like "Namaste dosto", "Kitab", etc.
                 f_narr = re.sub(r'^(?:namaste\s*(?:dosto)?[\s!,.]*|kitab\s+|dosto[\s!,.]*)+', '', f_narr, flags=re.IGNORECASE).strip()
-                if not f_narr.lower().startswith(b_title.lower()):
-                    first_s["narration"] = f"{b_title} hume sikhati hai: " + f_narr
-                else:
-                    first_s["narration"] = f_narr
+                first_s["narration"] = f_narr
 
                 l_narr = last_s.get("narration", "")
                 if "mindspark" not in l_narr.lower():
-                    last_s["narration"] = l_narr.rstrip(".! ") + ". Aur aisi life-changing insights ke liye MindSpark ko subscribe karein!"
+                    last_s["narration"] = l_narr.rstrip(".! ") + ". Aise aur aitihasik rahasyo ke liye MindSpark ko subscribe karein!"
 
                 # Ensure tts_text exists on each scene
                 for sc in plan["scenes"]:
@@ -646,62 +643,66 @@ STYLE_RULE = {
 
 
 def generate_fallback_plan(book, custom_script=None):
-    b_title = book.get("title", "Life Lessons")
-    b_author = book.get("author", "Author")
-    
-    if custom_script:
-        lines = [ln.strip() for ln in str(custom_script).splitlines() if ln.strip()]
-        hook_text = lines[0] if lines else f"{b_title} ka kadwa sach: 99% log yeh galti karte hain."
-        point1 = lines[1] if len(lines) > 1 else "Pehla niyam: small daily habits make massive impact."
-        point2 = lines[2] if len(lines) > 2 else "Doosra niyam: focus on system, not just the goal."
-        point3 = lines[3] if len(lines) > 3 else "Teesra niyam: consistency beats intensity every time."
-    else:
-        hook_text = f"{b_title} hume sikhati hai: 99% log haar jaate hain kyunki wo galat jagah mehnat karte hain."
-        point1 = "Sabse bada niyam: goals mat banao, daily systems banao."
-        point2 = "Roz sirf 1 percent behtar bano, saal ke aakhri me 37 guna growth milegi."
-        point3 = "Apne environment ko aisa design karo ki achhi aadat aasan ho jaye."
-
+    b_title = book.get("title", "5000 VS 1 LAKH")
     return {
         "youtube": {
-            "title": f"{b_title}: 3 Life-Changing Rules | MindSpark",
-            "description": f"{b_title} by {b_author} ke 3 sabse powerful lessons jo aapki life badal denge. #Shorts #MindSpark",
-            "tags": ["MindSpark", b_title, "SelfImprovement", "Success", "Shorts"]
+            "title": f"{b_title}: Raja Ka Krishna War Secret ⚔️ | MindSpark",
+            "description": f"{b_title} - Mahabharat aur Rajput itihas ka wo gupt rahasya jo itihaas badal gaya. #Shorts #MindSpark #History",
+            "tags": ["MindSpark", "Mahabharat", "History", "KrishnaNeeti", "Shorts"]
         },
         "scenes": [
             {
                 "type": "hook",
-                "narration": hook_text,
-                "tts_text": f"{b_title} humein kya sikhati hai? <short pause> 99% log galat jagah mehnat karte hain.",
-                "delivery": "curious, leaning in",
-                "data": {"title": b_title.upper()[:16], "sub": "3 GOLDEN RULES"}
-            },
-            {
-                "type": "terminal",
-                "narration": f"Rule number one: {point1}",
-                "tts_text": f"Pehla sabak! <breath> {point1}",
-                "delivery": "energetic, upbeat",
-                "data": {"cmd": "PROTOCOL_ACTIVATE", "lines": ["GOALS ARE FOR LOSERS", "SYSTEMS CREATE WINNERS"]}
+                "narration": f"{b_title}! 5000 sainik aur saamne 1 lakh ki fauj! Raja haarne wala tha, tab yaad aayi Krishna ki gupt neeti.",
+                "tts_text": "सामने एक लाख की फ़ौज और केवल पांच हज़ार सैनिक! <short pause> राजा हारने वाला था, तभी याद आई श्रीकृष्ण की गुप्त नीति।",
+                "delivery": "suspenseful, urgent",
+                "data": {
+                    "title": "5000 VS 1 LAKH",
+                    "sub": "Krishna War Secret",
+                    "visual": {"items": [{"icon": "char:raja", "label": "महाराणा राजा"}, {"icon": "skull", "label": "१ लाख फ़ौज"}]}
+                }
             },
             {
                 "type": "card",
-                "narration": f"Rule number two: {point2}",
-                "tts_text": f"Doosra sabak! <short pause> {point2}",
-                "delivery": "slow and reflective",
-                "data": {"lines": ["Make cue obvious", "Make craving attractive", "1% better every day"]}
+                "narration": "Gita me Krishna ne sikhaya tha: Yuddh shakti se nahi, dushman ke dimaag me bhay paida karke jeeto.",
+                "tts_text": "गीता में श्रीकृष्ण ने सिखाया था: युद्ध कभी संख्या से नहीं, <breath> शत्रु के दिमाग में भ्रम पैदा करके जीता जाता है।",
+                "delivery": "deep, strategic",
+                "data": {
+                    "lines": ["Dushman ke dimaag ko todo", "Raat ke andhere ka istemaal", "Aapas me bhidwa do"],
+                    "visual": {"items": [{"icon": "char:krishna", "label": "श्रीकृष्ण नीति"}, {"icon": "chess", "label": "रणनीति"}]}
+                }
             },
             {
-                "type": "dial",
-                "narration": f"Rule number three: {point3}",
-                "tts_text": f"Teesra sabak! <breath> {point3}",
-                "delivery": "warm and reassuring",
-                "data": {"center": "SYSTEM", "items": ["Cue", "Craving", "Response", "Reward"]}
+                "type": "paper",
+                "narration": "Lok katha kehti hai: Raat ke andhere me raja ne pahadon par hazaron mashaalein jala di.",
+                "tts_text": "रात के सन्नाटे में राजा ने चारों तरफ हज़ारों मशालें जला दीं, <short pause> दुश्मन समझा कि दो लाख सैनिकों ने घेर लिया है।",
+                "delivery": "mysterious, intense",
+                "data": {
+                    "title": "RAAT KA CHAKRAVYUH",
+                    "points": ["Pahadon par hazaron mashaalein", "Bhaari sena ka bhram", "Dushman me afra-tafri"],
+                    "visual": {"items": [{"icon": "char:warrior", "label": "राजપૂત योद्धा"}, {"icon": "fire", "label": "मशालों की आग"}]}
+                }
+            },
+            {
+                "type": "beforeAfter",
+                "narration": "Dushman aapas me hi ladkar khatam ho gaya, aur 5000 sainikon ne itihaas rach diya!",
+                "tts_text": "घबराहट में दुश्मन की पूरी सेना आपस में ही लड़कर ख़त्म हो गई, <breath> और पांच हज़ार जाંબાજો ने इतिहास रच दिया!",
+                "delivery": "shocking, dramatic",
+                "data": {
+                    "before": "1 Lakh Mughal Fauj",
+                    "after": "5000 Sainikon Ki Jeet",
+                    "visual": {"items": [{"icon": "char:raja", "label": "राजा की जीत"}, {"icon": "trophy", "label": "इतिहास रचा"}]}
+                }
             },
             {
                 "type": "quote",
-                "narration": f"Yaad rakho: You do not rise to your goals, you fall to your systems. Aur aisi powerful insights ke liye MindSpark ko subscribe karein!",
-                "tts_text": f"Yaad rakhna: <long pause> Har action aapke character ka ek vote hai. Aise hi powerful lessons ke liye MindSpark ko subscribe karein!",
+                "narration": "Sankat chahe 1 lakh ka ho, Krishna ki neeti se 5000 bhi itihaas badal sakte hain. Follow MindSpark!",
+                "tts_text": "नीति और साहस हो तो असंभव भी संभव हो जाता है। <short pause> ऐसे ही ऐतिहासिक रहस्यों के लिए माइंडस्पार्क को सब्सक्राइब करें!",
                 "delivery": "powerful, inspiring",
-                "data": {"quote": "You do not rise to the level of your goals. You fall to the level of your systems.", "by": b_author}
+                "data": {
+                    "quote": "Neeti Sahi Ho Toh Jeet Nischit Hai",
+                    "by": "Shri Krishna Neeti"
+                }
             }
         ]
     }
