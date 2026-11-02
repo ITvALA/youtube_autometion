@@ -188,7 +188,11 @@ export const voxContent = (scene: Scene, seed: number, index: number): VoxConten
 
   // 1) LLM ne direct Vox visual diya ho
   const v = d.visual || d.vox;
-  const given: VoxItem[] | undefined = Array.isArray(v?.items) ? v.items.slice(0, 4).map((x: any) => ({icon: ICON_KEYS.includes(x.icon) || String(x.icon).startsWith("map:") ? x.icon : "bulb", label: asStr(x.label)})) : undefined;
+  const isAllowedIcon = (ic: any) => {
+    const s = String(ic || "");
+    return ICON_KEYS.includes(s) || s.startsWith("map:") || s.startsWith("char:") || ["raja", "king", "krishna", "warrior", "yoddha", "senapati"].includes(s);
+  };
+  const given: VoxItem[] | undefined = Array.isArray(v?.items) ? v.items.slice(0, 4).map((x: any) => ({icon: isAllowedIcon(x.icon) ? String(x.icon) : "bulb", label: asStr(x.label)})) : undefined;
   const country = asStr(d.country || v?.country) || findCountry(all);
   const mapName = country && findCountry(country) ? findCountry(country)! : country && findCountry(all) ? findCountry(all) : undefined;
 

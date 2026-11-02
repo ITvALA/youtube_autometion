@@ -594,9 +594,9 @@ Avoid these recent scene sequences: {json.dumps(recent_sequences or [])}.
 youtube.title under 70 chars, description 2 short lines + hashtags."""
 
     err = None
-    for _ in range(3):
-        txt = _call(prompt + (f"\nYour previous answer was invalid: {err}. Fix it." if err else ""))
+    for attempt in range(3):
         try:
+            txt = _call(prompt + (f"\nYour previous answer was invalid: {err}. Fix it." if err else ""))
             plan = json.loads(txt[txt.index("{"): txt.rindex("}") + 1])
             plan = normalize(plan)
 
@@ -626,7 +626,8 @@ youtube.title under 70 chars, description 2 short lines + hashtags."""
             if not err:
                 return plan
         except Exception as e:
-            err = f"not valid JSON ({e})"
+            err = f"{e}"
+            print(f"[LLM] Plan generation attempt {attempt + 1}/3 failed: {err}")
     print(f"[LLM] Live plan failed ({err}). Generating built-in 'Mirch Masala' plan...")
     fallback_p = generate_fallback_plan(book, custom_script=custom_script)
     return normalize(fallback_p)

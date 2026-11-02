@@ -163,7 +163,11 @@ def main():
         print(f"⚠️ Plan failed: {plan_err}. Falling back to default plan.")
         template = template_engine.DEFAULT_TEMPLATE
         theme = template_engine._enrich_template(template, theme_history, random.Random())["theme"]
-        plan = llm.make_plan(book, recent_sequences=recent_seqs, template=template, style_mode=False)
+        try:
+            plan = llm.make_plan(book, recent_sequences=recent_seqs, template=template, style_mode=False)
+        except Exception as plan_err2:
+            print(f"⚠️ Secondary plan call failed: {plan_err2}. Using pre-built curated fallback plan.")
+            plan = llm.generate_fallback_plan(book, custom_script=custom_script)
         is_style_engine = False
         style = None
 

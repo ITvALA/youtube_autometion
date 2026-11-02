@@ -137,12 +137,21 @@ const Hook: React.FC<LP> = ({c, st, f, fps, S, areaH}) => {
   const words = c.title.split(/\s+/);
   const longest = Math.max(...words.map((w) => w.length));
   const fs = fitSize(Math.max(longest * 2.2, c.title.length * 0.55), S * 0.15, S * 0.075, 12) * st.font.scale;
-  const iconSize = Math.min(S * 0.34, areaH * 0.34);
+  const item = c.items[0];
+  const isChar = item && (item.icon.startsWith("char:") || ["raja", "king", "krishna", "warrior", "yoddha", "senapati"].includes(item.icon));
+  const isMap = item && item.icon.startsWith("map:");
+  const iconSize = Math.min(S * (isChar ? 0.55 : 0.34), areaH * (isChar ? 0.50 : 0.34));
   const lt = clamp((f - 12) / 14);
   return (
     <div style={{display: "flex", flexDirection: "column", alignItems: "center", gap: S * 0.035, width: S * 0.92}}>
       <div style={{width: iconSize, height: iconSize, transform: `scale(${pop(f, fps, 1)}) translateY(${Math.sin(f * 0.06) * iconSize * 0.02}px)`}}>
-        <Icon name={ICONS[c.items[0]?.icon] ? c.items[0].icon : "bulb"} p={st.pal} f={f} size={iconSize} />
+        {isChar ? (
+          <SvgCharacter name={item.icon} p={st.pal} size={iconSize} f={f} />
+        ) : isMap ? (
+          <CountryMap name={item.icon.slice(4)} p={st.pal} size={iconSize} f={f} />
+        ) : (
+          <Icon name={ICONS[item?.icon] ? item.icon : "bulb"} p={st.pal} f={f} size={iconSize} />
+        )}
       </div>
       <div style={{textAlign: "center", fontFamily: FAMILY[st.font.id], fontWeight: st.font.weight, fontSize: fs, lineHeight: 1.12, color: st.paper.ink, textTransform: st.font.upper ? "uppercase" : undefined}}>
         {words.map((w, i) => {
