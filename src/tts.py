@@ -305,42 +305,57 @@ def _synth_openai(text, cfg, out):
 
 
 def _synth_raju_clone(text, cfg, out):
-    """Zero-shot voice cloning using Hugging Face XTTS-v2 with native Hindi support and Demo 3 Level 1 EQ."""
+    """Zero-shot voice cloning using Hugging Face XTTS-v2 with native Hindi support, multi-space fallback and monotonic DTS."""
     import time
     from gradio_client import Client
-    space = cfg.get("xtts_space") or "hasanbasbunar/Voice-Cloning-XTTS-v2"
+    primary_space = cfg.get("xtts_space") or "hasanbasbunar/Voice-Cloning-XTTS-v2"
+    all_spaces = cfg.get("xtts_spaces") or [
+        primary_space,
+        "JymNils/Voice-Cloning-XTTS-v2",
+        "minsus/Voice-Cloning-XTTS-v2",
+        "Fatimamirza970/Voice-Cloning-XTTS-v2"
+    ]
+    spaces = [primary_space] + [s for s in all_spaces if s != primary_space]
     ref_url = cfg.get("reference_audio_url") or "https://raw.githubusercontent.com/ITvALA/youtube_autometion/main/data/voice_references/slice_5s.wav"
     clean_text = strip_tags(text)
-    token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN") or None
+    raw_token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HUGGINGFACE_API_KEY") or None
+    token = str(raw_token).strip() if raw_token else None
 
     last_err = None
     res = None
-    for attempt in range(1, 6):
-        try:
-            print(f"[XTTS-v2] Synthesizing scene via {space} (attempt {attempt}/5)...")
-            cl = Client(space, token=token)
-            res = cl.predict(
-                text=clean_text,
-                reference_audio_url=ref_url,
-                example_audio_name=None,
-                language="Hindi",
-                temperature=float(cfg.get("temperature", 0.75)),
-                speed=float(cfg.get("speed", 1.0)),
-                api_name="/voice_clone_synthesis"
-            )
-            if res and Path(res).exists() and Path(res).stat().st_size > 1000:
-                print(f"[XTTS-v2] Success on attempt {attempt}!")
-                break
-        except Exception as se:
-            print(f"[XTTS-v2] Attempt {attempt} failed: {se}")
-            last_err = se
-            time.sleep(5 * attempt)
+    for space in spaces:
+        for attempt in range(1, 3):
+            try:
+                print(f"[XTTS-v2] Synthesizing scene via {space} (attempt {attempt}/2)...")
+                cl = Client(space, token=token)
+                res = cl.predict(
+                    text=clean_text,
+                    reference_audio_url=ref_url,
+                    example_audio_name=None,
+                    language="Hindi",
+                    temperature=float(cfg.get("temperature", 0.75)),
+                    speed=float(cfg.get("speed", 1.0)),
+                    api_name="/voice_clone_synthesis"
+                )
+                if res and Path(res).exists() and Path(res).stat().st_size > 1000:
+                    print(f"[XTTS-v2] Success on {space}!")
+                    break
+            except Exception as se:
+                err_str = str(se)
+                print(f"[XTTS-v2] {space} attempt {attempt} failed: {err_str[:120]}")
+                last_err = se
+                if "ZeroGPU" in err_str or "quota" in err_str or "exceeded" in err_str:
+                    break
+                time.sleep(3)
+        if res and Path(res).exists() and Path(res).stat().st_size > 1000:
+            break
 
     if not res or not Path(res).exists():
         raise RuntimeError(f"XTTS-v2 synthesis failed after retries: {last_err}")
 
-    af = "equalizer=f=130:t=q:w=1.4:g=3.5,equalizer=f=240:t=q:w=1.2:g=2.0,equalizer=f=650:t=q:w=1.0:g=-1.5,equalizer=f=3800:t=q:w=1.0:g=1.2,loudnorm=I=-16:TP=-1.5:LRA=10"
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(res), "-af", af,
+    af = "equalizer=f=130:t=q:w=1.4:g=3.5,equalizer=f=240:t=q:w=1.2:g=2.0,equalizer=f=650:t=q:w=1.0:g=-1.5,equalizer=f=3800:t=q:w=1.0:g=1.2,loudnorm=I=-16:TP=-1.5:LRA=10,asetpts=PTS-STARTPTS"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-fflags", "+genpts", "-avoid_negative_ts", "make_zero",
+                    "-i", str(res), "-af", af,
                     "-ar", "44100", "-ac", "2", "-b:a", "192k", str(out)], check=True)
     return []
 
@@ -426,8 +441,9 @@ def _tighten(raw, out, tempo, lead, tail, squeeze=0.0, normalize=True):
         af += f",atempo={tempo:.3f}"
     if normalize:
         af += ",loudnorm=I=-16:TP=-1.5:LRA=11"
-    af += f",adelay={int(lead * 1000)}:all=1,apad=pad_dur={tail}"
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-af", af,
+    af += f",adelay={int(lead * 1000)}:all=1,apad=pad_dur={tail},asetpts=PTS-STARTPTS"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-fflags", "+genpts", "-avoid_negative_ts", "make_zero",
+                    "-i", str(raw), "-af", af,
                     "-ar", "44100", "-ac", "2", str(out)], check=True)
 
 
@@ -465,8 +481,8 @@ def narrate(scenes, workdir, cfg, pad=0.45):
                 raise RuntimeError("over-trimmed")
         except Exception as e:
             print(f"[TTS] Scene {i}: trim skipped ({e})")
-            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-af",
-                            f"apad=pad_dur={pad}", "-ar", "44100", "-ac", "2", str(padded)], check=True)
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-fflags", "+genpts", "-avoid_negative_ts", "make_zero",
+                            "-i", str(raw), "-af", f"apad=pad_dur={pad},asetpts=PTS-STARTPTS", "-ar", "44100", "-ac", "2", str(padded)], check=True)
             tail = pad
         s["durationSec"] = round(dur(padded), 3)
 
@@ -486,7 +502,8 @@ def narrate(scenes, workdir, cfg, pad=0.45):
     lst = workdir / "list.txt"
     lst.write_text("".join(f"file '{p.resolve().as_posix()}'\n" for p in parts))
     out = workdir / "voice.mp3"
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst),
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-fflags", "+genpts", "-avoid_negative_ts", "make_zero",
+                    "-f", "concat", "-safe", "0", "-i", str(lst),
                     "-c:a", "libmp3lame", "-q:a", "3", str(out)], check=True)
     for slot, _ in _google_keys():
         used = _usage_get(slot)

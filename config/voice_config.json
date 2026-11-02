@@ -1,6 +1,7 @@
 {
   "providers": [
-    "raju_clone"
+    "raju_clone",
+    "edge-tts"
   ],
   "provider": "raju_clone",
   "selected_voice_id": "raju_xtts2_demo3",
@@ -32,5 +33,11 @@
   "tail_last": 0.9,
   "squeeze_pauses": 1.0,
   "eq_preset": "level1_warm",
-  "description": "Demo 3 Locked: Raju XTTS-v2 + Level 1 Warm Studio Mic EQ + 1.0 Tempo + 0.12s Lead + 0.5s Tail + -0.5 Squeeze."
+  "description": "Demo 3 Locked: Raju XTTS-v2 + Level 1 Warm Studio Mic EQ + 1.0 Tempo + 0.12s Lead + 0.5s Tail + -0.5 Squeeze.",
+  "xtts_spaces": [
+    "hasanbasbunar/Voice-Cloning-XTTS-v2",
+    "JymNils/Voice-Cloning-XTTS-v2",
+    "minsus/Voice-Cloning-XTTS-v2",
+    "Fatimamirza970/Voice-Cloning-XTTS-v2"
+  ]
 }
