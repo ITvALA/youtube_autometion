@@ -160,28 +160,28 @@ def _call_gemini(prompt):
 
 
 def _call(prompt):
-    """Tries LLM providers in order: Relay -> HuggingFace -> Gemini."""
+    """Tries LLM providers in order: HuggingFace (Open/Free) -> Gemini (Free) -> Relay."""
     errors = []
 
-    # 1. Primary Relay
-    try:
-        return _call_relay(prompt)
-    except Exception as e:
-        errors.append(f"Relay: {e}")
-        print(f"[LLM] Primary relay failed ({e}). Trying Hugging Face...")
-
-    # 2. Hugging Face
+    # 1. Hugging Face (Primary Free Open-Source LLM)
     try:
         return _call_huggingface(prompt)
     except Exception as e:
         errors.append(f"HuggingFace: {e}")
-        print(f"[LLM] Hugging Face failed ({e}). Trying Google Gemini...")
+        print(f"[LLM] Hugging Face failed or not configured ({e}). Trying Google Gemini...")
 
-    # 3. Google Gemini
+    # 2. Google Gemini (Free Tier)
     try:
         return _call_gemini(prompt)
     except Exception as e:
         errors.append(f"Gemini: {e}")
+        print(f"[LLM] Google Gemini failed ({e}). Trying Relay...")
+
+    # 3. Primary Relay / Claude
+    try:
+        return _call_relay(prompt)
+    except Exception as e:
+        errors.append(f"Relay: {e}")
 
     raise RuntimeError("All LLM providers failed: " + " | ".join(errors))
 

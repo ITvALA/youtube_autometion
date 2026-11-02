@@ -186,8 +186,27 @@ def _synth_gemini(text, cfg, out):
 
 async def _synth_edge_async(text, cfg, out):
     import edge_tts
-    voice = cfg.get("voice") or "hi-IN-MadhurNeural"
-    comm = edge_tts.Communicate(text, voice, rate=cfg.get("rate", "+0%"), pitch=cfg.get("pitch", "+0Hz"))
+    v_req = str(cfg.get("voice") or "").lower().strip()
+    rate = cfg.get("rate", "+0%")
+    pitch = cfg.get("pitch", "+0Hz")
+
+    # Free calibrated voice presets matching ElevenLabs Viraj & Raju
+    if v_req in ("viraj", "viraj_free"):
+        voice = "hi-IN-MadhurNeural"
+        pitch = cfg.get("pitch") if cfg.get("pitch") != "+0Hz" else "-2Hz"
+        rate = cfg.get("rate") if cfg.get("rate") != "+0%" else "+3%"
+    elif v_req in ("raju", "raju_free"):
+        voice = "hi-IN-MadhurNeural"
+        pitch = cfg.get("pitch") if cfg.get("pitch") != "+0Hz" else "+0Hz"
+        rate = cfg.get("rate") if cfg.get("rate") != "+0%" else "+6%"
+    elif v_req in ("swara", "female"):
+        voice = "hi-IN-SwaraNeural"
+    else:
+        voice = cfg.get("voice") or "hi-IN-MadhurNeural"
+        if voice in ("viraj", "raju"):
+            voice = "hi-IN-MadhurNeural"
+
+    comm = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
     with open(out, "wb") as f:
         async for ch in comm.stream():
             if ch["type"] == "audio":
