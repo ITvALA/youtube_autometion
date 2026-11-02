@@ -315,10 +315,38 @@
     "seed": 216857444
   },
   {
-    "style_id": "v180",
-    "variant": 2,
+    "style_id": "v142",
+    "variant": 1,
     "date": "2026-11-02",
-    "book": "Deep Work",
-    "seed": 657529454
+    "book": "5000 VS 1 LAKH",
+    "seed": 876249364
+  },
+  {
+    "style_id": "v096",
+    "variant": 1,
+    "date": "2026-11-02",
+    "book": "5000 VS 1 LAKH",
+    "seed": 911491365
+  },
+  {
+    "style_id": "v197",
+    "variant": 0,
+    "date": "2026-11-02",
+    "book": "5000 VS 1 LAKH",
+    "seed": 787608805
+  },
+  {
+    "style_id": "v138",
+    "variant": 3,
+    "date": "2026-11-02",
+    "book": "5000 VS 1 LAKH",
+    "seed": 512722290
+  },
+  {
+    "style_id": "v102",
+    "variant": 0,
+    "date": "2026-11-02",
+    "book": "5000 VS 1 LAKH",
+    "seed": 677564174
   }
 ]

@@ -81,11 +81,31 @@ def _totp_code():
 
 
 def _login(cl, username, password):
+    from instagrapi.exceptions import TwoFactorRequired, ChallengeRequired
     code = _totp_code()
     if code:
-        cl.login(username, password, verification_code=code)
-    else:
+        try:
+            cl.login(username, password, verification_code=code)
+            return
+        except Exception as e:
+            print(f"[Instagram] TOTP login failed ({e}), trying normal flow...")
+
+    try:
         cl.login(username, password)
+    except TwoFactorRequired:
+        print("[Instagram] 2FA/Gmail verification code required! Asking user on Telegram...")
+        code = telegram_code_handler(username, "Gmail / SMS 2FA Code")
+        if code:
+            cl.login(username, password, verification_code=code)
+        else:
+            raise RuntimeError("Instagram verification code was not provided in time.")
+    except ChallengeRequired:
+        print("[Instagram] Security challenge required! Asking user on Telegram...")
+        code = telegram_code_handler(username, "Gmail Security Checkpoint Code")
+        if code:
+            cl.login(username, password, verification_code=code)
+        else:
+            raise RuntimeError("Instagram challenge code was not provided in time.")
 
 
 def get_ig_client():
