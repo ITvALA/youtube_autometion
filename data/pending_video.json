@@ -1,13 +1,13 @@
 {
-  "dir_name": "2026-11-02_093458_atomic-habits",
-  "file_id": "BAACAgUAAxkDAAO-auhZ0tMI0j1HdhpVJI0zrZ2N23QAAq4kAAJDvEFX5vsYXR87h7M9BA",
-  "file_unique_id": "AgADriQAAkO8QVc",
-  "message_id": 190,
-  "caption": "🎬 *New Reel Ready for Review!*\n\nAtomic Habits Summary: Ye Kadwa Sach Aapko Koi Nahi Batayega! 🔥 #Shorts\n\n🎨 Style: *V013* (variant 1)\n✨ 9:16 Vertical | Seed: 204547041\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
+  "dir_name": "2026-11-02_103443_the-7-habits-of-highly-effective-people",
+  "file_id": "BAACAgUAAxkDAAPAauhoKyr3Qv0oXovihgVCtrp6MaEAAmIlAAJDvEFX1bazLPE3qpA9BA",
+  "file_unique_id": "AgADYiUAAkO8QVc",
+  "message_id": 192,
+  "caption": "🎬 *New Reel Ready for Review!*\n\nThe 7 Habits of Highly Effective People Summary: Ye Kadwa Sach Aapko Koi Nahi Batayega! 🔥 #Shorts\n\n🎨 Style: *V135* (variant 0)\n✨ 9:16 Vertical | Seed: 906526077\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
   "meta": {
-    "book": "Atomic Habits",
-    "title": "Atomic Habits Summary: Ye Kadwa Sach Aapko Koi Nahi Batayega! 🔥 #Shorts",
-    "description": "Discover the shocking reality and life-changing breakthrough from Atomic Habits by James Clear.\n\n#mindspark #motivation #hindi #selfimprovement #shorts",
+    "book": "The 7 Habits of Highly Effective People",
+    "title": "The 7 Habits of Highly Effective People Summary: Ye Kadwa Sach Aapko Koi Nahi Batayega! 🔥 #Shorts",
+    "description": "Discover the shocking reality and life-changing breakthrough from The 7 Habits of Highly Effective People by Stephen Covey.\n\n#mindspark #motivation #hindi #selfimprovement #shorts",
     "tags": [
       "mindspark",
       "book summary",
@@ -18,13 +18,13 @@
       "habits"
     ],
     "privacy": "public",
-    "template_id": "style_v013",
-    "template_name": "Style: V013",
-    "style_id": "v013",
-    "style_variant": 1,
-    "style_seed": 204547041
+    "template_id": "style_v135",
+    "template_name": "Style: V135",
+    "style_id": "v135",
+    "style_variant": 0,
+    "style_seed": 906526077
   },
-  "timestamp": 1793612242,
+  "timestamp": 1793615915,
   "status": "pending_review",
-  "run_id": "41421473672"
+  "run_id": "41429599990"
 }
