@@ -1,38 +1,29 @@
 {
   "providers": [
-    "edge-tts",
     "gemini_tts",
-    "elevenlabs"
+    "google_chirp",
+    "edge-tts"
   ],
-  "provider": "edge-tts",
-  "selected_voice_id": "viraj",
-  "selected_voice_name": "Edge-TTS (100% FREE) - Viraj Style (Deep Hindi Storyteller)",
-  "voice": "viraj",
-  "elevenlabs_voice": "viraj",
-  "elevenlabs_voice_id": "3AMU7jXQuQa3oRvRqUmb",
-  "elevenlabs_voices": {
-    "viraj": "3AMU7jXQuQa3oRvRqUmb",
-    "raju": "zT03pEAEi0VHKciJODfn"
-  },
+  "provider": "gemini_tts",
+  "selected_voice_id": "gemini_charon",
+  "selected_voice_name": "Gemini TTS - Charon (fallback: Chirp 3 HD, then Edge Madhur)",
+  "voice": "Charon",
   "voices": {
-    "elevenlabs": "3AMU7jXQuQa3oRvRqUmb",
     "gemini_tts": "Charon",
     "google_chirp": "hi-IN-Chirp3-HD-Charon",
     "edge-tts": "hi-IN-MadhurNeural"
   },
-  "voice_model": "eleven_multilingual_v2",
   "gemini_models": [
     "gemini-3.8-flash-tts",
-    "gemini-3.8-flash-lite-tts",
-    "gemini-2.5-flash-tts"
+    "gemini-3.8-flash-lite-tts"
   ],
-  "style": "Say in an intense, dramatic, natural, conversational Hindi storyteller voice with emotional pauses",
+  "style": "warm, conversational, like a friend telling a story",
   "language": "hi",
   "language_code": "hi-IN",
   "fallback_voice": "hi-IN-MadhurNeural",
   "speed": 1.0,
-  "rate": "+3%",
-  "pitch": "-2Hz",
+  "rate": "+0%",
+  "pitch": "+0Hz",
   "monthly_char_limit": 950000,
   "cache": true,
   "normalize": true,
@@ -41,19 +32,6 @@
   "tail": 0.3,
   "tail_last": 0.5,
   "squeeze_pauses": 0,
-  "description": "100% FREE setup: Edge-TTS Madhur calibrated for Viraj/Raju styles. 0 cost, no card or paid subscription needed.",
-  "free_voice_presets": {
-    "viraj": {
-      "voice": "hi-IN-MadhurNeural",
-      "pitch": "-2Hz",
-      "rate": "+3%",
-      "description": "100% Free - Deep, intense storytelling tone matching ElevenLabs Viraj"
-    },
-    "raju": {
-      "voice": "hi-IN-MadhurNeural",
-      "pitch": "+0Hz",
-      "rate": "+6%",
-      "description": "100% Free - Clear, conversational tone matching ElevenLabs Raju"
-    }
-  }
+  "description": "No-card setup: Gemini TTS (GEMINI_API_KEY, GEMINI_API_KEY_2) -> Chirp 3 HD (only if a Google key exists) -> Edge Madhur (always works). One voice per reel, natural pacing.",
+  "style_note": "Gemini 3.8 TTS: style chhota rakho (turn-level delivery). Scene-wise style LLM ke 'delivery' field se aata hai. Permanent custom awaaz ke liye voices -> gemini_tts me voice_... ID daalo (Voice Tools workflow se design karo)."
 }

@@ -282,6 +282,12 @@ def main():
             f"🎨 Template: *{template['name']}* (`{template['id']}`)\n"
             f"✨ Palette: {theme['palette']} / {theme['transition']} / 9:16 Vertical"
         )
+    try:
+        vline = tts.voice_summary()
+        if vline:
+            caption += f"\n🎙️ {vline}"
+    except Exception as e:
+        print(f"[Pipeline] voice summary skipped: {e}")
     notify.send(final, caption, video_dir=out)
     print("DONE:", final)
 
