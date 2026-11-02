@@ -1,33 +1,33 @@
 {
-  "dir_name": "2026-11-01_233516_can-t-hurt-me",
-  "file_id": "BAACAgUAAxkDAAO4aufNoR9nUAYDVIOLTW3wy9yxeVAAAukkAAKrQThX31I9fhcpcbY9BA",
-  "file_unique_id": "AgAD6SQAAqtBOFc",
-  "message_id": 184,
-  "caption": "🎬 *New Reel Ready for Review!*\n\nDavid Goggins Ka 40% Rule | Can't Hurt Me Book Summary Hindi\n\n🎨 Style: *V194* (variant 1)\n✨ 9:16 Vertical | Seed: 821249390\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
+  "dir_name": "2026-11-02_003529_meditations",
+  "file_id": "BAACAgUAAxkDAAO5aufbZhptkh72Rpfq5aWvSMeIo2MAAkUgAAKrQUBXBvA3LacXBVs9BA",
+  "file_unique_id": "AgADRSAAAqtBQFc",
+  "message_id": 185,
+  "caption": "🎬 *New Reel Ready for Review!*\n\nMarcus Aurelius ki 3 Life-Changing Lessons | Meditations Book Summary\n\n🎨 Style: *V121* (variant 3)\n✨ 9:16 Vertical | Seed: 78080124\n\n👉 Tap *PASS* button  to upload immediately to YouTube!",
   "meta": {
-    "book": "Can't Hurt Me",
-    "title": "David Goggins Ka 40% Rule | Can't Hurt Me Book Summary Hindi",
-    "description": "David Goggins ki powerful lessons jo tumhari life badal denge\nMental toughness aur discipline seekho\n#DavidGoggins #CantHurtMe #MentalToughness #HindiSummary #Motivation",
+    "book": "Meditations",
+    "title": "Marcus Aurelius ki 3 Life-Changing Lessons | Meditations Book Summary",
+    "description": "Meditations se seekho apne mann ko control karna aur stoic banna.\nMindSpark par daily wisdom milegi!\n#Meditations #MarcusAurelius #Stoicism #BookSummary #HindiShorts #Mindset #Philosophy",
     "tags": [
-      "David Goggins",
-      "Can't Hurt Me",
-      "Book Summary Hindi",
-      "Mental Toughness",
-      "40 Percent Rule",
-      "Motivation Hindi",
-      "Self Improvement",
-      "Discipline",
-      "Hinglish",
-      "MindSpark"
+      "meditations",
+      "marcus aurelius",
+      "stoicism",
+      "book summary",
+      "hindi",
+      "hinglish",
+      "philosophy",
+      "self help",
+      "mindset",
+      "wisdom"
     ],
     "privacy": "public",
-    "template_id": "style_v194",
-    "template_name": "Style: V194",
-    "style_id": "v194",
-    "style_variant": 1,
-    "style_seed": 821249390
+    "template_id": "style_v121",
+    "template_name": "Style: V121",
+    "style_id": "v121",
+    "style_variant": 3,
+    "style_seed": 78080124
   },
-  "timestamp": 1793576353,
+  "timestamp": 1793579878,
   "status": "pending_review",
-  "run_id": "41362525732"
+  "run_id": "41367620127"
 }
