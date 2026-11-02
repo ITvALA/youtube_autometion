@@ -1,7 +1,6 @@
 {
   "providers": [
-    "raju_clone",
-    "edge-tts"
+    "raju_clone"
   ],
   "provider": "raju_clone",
   "selected_voice_id": "raju_xtts2_demo3",

@@ -82,8 +82,8 @@ def main():
     scenes = [
         {
             "type": "hook",
-            "narration": "5000 sainik aur saamne 1 lakh ki fauj! Raja haarne wala tha, tab yaad aayi Krishna ki gupt neeti.",
-            "tts_text": "5000 सैनिक और सामने 1 लाख की फ़ौज! राजा हारने वाला था, तब याद आई श्रीकृष्ण की गुप्त नीति।",
+            "narration": "5000 सैनिक और सामने 1 लाख की फ़ौज! राजा हारने वाला था, तभी याद आई श्रीकृष्ण की गुप्त नीति।",
+            "tts_text": "5000 सैनिक और सामने 1 लाख की फ़ौज! राजा हारने वाला था, तभी याद आई श्रीकृष्ण की गुप्त नीति।",
             "delivery": "suspenseful, urgent",
             "data": {
                 "title": "5000 VS 1 LAKH",
@@ -98,7 +98,7 @@ def main():
         },
         {
             "type": "card",
-            "narration": "Gita me Krishna ne sikhaya tha: Yuddh shakti se nahi, dushman ke dimaag me bhay paida karke jeeto.",
+            "narration": "गीता में श्रीकृष्ण ने सिखाया था: युद्ध शक्ति से नहीं, दुश्मन के दिमाग में भय पैदा करके जीतो।",
             "tts_text": "गीता में श्रीकृष्ण ने सिखाया था: युद्ध शक्ति से नहीं, दुश्मन के दिमाग में भय पैदा करके जीतो।",
             "delivery": "deep, strategic",
             "data": {
@@ -117,7 +117,7 @@ def main():
         },
         {
             "type": "paper",
-            "narration": "Raat ke andhere me raja ne pahadon par hazaron mashaalein jala di, dushman me bhagdad mach gayi.",
+            "narration": "रात के अँधेरे में राजा ने पहाड़ों पर हज़ारों मशालें जला दीं, दुश्मन में भगदड़ मच गई।",
             "tts_text": "रात के अँधेरे में राजा ने पहाड़ों पर हज़ारों मशालें जला दीं, दुश्मन में भगदड़ मच गई।",
             "delivery": "mysterious, intense",
             "data": {
@@ -137,7 +137,7 @@ def main():
         },
         {
             "type": "beforeAfter",
-            "narration": "Dushman aapas me hi ladkar khatam ho gaya, aur 5000 sainikon ne itihaas rach diya!",
+            "narration": "दुश्मन आपस में ही लड़कर ख़त्म हो गया, और 5000 सैनिकों ने इतिहास रच दिया!",
             "tts_text": "दुश्मन आपस में ही लड़कर ख़त्म हो गया, और 5000 सैनिकों ने इतिहास रच दिया!",
             "delivery": "shocking, dramatic",
             "data": {
@@ -153,7 +153,7 @@ def main():
         },
         {
             "type": "quote",
-            "narration": "Sankat chahe 1 lakh ka ho, Krishna ki neeti se jeet nischit hai. Follow MindSpark!",
+            "narration": "संकट चाहे 1 लाख का हो, श्रीकृष्ण की नीति से जीत निश्चित है। फॉलो माइंडस्पार्क!",
             "tts_text": "संकट चाहे 1 लाख का हो, श्रीकृष्ण की नीति से जीत निश्चित है। फॉलो माइंडस्पार्क!",
             "delivery": "powerful, inspiring",
             "data": {
