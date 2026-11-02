@@ -150,6 +150,9 @@ jobs:
             echo "No history changes to commit."
           else
             git commit -m "theme, template, style and pending video [skip ci]"
-            git pull --rebase -Xtheirs origin main || (git rebase --abort && git pull --no-rebase -Xours origin main --no-edit)
+            # Clean untracked and unstaged files so git pull never fails with "You have unstaged changes"
+            git checkout -- . 2>/dev/null || true
+            git clean -fd 2>/dev/null || true
+            git pull --rebase -Xtheirs origin main || (git rebase --abort 2>/dev/null || true; git pull --no-rebase -Xtheirs origin main --no-edit) || true
             git push origin main || echo "Git push skipped on concurrent run"
           fi
