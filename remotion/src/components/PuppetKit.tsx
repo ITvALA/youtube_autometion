@@ -78,7 +78,50 @@ export const POSES: Record<string, Pose> = {
   bow: {armA: [14, 10], armB: [14, 10], legA: [4, 0], legB: [4, 0], head: 14, lean: 7},
   angry: {armA: [30, 95], armB: [30, 95], legA: [14, 0], legB: [14, 0], head: -4, lean: -3},
   sad: {armA: [6, 4], armB: [6, 4], legA: [3, 0], legB: [3, 0], head: 16, lean: 4},
+  // --- Battle & Action Poses ---
+  charge: {armA: [80, -20], armB: [140, 40], legA: [35, 20], legB: [-25, 40], head: -8, lean: 18},
+  slashHigh: {armA: [30, 20], armB: [165, 35], legA: [15, 0], legB: [-15, 20], head: -5, lean: -6},
+  slashStrike: {armA: [30, 40], armB: [35, -20], legA: [35, 10], legB: [-25, 30], head: 8, lean: 22},
+  clashLock: {armA: [65, 80], armB: [75, 70], legA: [28, 10], legB: [-20, 20], head: -4, lean: 12},
+  recoilHit: {armA: [110, -30], armB: [120, -20], legA: [-30, 40], legB: [10, 10], head: -18, lean: -24},
+  marchA: {armA: [-35, 15], armB: [40, 20], legA: [30, 10], legB: [-25, 35], head: 0, lean: 5},
+  marchB: {armA: [40, 20], armB: [-35, 15], legA: [-25, 35], legB: [30, 10], head: 0, lean: 5},
 };
+
+export function calcWalkPose(frame: number, speed: number = 0.25, isRun: boolean = false): {pose: Pose; bobY: number} {
+  const amp = isRun ? 42 : 28;
+  const legAmp = isRun ? 48 : 32;
+  const cycle = frame * speed;
+
+  const sin = Math.sin(cycle);
+  const cos = Math.cos(cycle);
+
+  const legA_rot = sin * legAmp;
+  const legB_rot = -sin * legAmp;
+
+  const kneeA = Math.max(0, -sin) * (isRun ? 55 : 35);
+  const kneeB = Math.max(0, sin) * (isRun ? 55 : 35);
+
+  const armA_rot = -sin * amp;
+  const armB_rot = sin * amp;
+  const armA_bend = 15 + Math.abs(cos) * (isRun ? 40 : 20);
+  const armB_bend = 15 + Math.abs(cos) * (isRun ? 40 : 20);
+
+  const bobY = Math.abs(Math.sin(cycle)) * (isRun ? 18 : 10);
+  const lean = isRun ? 16 : 4;
+
+  return {
+    pose: {
+      armA: [armA_rot, armA_bend],
+      armB: [armB_rot, armB_bend],
+      legA: [legA_rot, kneeA],
+      legB: [legB_rot, kneeB],
+      head: Math.sin(cycle) * 2,
+      lean,
+    },
+    bobY,
+  };
+}
 
 export type PoseKey = {f: number; pose: Pose | string};
 
@@ -117,13 +160,17 @@ export type Look = {
   skin: string;
   dhoti?: string;
   halo?: boolean;
-  prop?: "mace" | "none";
+  prop?: "mace" | "sword" | "bow" | "spear" | "shield" | "none";
   propHand?: "A" | "B";
+  secondaryProp?: "shield" | "none";
+  secondaryPropHand?: "A" | "B";
 };
 
 export const LOOKS: Record<string, Look> = {
   warrior: {face: "vanara", skin: C.skinGold, dhoti: C.red, prop: "mace", propHand: "B"},
   king: {face: "human", skin: C.skinTeal, dhoti: C.rust, halo: true, prop: "none"},
+  rajaWarrior: {face: "human", skin: "#f1c27d", dhoti: "#c2185b", halo: false, prop: "sword", propHand: "B", secondaryProp: "shield", secondaryPropHand: "A"},
+  enemySoldier: {face: "human", skin: "#d29054", dhoti: "#1e293b", halo: false, prop: "spear", propHand: "B"},
 };
 
 /* ========================= PUPPET PARTS ============================ */
@@ -144,7 +191,7 @@ const Segment: React.FC<{len: number; w: number; fill: string; band?: string}> =
   </g>
 );
 
-const Mace: React.FC = () => (
+export const Mace: React.FC = () => (
   <g>
     <rect x={-6} y={-150} width={12} height={196} rx={6} fill={C.gold} stroke={C.ink} strokeWidth={4} />
     <rect x={-13} y={-24} width={26} height={14} rx={4} fill={C.goldDark} stroke={C.ink} strokeWidth={3} />
@@ -159,6 +206,211 @@ const Mace: React.FC = () => (
     <circle cx={0} cy={52} r={8} fill={C.red} stroke={C.ink} strokeWidth={3} />
   </g>
 );
+
+export const Sword: React.FC = () => (
+  <g transform="translate(0 -140) rotate(-10)">
+    {/* Blade */}
+    <path
+      d="M -9 40 L -7 -155 Q 0 -185 7 -155 L 9 40 Z"
+      fill="#e2e8f0"
+      stroke={C.ink}
+      strokeWidth={3.5}
+    />
+    <line x1={0} y1={30} x2={0} y2={-150} stroke="#94a3b8" strokeWidth={2} />
+    <path d="M -5 30 L -4 -145 L 0 -145 L 0 30 Z" fill="#ffffff" opacity={0.65} />
+    {/* Crossguard */}
+    <rect x={-32} y={38} width={64} height={12} rx={5} fill={C.gold} stroke={C.ink} strokeWidth={3} />
+    <circle cx={-30} cy={44} r={5} fill={C.goldLight} stroke={C.ink} strokeWidth={2} />
+    <circle cx={30} cy={44} r={5} fill={C.goldLight} stroke={C.ink} strokeWidth={2} />
+    {/* Grip */}
+    <rect x={-6} y={50} width={12} height={36} rx={3} fill="#4a2410" stroke={C.ink} strokeWidth={2.5} />
+    <line x1={-6} y1={58} x2={6} y2={62} stroke={C.gold} strokeWidth={2} />
+    <line x1={-6} y1={68} x2={6} y2={72} stroke={C.gold} strokeWidth={2} />
+    {/* Pommel with gem */}
+    <circle cx={0} cy={92} r={12} fill={C.gold} stroke={C.ink} strokeWidth={3} />
+    <circle cx={0} cy={92} r={5} fill={C.red} stroke={C.ink} strokeWidth={2} />
+  </g>
+);
+
+export const Shield: React.FC = () => (
+  <g transform="translate(0 20)">
+    <circle r={58} fill="#78350f" stroke={C.ink} strokeWidth={5} />
+    <circle r={52} fill="#b45309" stroke={C.gold} strokeWidth={3} />
+    <circle r={42} fill="#d97706" />
+    <circle r={28} fill="#f59e0b" stroke={C.ink} strokeWidth={2.5} />
+    <circle r={14} fill={C.goldLight} stroke={C.ink} strokeWidth={3} />
+    {[-32, 32].map((ox) =>
+      [-32, 32].map((oy) => (
+        <circle key={`${ox}-${oy}`} cx={ox} cy={oy} r={4.5} fill={C.goldLight} stroke={C.ink} strokeWidth={1.5} />
+      ))
+    )}
+  </g>
+);
+
+export const Bow: React.FC = () => (
+  <g transform="translate(0 -20)">
+    <path
+      d="M -25 -140 Q 45 0 -25 140"
+      fill="none"
+      stroke="#78350f"
+      strokeWidth={7}
+      strokeLinecap="round"
+    />
+    <path
+      d="M -25 -140 Q 45 0 -25 140"
+      fill="none"
+      stroke={C.gold}
+      strokeWidth={3}
+      strokeDasharray="14 14"
+    />
+    <line x1={-25} y1={-140} x2={-25} y2={140} stroke="#ffffff" strokeWidth={2.5} opacity={0.8} />
+  </g>
+);
+
+export const Spear: React.FC = () => (
+  <g transform="translate(0 -160) rotate(-10)">
+    <line x1={0} y1={280} x2={0} y2={-160} stroke="#451a03" strokeWidth={8} strokeLinecap="round" />
+    <line x1={-2} y1={260} x2={-2} y2={-150} stroke={C.gold} strokeWidth={2} opacity={0.6} />
+    <polygon points="-16,-160 0,-240 16,-160 0,-140" fill="#e2e8f0" stroke={C.ink} strokeWidth={3.5} />
+    <line x1={0} y1={-150} x2={0} y2={-230} stroke="#94a3b8" strokeWidth={2} />
+    <path d="M -12 -140 L 0 -110 L 12 -140 Z" fill="#dc2626" />
+  </g>
+);
+
+/* ========================= ACTION & COMBAT FX ======================= */
+export const ClashSparks: React.FC<{x: number; y: number; triggerFrame: number; frame: number}> = ({
+  x,
+  y,
+  triggerFrame,
+  frame,
+}) => {
+  const dt = frame - triggerFrame;
+  if (dt < 0 || dt > 16) return null;
+  const progress = dt / 16;
+  const radius = progress * 160;
+  const opacity = 1 - progress;
+
+  return (
+    <g transform={`translate(${x} ${y})`} opacity={opacity}>
+      <circle r={radius * 0.4} fill="#fffae0" opacity={0.8} />
+      <circle r={radius * 0.7} fill="#f59e0b" opacity={0.4} />
+      {Array.from({length: 8}).map((_, i) => {
+        const ang = (i * Math.PI) / 4 + progress * 0.5;
+        const dist = radius * (0.8 + 0.4 * (i % 2));
+        const px = Math.cos(ang) * dist;
+        const py = Math.sin(ang) * dist;
+        return (
+          <line
+            key={i}
+            x1={px * 0.3}
+            y1={py * 0.3}
+            x2={px}
+            y2={py}
+            stroke={i % 2 === 0 ? "#ffffff" : "#f59e0b"}
+            strokeWidth={4 * (1 - progress)}
+            strokeLinecap="round"
+          />
+        );
+      })}
+    </g>
+  );
+};
+
+export const SlashTrail: React.FC<{
+  cx: number;
+  cy: number;
+  radius?: number;
+  startAngle?: number;
+  endAngle?: number;
+  frame: number;
+  startFrame: number;
+  duration?: number;
+}> = ({cx, cy, radius = 200, startAngle = -45, endAngle = 75, frame, startFrame, duration = 8}) => {
+  const dt = frame - startFrame;
+  if (dt < 0 || dt > duration) return null;
+  const t = dt / duration;
+  const op = (1 - t) * 0.85;
+
+  const a1 = (startAngle * Math.PI) / 180;
+  const a2 = ((startAngle + (endAngle - startAngle) * Math.min(1, t * 1.5)) * Math.PI) / 180;
+  const x1 = cx + Math.cos(a1) * radius;
+  const y1 = cy + Math.sin(a1) * radius;
+  const x2 = cx + Math.cos(a2) * radius;
+  const y2 = cy + Math.sin(a2) * radius;
+
+  return (
+    <g opacity={op} style={{mixBlendMode: "screen"}}>
+      <path
+        d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth={14 * (1 - t)}
+        strokeLinecap="round"
+      />
+      <path
+        d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
+        fill="none"
+        stroke="#ffd54f"
+        strokeWidth={28 * (1 - t)}
+        strokeLinecap="round"
+        opacity={0.6}
+      />
+    </g>
+  );
+};
+
+export const FlyingArrows: React.FC<{frame: number; count?: number}> = ({frame, count = 6}) => {
+  return (
+    <g>
+      {Array.from({length: count}).map((_, i) => {
+        const offset = i * 22;
+        const progress = ((frame + offset) % 60) / 60;
+        const x = -100 + progress * 1300;
+        const y = 350 + i * 110 + Math.sin(progress * Math.PI) * -80;
+        const rot = -15 + progress * 35;
+        return (
+          <g key={i} transform={`translate(${x} ${y}) rotate(${rot})`}>
+            <line x1={-90} y1={0} x2={0} y2={0} stroke="#ffd54f" strokeWidth={3} opacity={0.5} strokeDasharray="6 6" />
+            <line x1={-60} y1={0} x2={0} y2={0} stroke="#451a03" strokeWidth={4} />
+            <polygon points="0,-6 16,0 0,6" fill="#e2e8f0" stroke="#000" strokeWidth={1.5} />
+            <polygon points="-60,-8 -46,0 -60,8 -54,0" fill="#dc2626" />
+          </g>
+        );
+      })}
+    </g>
+  );
+};
+
+export const ArmyMarch: React.FC<{frame: number; direction?: 1 | -1}> = ({frame, direction = 1}) => {
+  return (
+    <g opacity={0.65} transform={`scale(${direction} 1)`}>
+      {Array.from({length: 12}).map((_, i) => {
+        const baseX = (i * 120 + frame * 1.5 * direction) % 1500 - 200;
+        const step = Math.sin((frame + i * 7) * 0.25) * 8;
+        const y = 1380 + (i % 2) * 40;
+        return (
+          <g key={i} transform={`translate(${baseX} ${y})`}>
+            <line x1={0} y1={-180} x2={0} y2={20} stroke="#1f2937" strokeWidth={4} />
+            <polygon points="-6,-180 0,-215 6,-180" fill="#cbd5e1" stroke="#1f2937" strokeWidth={2} />
+            {i % 3 === 0 ? (
+              <path
+                d={`M 0 -195 Q 25 ${-205 + Math.sin(frame * 0.15 + i) * 6} 45 -195 L 35 -175 Q 18 -180 0 -175 Z`}
+                fill="#dc2626"
+                stroke="#1f2937"
+                strokeWidth={1.5}
+              />
+            ) : null}
+            <circle cx={-10} cy={-60} r={18} fill="#27272a" />
+            <polygon points="-16,-68 -10,-88 -4,-68" fill="#d97706" />
+            <rect x={-22} y={-42} width={24} height={42} rx={6} fill="#18181b" />
+            <line x1={-16} y1={0} x2={-16 + step} y2={45} stroke="#18181b" strokeWidth={8} strokeLinecap="round" />
+            <line x1={-6} y1={0} x2={-6 - step} y2={45} stroke="#18181b" strokeWidth={8} strokeLinecap="round" />
+          </g>
+        );
+      })}
+    </g>
+  );
+};
 
 const Arm: React.FC<{x: number; y: number; a1: number; a2: number; sign: 1 | -1; skin: string; prop?: React.ReactNode}> = ({
   x,
@@ -291,6 +543,7 @@ export type CharSpec = {
   speaking?: boolean;
   enterAt?: number;
   seed?: number;
+  walk?: boolean | {speed?: number; run?: boolean};
 };
 
 export const PuppetCharacter: React.FC<CharSpec> = ({
@@ -303,13 +556,31 @@ export const PuppetCharacter: React.FC<CharSpec> = ({
   speaking = false,
   enterAt = 0,
   seed = 0,
+  walk = false,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const look: Look = typeof lookIn === "string" ? LOOKS[lookIn] ?? LOOKS.warrior : lookIn;
   const f = frame + seed * 23;
 
-  const pose = blendPose(keys, frame);
+  const isWalking = Boolean(walk);
+  const walkSpeed = typeof walk === "object" && walk.speed ? walk.speed : typeof walk === "object" && walk.run ? 0.38 : 0.22;
+  const isRun = typeof walk === "object" ? Boolean(walk.run) : false;
+
+  const basePose = blendPose(keys, frame);
+  const walkData = isWalking ? calcWalkPose(frame, walkSpeed, isRun) : null;
+  const pose: Pose = walkData
+    ? {
+        armA: walkData.pose.armA,
+        armB: walkData.pose.armB,
+        legA: walkData.pose.legA,
+        legB: walkData.pose.legB,
+        head: basePose.head + walkData.pose.head,
+        lean: basePose.lean + walkData.pose.lean,
+      }
+    : basePose;
+  const walkBob = walkData ? -walkData.bobY : 0;
+
   const pop = spring({frame: frame - enterAt, fps, config: {damping: 15, stiffness: 80}});
   const opacity = interpolate(frame, [enterAt, enterAt + 8], [0, 1], {
     extrapolateLeft: "clamp",
@@ -317,23 +588,38 @@ export const PuppetCharacter: React.FC<CharSpec> = ({
   });
 
   const breath = 1 + Math.sin(f / 16) * 0.008;
-  const sway = Math.sin(f / 21) * 1.6;
+  const sway = isWalking ? 0 : Math.sin(f / 21) * 1.6;
   const bob = speaking ? Math.sin(frame * 0.45) * 2.5 : 0;
 
-  const swayA = Math.sin(f / 19) * 2;
-  const swayB = Math.cos(f / 17) * 2;
+  const swayA = isWalking ? 0 : Math.sin(f / 19) * 2;
+  const swayB = isWalking ? 0 : Math.cos(f / 17) * 2;
   const armA: Limb = [pose.armA[0] + swayA, pose.armA[1] + swayB];
   const armB: Limb = [pose.armB[0] + swayB, pose.armB[1] + swayA];
 
   const skin = look.skin;
   const dhoti = look.dhoti ?? C.red;
-  const maceA = look.prop === "mace" && look.propHand === "A";
-  const maceB = look.prop === "mace" && look.propHand !== "A";
+
+  const renderProp = (hand: "A" | "B") => {
+    const isPrimaryHand = look.propHand ? look.propHand === hand : hand === "B";
+    const isSecondaryHand = look.secondaryPropHand ? look.secondaryPropHand === hand : hand === "A";
+
+    if (isSecondaryHand && look.secondaryProp === "shield") {
+      return <Shield />;
+    }
+    if (isPrimaryHand) {
+      if (look.prop === "mace") return <Mace />;
+      if (look.prop === "sword") return <Sword />;
+      if (look.prop === "shield") return <Shield />;
+      if (look.prop === "bow") return <Bow />;
+      if (look.prop === "spear") return <Spear />;
+    }
+    return null;
+  };
 
   return (
     <g
       opacity={opacity}
-      transform={`translate(${x} ${y + (1 - pop) * 140}) scale(${flip ? -scale : scale} ${scale})`}
+      transform={`translate(${x} ${y + (1 - pop) * 140 + walkBob}) scale(${flip ? -scale : scale} ${scale})`}
     >
       {/* ground shadow */}
       <ellipse cx={0} cy={292} rx={130} ry={16} fill="#000" opacity={0.35} />
@@ -363,8 +649,8 @@ export const PuppetCharacter: React.FC<CharSpec> = ({
         <circle cx={0} cy={-31} r={6} fill={C.red} stroke={C.ink} strokeWidth={2} />
 
         {/* arms */}
-        <Arm x={-96} y={-196} a1={armA[0]} a2={armA[1]} sign={1} skin={skin} prop={maceA ? <Mace /> : null} />
-        <Arm x={96} y={-196} a1={armB[0]} a2={armB[1]} sign={-1} skin={skin} prop={maceB ? <Mace /> : null} />
+        <Arm x={-96} y={-196} a1={armA[0]} a2={armA[1]} sign={1} skin={skin} prop={renderProp("A")} />
+        <Arm x={96} y={-196} a1={armB[0]} a2={armB[1]} sign={-1} skin={skin} prop={renderProp("B")} />
 
         {/* neck + head */}
         <rect x={-14} y={-246} width={28} height={30} rx={8} fill={skin} stroke={C.ink} strokeWidth={4} />
