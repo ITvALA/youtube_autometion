@@ -1,7 +1,8 @@
 import React from "react";
 import {VoxPal, shade, rgba} from "./types";
+import {Character, Emotion} from "./Character";
 
-export type SvgCharName = "raja" | "king" | "krishna" | "warrior" | "yoddha" | "enemy" | "enemy_king";
+export type SvgCharName = "raja" | "king" | "krishna" | "warrior" | "yoddha" | "enemy" | "enemy_king" | "character" | "human" | "person" | "speaker";
 
 const d = (c: string) => shade(c, 0.75);
 const l = (c: string) => shade(c, 1.35);
@@ -25,6 +26,22 @@ export const SvgCharacter: React.FC<{
   const eyeBlink = (f % 85) > 80;
 
   // 2. Select Character
+  if (charKey === "character" || charKey === "human" || charKey === "person" || charKey === "speaker") {
+    const isTalking = (f % 60) < 42;
+    return (
+      <svg viewBox="0 0 400 500" width={size} height={size} style={{overflow: "visible"}}>
+        <Character
+          x={200}
+          y={460}
+          scale={1.3}
+          emotion="happy"
+          talking={isTalking}
+          shirt={p.c1}
+          pants={p.c2}
+        />
+      </svg>
+    );
+  }
   if (charKey === "krishna") {
     // -------------------------------------------------------------
     // SHRI KRISHNA (Divine Guide & Neetikar)
