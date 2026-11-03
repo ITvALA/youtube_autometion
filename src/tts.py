@@ -304,62 +304,113 @@ def _synth_openai(text, cfg, out):
 
 
 
+_LOCAL_XTTS_MODEL = None
+
 def _synth_raju_clone(text, cfg, out):
-    """Zero-shot voice cloning using Hugging Face XTTS-v2 with native Hindi support, multi-space fallback and monotonic DTS."""
+    """Zero-shot voice cloning using Local XTTS-v2 or Hugging Face XTTS-v2 with native Hindi support."""
     import time
-    from gradio_client import Client
-    primary_space = cfg.get("xtts_space") or "hasanbasbunar/Voice-Cloning-XTTS-v2"
-    all_spaces = cfg.get("xtts_spaces") or [
-        primary_space,
-        "JymNils/Voice-Cloning-XTTS-v2",
-        "minsus/Voice-Cloning-XTTS-v2",
-        "Fatimamirza970/Voice-Cloning-XTTS-v2"
-    ]
-    spaces = [primary_space] + [s for s in all_spaces if s != primary_space]
-    ref_url = cfg.get("reference_audio_url") or "https://raw.githubusercontent.com/ITvALA/youtube_autometion/main/data/voice_references/slice_5s.wav"
+    global _LOCAL_XTTS_MODEL
+
     clean_text = strip_tags(text)
+    local_ref = ROOT / "data" / "voice_references" / "slice_5s.wav"
+    ref_url = cfg.get("reference_audio_url") or "https://raw.githubusercontent.com/ITvALA/youtube_autometion/main/data/voice_references/slice_5s.wav"
     raw_token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HUGGINGFACE_API_KEY") or None
     token = str(raw_token).strip() if raw_token else None
 
     last_err = None
     res = None
-    for space in spaces:
-        for attempt in range(1, 3):
-            try:
-                print(f"[XTTS-v2] Synthesizing scene via {space} (attempt {attempt}/2)...")
-                cl = Client(space, token=token)
+
+    # 1. Try Local Coqui XTTS-v2 first if installed
+    try:
+        from TTS.api import TTS
+        os.environ["COQUI_TOS_AGREED"] = "1"
+        print("[XTTS-v2] Synthesizing scene via local Coqui XTTS-v2 on CPU...")
+        if _LOCAL_XTTS_MODEL is None:
+            _LOCAL_XTTS_MODEL = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to("cpu")
+        
+        temp_wav = Path(out).with_suffix(".local_xtts.wav")
+        _LOCAL_XTTS_MODEL.tts_to_file(
+            text=clean_text,
+            speaker_wav=str(local_ref) if local_ref.exists() else str(ref_url),
+            language="hi",
+            file_path=str(temp_wav),
+            speed=float(cfg.get("speed", 1.0))
+        )
+        if temp_wav.exists() and temp_wav.stat().st_size > 1000:
+            res = str(temp_wav)
+            print("[XTTS-v2] Local XTTS-v2 synthesis succeeded!")
+    except Exception as local_e:
+        print(f"[XTTS-v2] Local XTTS not active ({local_e}), falling back to HF Spaces...")
+
+    # 2. Fallback to Hugging Face XTTS-v2 Spaces if local is not available
+    if not res:
+        from gradio_client import Client
+        try:
+            from gradio_client import handle_file
+            has_handle_file = True
+        except ImportError:
+            has_handle_file = False
+
+        ref_input = handle_file(str(local_ref)) if (has_handle_file and local_ref.exists()) else (str(local_ref) if local_ref.exists() else ref_url)
+
+        primary_space = cfg.get("xtts_space") or "hasanbasbunar/Voice-Cloning-XTTS-v2"
+        all_spaces = cfg.get("xtts_spaces") or [
+            primary_space,
+            "JymNils/Voice-Cloning-XTTS-v2",
+            "minsus/Voice-Cloning-XTTS-v2",
+            "Fatimamirza970/Voice-Cloning-XTTS-v2",
+            "coqui/XTTS-v2",
+            "asigalov61/XTTS-v2",
+        ]
+        spaces = [primary_space] + [s for s in all_spaces if s != primary_space]
+
+        for space in spaces:
+            for attempt in range(1, 3):
                 try:
-                    res = cl.predict(
-                        text=clean_text,
-                        reference_audio_url=ref_url,
-                        language="Hindi",
-                        temperature=float(cfg.get("temperature", 0.75)),
-                        speed=float(cfg.get("speed", 1.0)),
-                        api_name="/voice_clone_synthesis"
-                    )
-                except Exception as pe:
-                    # In case space requires example_audio_name or different signature
-                    res = cl.predict(
-                        text=clean_text,
-                        reference_audio_url=ref_url,
-                        example_audio_name=None,
-                        language="Hindi",
-                        temperature=float(cfg.get("temperature", 0.75)),
-                        speed=float(cfg.get("speed", 1.0)),
-                        api_name="/voice_clone_synthesis"
-                    )
-                if res and Path(res).exists() and Path(res).stat().st_size > 1000:
-                    print(f"[XTTS-v2] Success on {space}!")
-                    break
-            except Exception as se:
-                err_str = str(se)
-                print(f"[XTTS-v2] {space} attempt {attempt} failed: {err_str[:120]}")
-                last_err = se
-                if "ZeroGPU" in err_str or "quota" in err_str or "exceeded" in err_str:
-                    break
-                time.sleep(3)
-        if res and Path(res).exists() and Path(res).stat().st_size > 1000:
-            break
+                    print(f"[XTTS-v2] Synthesizing scene via {space} (attempt {attempt}/2)...")
+                    cl = Client(space, token=token)
+                    try:
+                        res = cl.predict(
+                            text=clean_text,
+                            reference_audio_url=ref_input,
+                            language="Hindi",
+                            temperature=float(cfg.get("temperature", 0.75)),
+                            speed=float(cfg.get("speed", 1.0)),
+                            api_name="/voice_clone_synthesis"
+                        )
+                    except Exception as pe:
+                        # Fallback signature with example_audio_name=None or raw url
+                        try:
+                            res = cl.predict(
+                                text=clean_text,
+                                reference_audio_url=ref_input,
+                                example_audio_name=None,
+                                language="Hindi",
+                                temperature=float(cfg.get("temperature", 0.75)),
+                                speed=float(cfg.get("speed", 1.0)),
+                                api_name="/voice_clone_synthesis"
+                            )
+                        except Exception:
+                            res = cl.predict(
+                                text=clean_text,
+                                reference_audio_url=ref_url,
+                                language="Hindi",
+                                temperature=float(cfg.get("temperature", 0.75)),
+                                speed=float(cfg.get("speed", 1.0)),
+                                api_name="/voice_clone_synthesis"
+                            )
+                    if res and Path(res).exists() and Path(res).stat().st_size > 1000:
+                        print(f"[XTTS-v2] Success on {space}!")
+                        break
+                except Exception as se:
+                    err_str = str(se)
+                    print(f"[XTTS-v2] {space} attempt {attempt} failed: {err_str[:120]}")
+                    last_err = se
+                    if "ZeroGPU" in err_str or "quota" in err_str or "exceeded" in err_str:
+                        break
+                    time.sleep(3)
+            if res and Path(res).exists() and Path(res).stat().st_size > 1000:
+                break
 
     if not res or not Path(res).exists():
         raise RuntimeError(f"XTTS-v2 synthesis failed after retries: {last_err}")

@@ -57,7 +57,22 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - if: steps.guard.outputs.skip != 'true'
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu || true
+          pip install TTS || true
+
+      # ── Cache XTTS-v2 Local Model weights so it loads instantly from cache ──
+      - name: Cache XTTS-v2 Local Model
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/tts
+            ~/.cache/huggingface
+          key: xtts-v2-weights-v1
+          restore-keys: |
+            xtts-v2-weights-
 
       - if: steps.guard.outputs.skip != 'true'
         uses: actions/cache@v4
