@@ -1,5 +1,6 @@
 """Daily pipeline: book -> template & theme -> plan (Claude) -> voice+BGM -> Remotion -> final.mp4
 Strictly 9:16 vertical 1080x1920 with 22 dynamic visual templates.
+Also supports MINDSPARK Mythology Shorts (--mode myth).
 """
 import os, sys, re, random, shutil, argparse, datetime, subprocess, pathlib
 from pathlib import Path
@@ -22,6 +23,7 @@ import theme_engine, template_engine, style_engine, llm, tts, audio, notify
 
 THEME_HIST = ROOT / "data" / "theme_history.json"
 slug = lambda s: re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+
 
 def pick_book(history, forced=None):
     books = jload(ROOT / "data" / "books.json", [])
@@ -49,6 +51,7 @@ def pick_book(history, forced=None):
         left = books
     return random.choice(left)
 
+
 def verify_resolution(video_path):
     """Verifies that the generated video is strictly 1080x1920 using ffprobe."""
     try:
@@ -65,10 +68,182 @@ def verify_resolution(video_path):
         print(f"⚠️ ffprobe check warning: {e}")
         return 1080, 1920
 
+
+def ensure_myth_audio():
+    """Ensure all required myth audio files exist."""
+    score_path = ROOT / "remotion" / "public" / "myth-audio" / "score.wav"
+    if not score_path.exists():
+        print("[Myth] Generating myth audio files...")
+        node = shutil.which("node") or "node"
+        subprocess.run([node, str(ROOT / "scripts" / "make-myth-audio.mjs")], cwd=ROOT, check=True)
+
+
+def pick_myth_topic(forced=None):
+    topics = jload(ROOT / "data" / "myth_topics.json", [])
+    if forced:
+        for t in topics:
+            if t["title"].lower() == forced.lower() or t.get("topic", "").lower() == forced.lower():
+                return t
+        return {"title": forced, "summary": forced}
+    if not topics:
+        return {"title": "श्रीकृष्ण और अर्जुन: कुरुक्षेत्र का रहस्य", "summary": "कुरुक्षेत्र में गीता ज्ञान और विराट रूप।"}
+    hist = jload(ROOT / "data" / "myth_history.json", [])
+    used = {h.get("topic_title", "") for h in hist[-5:] if isinstance(h, dict)}
+    left = [t for t in topics if t.get("title") not in used]
+    if not left:
+        left = topics
+    return random.choice(left)
+
+
+def run_myth_pipeline(a, voice_cfg, custom_script=None):
+    print("=" * 60)
+    print("🔱 MINDSPARK MYTHOLOGY SHORTS PIPELINE (MythShort)")
+    print("=" * 60)
+
+    ensure_myth_audio()
+
+    if custom_script:
+        first_line = custom_script.split("\n")[0].strip()
+        short_title = " ".join(first_line.split()[:5]).title() or "पौराणिक गाथा"
+        topic = {"title": short_title, "summary": custom_script}
+    else:
+        topic = pick_myth_topic(a.book)
+
+    print(f"📖 Myth Topic: {topic['title']}")
+
+    seed = int(datetime.datetime.now().timestamp() * 1000) % 1000000
+    print(f"🎲 Seed per video: {seed}")
+
+    plan = llm.make_myth_plan(topic, custom_script=custom_script)
+
+    unique_ts = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    key = f"{unique_ts}_myth_{slug(topic['title'])}"
+    work = ROOT / "data" / "work" / key
+    out = ROOT / "data" / "output" / key
+    work.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
+
+    # Voiceover generation per scene
+    print(f"🎙️ Synthesizing scene voiceovers via {voice_cfg.get('provider', 'raju_clone')}...")
+    rem_voice_dir = ROOT / "remotion" / "public" / "voice" / key
+    pub_voice_dir = ROOT / "public" / "voice" / key
+    rem_voice_dir.mkdir(parents=True, exist_ok=True)
+    pub_voice_dir.mkdir(parents=True, exist_ok=True)
+
+    for i, sc in enumerate(plan["scenes"]):
+        raw_mp3 = work / f"s{i}_raw.mp3"
+        voice_rel = f"voice/{key}/s{i}.mp3"
+        dest_rem = rem_voice_dir / f"s{i}.mp3"
+        dest_pub = pub_voice_dir / f"s{i}.mp3"
+
+        narr_text = sc.get("narration", "").strip()
+        tts.synth_speech(narr_text, voice_cfg, raw_mp3)
+        shutil.copyfile(raw_mp3, dest_rem)
+        shutil.copyfile(raw_mp3, dest_pub)
+
+        try:
+            v_sec = round(tts.dur(raw_mp3), 3)
+        except Exception:
+            v_sec = float(sc.get("sec", 5))
+
+        sc["voice"] = voice_rel
+        sc["voiceSec"] = v_sec
+        print(f"  [Scene {i}] {v_sec}s | {sc.get('beat')} | voice: {voice_rel}")
+
+    myth_props = {
+        "scenes": plan["scenes"],
+        "seed": seed,
+        "music": True,
+        "sfx": True,
+        "musicVol": 0.5,
+        "duckedVol": 0.2,
+        "voiceVol": 1.0
+    }
+    jsave(work / "myth_props.json", myth_props)
+
+    print("🎬 Rendering MythShort via Remotion...")
+    rendered_mp4 = work / "rendered.mp4"
+    npx = shutil.which("npx.cmd") or shutil.which("npx") or "npx.cmd"
+    subprocess.run([
+        npx, "remotion", "render", "src/index.ts", "MythShort", str(rendered_mp4),
+        f"--props={(work / 'myth_props.json').resolve().as_posix()}"
+    ], cwd=ROOT / "remotion", check=True)
+
+    # Encode to ~16 MB target bitrate for Telegram
+    final = out / "final.mp4"
+    dur = 35.0
+    try:
+        dur = float(subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", str(rendered_mp4)],
+            capture_output=True, text=True, check=True).stdout.strip())
+    except Exception:
+        pass
+
+    v_kbps = int(max(800, min(5000, (16 * 8 * 1024) / max(dur, 1.0) - 128)))
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error", "-i", str(rendered_mp4),
+        "-c:v", "libx264", "-preset", "medium", "-b:v", f"{v_kbps}k", "-maxrate", f"{int(v_kbps * 1.3)}k",
+        "-bufsize", f"{v_kbps * 2}k", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+        "-c:a", "aac", "-b:a", "128k", "-shortest", str(final)
+    ], check=True)
+    print(f"📦 Final MythShort video: {final.stat().st_size / 1048576:.1f} MB ({v_kbps} kbps video)")
+
+    # Strict resolution verification
+    w, h = verify_resolution(final)
+    print(f"📏 Output video dimensions: {w}x{h}")
+    if (w, h) != (1080, 1920):
+        error_msg = f"❌ Format violation: Video resolution is {w}x{h}, expected 1080x1920!"
+        print(error_msg)
+        notify.send_msg(error_msg)
+        raise RuntimeError(error_msg)
+
+    # Metadata & History
+    y = plan.get("youtube", {})
+    meta = {
+        "mode": "myth",
+        "topic": topic["title"],
+        "title": y.get("title", f"{topic['title']} | MindSpark"),
+        "description": y.get("description", ""),
+        "tags": y.get("tags", []),
+        "privacy": os.environ.get("YOUTUBE_PRIVACY", "public"),
+        "seed": seed,
+        "scenes_count": len(plan["scenes"])
+    }
+    jsave(out / "meta.json", meta)
+    jsave(out / "plan.json", myth_props)
+
+    myth_hist = jload(ROOT / "data" / "myth_history.json", [])
+    myth_hist.append({
+        "topic_title": topic["title"],
+        "date": str(datetime.date.today()),
+        "seed": seed,
+        "video_key": key
+    })
+    jsave(ROOT / "data" / "myth_history.json", myth_hist)
+
+    # Telegram notification
+    caption = (
+        f"🔱 *{y.get('title', topic['title'])}*\n\n"
+        f"✨ MindSpark Mythology Shorts (MythShort)\n"
+        f"🎲 Seed: {seed} | 9:16 Vertical"
+    )
+    try:
+        vline = tts.voice_summary()
+        if vline:
+            caption += f"\n🎙️ {vline}"
+    except Exception as e:
+        print(f"[Pipeline] voice summary skipped: {e}")
+
+    notify.send(final, caption, video_dir=out)
+    print("DONE:", final)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--book")
     ap.add_argument("--script", help="Custom user script or arbitrary topic")
+    ap.add_argument("--mode", choices=["book", "myth"], default="book", help="Pipeline mode: 'book' (default) or 'myth'")
+    ap.add_argument("--myth", action="store_true", help="Shortcut for --mode myth")
     ap.add_argument("--template")
     ap.add_argument("--style", help="Force Vox style ID (v001 ... v212)")
     ap.add_argument("--headless", action="store_true", help="CI mode (kept for clarity)")
@@ -89,6 +264,11 @@ def main():
             print("[Pipeline] Loaded custom script from Telegram!")
         except Exception as se:
             print(f"[Pipeline] Warning reading custom_script.txt: {se}")
+
+    mode = "myth" if a.myth else a.mode
+    if mode == "myth":
+        run_myth_pipeline(a, voice_cfg, custom_script=custom_script)
+        return
 
     if custom_script:
         # Generate short title from first words

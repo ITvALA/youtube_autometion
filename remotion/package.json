@@ -7,7 +7,10 @@
     "demo:anime": "remotion render src/index.ts Main out/demo_anime.mp4 --props=../data/demo_anime_plan.json",
     "demo:vox": "remotion render src/index.ts Main out/demo_vox.mp4 --props=../data/demo_plan_vox.json",
     "demo:story": "remotion render src/index.ts Main out/story_demo.mp4 --props=../data/demo_plan_story.json",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "myth:audio": "node ../scripts/make-myth-audio.mjs",
+    "myth:preview": "remotion preview src/index.ts MythShort",
+    "myth:render": "remotion render src/index.ts MythShort out/myth_demo.mp4"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",

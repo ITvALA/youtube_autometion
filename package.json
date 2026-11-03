@@ -1,0 +1,11 @@
+{
+  "name": "mindspark-root",
+  "private": true,
+  "scripts": {
+    "myth:audio": "node scripts/make-myth-audio.mjs",
+    "myth:preview": "npm run --prefix remotion myth:preview",
+    "myth:render": "npm run --prefix remotion myth:render",
+    "check": "npm run --prefix remotion check"
+  }
+}
+

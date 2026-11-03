@@ -715,3 +715,263 @@ def generate_fallback_plan(book, custom_script=None):
             }
         ]
     }
+
+
+# ==============================================================================
+# MINDSPARK MYTHOLOGY SHORTS ENGINE (MythShort)
+# ==============================================================================
+
+ROSTER_GODS = {
+    "krishna", "rama", "hanuman", "shiva", "vishnu", "brahma",
+    "ganesha", "kartikeya", "indra", "surya", "vayu", "varuna",
+    "durga", "lakshmi", "saraswati", "parvati", "kali", "narasimha",
+    "ravana", "asura"
+}
+MYTH_BEATS = {"intro", "talk", "reveal", "fight", "victory"}
+MYTH_BGS = {"forest", "pond", "temple", "battlefield", "sky"}
+MYTH_POSES = {"stand", "sit", "fly", "fight"}
+MYTH_WEAPONS = {"none", "gada", "bow", "trishul", "chakra", "sword"}
+MYTH_SHOTS = {"wide", "medium", "closeup", "extreme", "low", "high", "dutch", "side", "sideR", "over"}
+MYTH_MOVES = {"still", "pushIn", "pullOut", "panL", "panR", "tiltUp", "craneDown", "orbit", "shake", "whip"}
+
+
+def validate_myth_plan(plan):
+    """Validator: reject unknown character ids, missing fields, or scenes under 3s."""
+    if not isinstance(plan, dict):
+        return "Plan must be a JSON object"
+    scenes = plan.get("scenes")
+    if not isinstance(scenes, list) or len(scenes) < 5 or len(scenes) > 10:
+        return f"scenes must be a list of 5 to 10 scenes, got {len(scenes) if isinstance(scenes, list) else type(scenes)}"
+
+    for idx, sc in enumerate(scenes):
+        if not isinstance(sc, dict):
+            return f"scene {idx} must be an object"
+        sec = sc.get("sec")
+        if not isinstance(sec, (int, float)) or sec < 3:
+            return f"scene {idx}: sec must be >= 3 seconds, got {sec}"
+
+        beat = sc.get("beat")
+        if beat not in MYTH_BEATS:
+            return f"scene {idx}: invalid beat '{beat}'. Allowed: {sorted(list(MYTH_BEATS))}"
+
+        bg = sc.get("bg")
+        if bg not in MYTH_BGS:
+            return f"scene {idx}: invalid bg '{bg}'. Allowed: {sorted(list(MYTH_BGS))}"
+
+        caption = sc.get("caption")
+        if not isinstance(caption, dict) or not caption.get("title") or not caption.get("text"):
+            return f"scene {idx}: caption must have 'title' and 'text'"
+
+        narr = sc.get("narration")
+        if not isinstance(narr, str) or not narr.strip():
+            return f"scene {idx}: narration must be a non-empty Hindi string"
+
+        actors = sc.get("actors")
+        if not isinstance(actors, list) or len(actors) == 0:
+            return f"scene {idx}: actors must be a non-empty list"
+
+        for a_idx, act in enumerate(actors):
+            if not isinstance(act, dict):
+                return f"scene {idx} actor {a_idx} must be an object"
+            who = str(act.get("who", "")).lower()
+            if who not in ROSTER_GODS:
+                return f"scene {idx} actor {a_idx}: unknown god '{who}'. Allowed: {sorted(list(ROSTER_GODS))}"
+            act["who"] = who
+
+            pose = act.get("pose", "stand")
+            if pose not in MYTH_POSES:
+                act["pose"] = "stand"
+
+            x = act.get("x", 540)
+            if not isinstance(x, (int, float)):
+                act["x"] = 540
+            else:
+                act["x"] = max(200, min(880, int(x)))
+
+            w = act.get("weapon")
+            if w and w not in MYTH_WEAPONS:
+                act["weapon"] = "none"
+
+        cam = sc.get("camera")
+        if isinstance(cam, dict):
+            shot = cam.get("shot")
+            move = cam.get("move")
+            if shot and shot not in MYTH_SHOTS:
+                cam.pop("shot", None)
+            if move and move not in MYTH_MOVES:
+                cam.pop("move", None)
+
+    return None
+
+
+def generate_fallback_myth_plan(topic=None):
+    title = topic if isinstance(topic, str) and topic.strip() else "श्रीकृष्ण और अर्जुन: कुरुक्षेत्र का रहस्य"
+    return {
+        "youtube": {
+            "title": f"{title} ⚔️ | MindSpark Mythology",
+            "description": f"{title} - भारतीय पौराणिक कथाओं का अद्भुत रहस्य और धर्म युद्ध। #Mythology #Shorts #MindSpark #Mahabharat",
+            "tags": ["MindSpark", "Mythology", "Shorts", "Mahabharat", "Krishna", "ShriKrishna", "Hindi"]
+        },
+        "scenes": [
+            {
+                "sec": 5,
+                "beat": "intro",
+                "bg": "temple",
+                "actors": [{"who": "ravana", "pose": "stand", "x": 540, "weapon": "gada"}],
+                "caption": {"title": "५००० सैनिक बनाम १ लाख", "text": "राजा युद्ध से पहले घबरा गया..."},
+                "narration": "५००० सैनिक और सामने १ लाख की फ़ौज! राजा महायुद्ध से पहले घबरा गया।",
+                "focus": 0
+            },
+            {
+                "sec": 6,
+                "beat": "talk",
+                "bg": "forest",
+                "actors": [
+                    {"who": "rama", "pose": "stand", "x": 330, "weapon": "bow"},
+                    {"who": "krishna", "pose": "stand", "x": 760, "flip": True}
+                ],
+                "caption": {"title": "राजा का प्रश्न", "text": "'प्रभु, हम इस महायुद्ध को कैसे जीतेंगे?'"},
+                "narration": "राजा ने पूछा, 'हे प्रभु, इतनी विशाल सेना के सामने हम धर्म युद्ध कैसे जीतेंगे?'",
+                "focus": 1
+            },
+            {
+                "sec": 5,
+                "beat": "reveal",
+                "bg": "pond",
+                "actors": [{"who": "krishna", "pose": "sit", "x": 540}],
+                "caption": {"title": "श्रीकृष्ण का अमर रहस्य", "text": "'एक संकल्पी योद्धा सौ पर भारी है!'"},
+                "narration": "श्रीकृष्ण मुस्कुराए और बोले, 'युद्ध अस्त्रों से नहीं, अटल संकल्प और रणनीति से जीता जाता है!'",
+                "focus": 0
+            },
+            {
+                "sec": 7,
+                "beat": "fight",
+                "bg": "battlefield",
+                "actors": [
+                    {"who": "hanuman", "pose": "fly", "x": 300, "weapon": "gada"},
+                    {"who": "asura", "pose": "fight", "x": 800, "flip": True, "weapon": "sword"}
+                ],
+                "caption": {"title": "रणभूमि में महाप्रहार", "text": "गदा और चक्र से दुश्मन सेना के पसीने छूटे!"},
+                "narration": "रणभूमि में महाबली हनुमान ने गदा का ऐसा प्रचंड प्रहार किया कि शत्रु कांप उठे!",
+                "focus": 0
+            },
+            {
+                "sec": 6,
+                "beat": "victory",
+                "bg": "sky",
+                "actors": [
+                    {"who": "krishna", "pose": "stand", "x": 700, "weapon": "chakra"},
+                    {"who": "rama", "pose": "stand", "x": 360, "weapon": "bow"}
+                ],
+                "caption": {"title": "सत्य और धर्म की विजय", "text": "बोलो श्रीकृष्ण भगवान की जय!"},
+                "narration": "अंत में धर्म और सत्य की ही महाविजय हुई। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
+                "focus": 0
+            }
+        ]
+    }
+
+
+def make_myth_plan(topic, custom_script=None):
+    """Generates a strict JSON plan for MINDSPARK Mythology Shorts (MythShort).
+
+    Rules:
+    - 6 to 9 scenes, 4 to 7 seconds each, 35 to 45 seconds total.
+    - Choose characters from ROSTER (2-4 gods per short, villains like ravana/asura where needed).
+    - Choose beat from: intro, talk, reveal, fight, victory.
+    - Choose bg from: forest, pond, temple, battlefield, sky. Vary across scenes.
+    - Captions: short title + one line text (100% Devanagari Hindi).
+    - Narration: 12-18 words per scene in 100% Shuddh Devanagari Hindi.
+    - Last scene concludes with 'MindSpark'.
+    """
+    topic_str = topic.get("title", str(topic)) if isinstance(topic, dict) else str(topic)
+    topic_summary = topic.get("summary", "") if isinstance(topic, dict) else ""
+    if custom_script:
+        story_context = f"Topic: {topic_str}\nCustom Script/Details: {custom_script}"
+    else:
+        story_context = f"Story Topic: {topic_str}\nSummary: {topic_summary}"
+
+    prompt = f"""You are the master script writer and director for MINDSPARK Mythology Shorts.
+Generate an epic Indian mythology YouTube Short (35-45 seconds) based on this story:
+{story_context}
+
+Return ONE valid JSON object only (no markdown, no extra commentary):
+{{
+  "youtube": {{
+    "title": "Epic title under 65 chars with ⚔️/🔱/✨",
+    "description": "2 lines description with #Shorts #Mythology #MindSpark",
+    "tags": ["MindSpark", "Mythology", "Shorts", "HinduMythology", "Hindi"]
+  }},
+  "scenes": [
+    {{
+      "sec": 5,
+      "beat": "intro" | "talk" | "reveal" | "fight" | "victory",
+      "bg": "forest" | "pond" | "temple" | "battlefield" | "sky",
+      "actors": [
+        {{
+          "who": "one of: {', '.join(sorted(list(ROSTER_GODS)))}",
+          "pose": "stand" | "sit" | "fly" | "fight",
+          "x": 350,
+          "weapon": "none" | "gada" | "bow" | "trishul" | "chakra" | "sword",
+          "flip": false
+        }}
+      ],
+      "focus": 0,
+      "caption": {{
+        "title": "Short title in Devanagari Hindi (max 4 words)",
+        "text": "One line text in Devanagari Hindi"
+      }},
+      "narration": "12-18 words in 100% Shuddh Devanagari Hindi. Words must match caption."
+    }}
+  ]
+}}
+
+STRICT RULES:
+1. Scenes count: 6 to 9 scenes. Each scene duration 'sec': 4 to 7 seconds.
+2. Characters: Choose ONLY from allowed gods: {', '.join(sorted(list(ROSTER_GODS)))}.
+   Pick 2 to 4 different characters across the video that fit this legend.
+   For fight scenes, use villains like 'ravana' or 'asura' opposing gods like 'hanuman', 'rama', 'krishna', 'durga', or 'narasimha'.
+3. Poses: 'fight' (weapon swinging, intense), 'fly' (flying in air e.g. hanuman), 'sit' (meditation, blessing), 'stand' (normal).
+4. Backgrounds ('bg'): forest, pond, temple, battlefield, sky. Vary the background across scenes.
+5. Actors placement:
+   - x between 250 and 830.
+   - If 2 actors are in a scene, place one on left (x: 320, flip: false) and one on right (x: 760, flip: true) so they face each other.
+6. Story Beats:
+   - Scene 1: intro
+   - Middle scenes: talk, reveal, fight
+   - Final scene: victory
+7. DEVANAGARI HINDI:
+   - 'caption': title + text strictly in Devanagari Hindi.
+   - 'narration': 100% Shuddh Devanagari Hindi (NO English/Roman script).
+   - Last scene narration MUST conclude with 'MindSpark' (e.g. '...ऐसे और रहस्यों के लिए MindSpark को सब्सक्राइब करें!').
+"""
+
+    err = None
+    for attempt in range(2):
+        try:
+            curr_prompt = prompt
+            if err:
+                curr_prompt += f"\n\nCRITICAL: Your previous output had this error: {err}. Please fix it strictly."
+            txt = _call(curr_prompt)
+            raw = txt.strip()
+            if "{" in raw and "}" in raw:
+                raw = raw[raw.index("{"): raw.rindex("}") + 1]
+            plan = json.loads(raw)
+
+            # Enforce MindSpark brand at the end
+            if plan.get("scenes") and len(plan["scenes"]) > 0:
+                last_s = plan["scenes"][-1]
+                l_narr = last_s.get("narration", "")
+                if "mindspark" not in l_narr.lower() and "माइंडस्पार्क" not in l_narr:
+                    last_s["narration"] = l_narr.rstrip(".! ") + "। ऐसे और अद्भुत गाथाओं के लिए MindSpark को सब्सक्राइब करें!"
+
+            err = validate_myth_plan(plan)
+            if not err:
+                print(f"[LLM] Myth plan generated successfully with {len(plan['scenes'])} scenes!")
+                return plan
+            print(f"[LLM] Myth plan validation failed on attempt {attempt + 1}: {err}")
+        except Exception as e:
+            err = str(e)
+            print(f"[LLM] Myth plan generation attempt {attempt + 1} exception: {err}")
+
+    print(f"[LLM] Live myth plan failed ({err}). Using curated fallback myth plan...")
+    return generate_fallback_myth_plan(topic_str)
