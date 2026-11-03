@@ -3,7 +3,8 @@ import os, time, json, requests
 from pathlib import Path
 
 def send(video, caption, video_dir=None):
-    t, c = os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID")
+    t = (os.environ.get("TELEGRAM_BOT_TOKEN") or "").strip().strip('"').strip("'")
+    c = str(os.environ.get("TELEGRAM_CHAT_ID") or "").strip().strip('"').strip("'")
     if not (t and c):
         print(f"[Telegram Notify] ERROR: Missing TELEGRAM_BOT_TOKEN ({bool(t)}) or TELEGRAM_CHAT_ID ({bool(c)}) in environment/secrets!")
         return
@@ -26,41 +27,41 @@ def send(video, caption, video_dir=None):
     full_caption = (
         f"🎬 *New Reel Ready for Review!*\n\n"
         f"{caption}\n\n"
-        f"👉 Tap *PASS* button  to upload immediately to YouTube!"
+        f"👉 Tap *PASS* button to upload immediately to YouTube!"
     )[:1000]
 
-    with open(video_path, "rb") as f:
+    sent = False
+    for attempt in range(1, 3):
         try:
-            r = requests.post(
-                f"https://api.telegram.org/bot{t}/sendVideo",
-                timeout=300,
-                data={
-                    "chat_id": c,
-                    "caption": full_caption,
-                    "parse_mode": "Markdown",
-                    "supports_streaming": "true",
-                    "reply_markup": json.dumps(reply_markup)
-                },
-                files={"video": f}
-            )
-            if not r.ok:
-                # If markdown fails due to special chars, send as plain text
-                f.seek(0)
+            print(f"[Telegram Notify] Sending video to Telegram (attempt {attempt}/2)...")
+            with open(video_path, "rb") as f:
                 r = requests.post(
                     f"https://api.telegram.org/bot{t}/sendVideo",
                     timeout=300,
                     data={
                         "chat_id": c,
-                        "caption": caption[:900],
+                        "caption": full_caption,
+                        "parse_mode": "Markdown",
                         "supports_streaming": "true",
                         "reply_markup": json.dumps(reply_markup)
                     },
                     files={"video": f}
                 )
+                if not r.ok:
+                    # If markdown fails due to special chars, send as plain text
+                    f.seek(0)
+                    r = requests.post(
+                        f"https://api.telegram.org/bot{t}/sendVideo",
+                        timeout=300,
+                        data={
+                            "chat_id": c,
+                            "caption": caption[:900],
+                            "supports_streaming": "true",
+                            "reply_markup": json.dumps(reply_markup)
+                        },
+                        files={"video": f}
+                    )
 
-            # Record pending video info so telegram_bot can pre-load or instant PASS
-            if not r.ok:
-                print(f"[Telegram Notify] CRITICAL ERROR: Telegram sendVideo failed with code {r.status_code}: {r.text}")
             if r.ok:
                 resp_data = r.json()
                 res = resp_data.get("result", {})
@@ -68,7 +69,6 @@ def send(video, caption, video_dir=None):
                 file_unique_id = res.get("video", {}).get("file_unique_id")
                 msg_id = res.get("message_id")
                 
-                # Check for meta.json
                 target_video_dir = Path(video_dir) if video_dir else video_path.parent
                 meta_path = target_video_dir / "meta.json"
                 meta_data = {}
@@ -95,6 +95,45 @@ def send(video, caption, video_dir=None):
                 with open(root_data / "pending_video.json", "w", encoding="utf-8") as pf:
                     json.dump(pending_info, pf, indent=2)
                 print(f"[Telegram Notify] Video sent. Saved data/pending_video.json for dir '{dir_name}'")
-
+                sent = True
+                break
+            else:
+                print(f"[Telegram Notify] Telegram sendVideo failed ({r.status_code}): {r.text[:200]}")
         except Exception as e:
             print(f"[Telegram Notify] Error sending video: {e}")
+            time.sleep(2)
+
+    # Fallback: send via GitHub Pages stream URL if direct file upload failed or timed out
+    if not sent:
+        try:
+            print("[Telegram Notify] Trying fallback via GitHub Pages stream URL...")
+            r_url = requests.post(
+                f"https://api.telegram.org/bot{t}/sendVideo",
+                timeout=120,
+                data={
+                    "chat_id": c,
+                    "video": "https://itvala.github.io/youtube_autometion/video.mp4",
+                    "caption": caption[:900],
+                    "reply_markup": json.dumps(reply_markup)
+                }
+            )
+            if r_url.ok:
+                print("[Telegram Notify] Fallback stream URL sent successfully!")
+            else:
+                print(f"[Telegram Notify] Fallback stream URL failed ({r_url.status_code}): {r_url.text[:200]}")
+        except Exception as fe:
+            print(f"[Telegram Notify] Fallback URL error: {fe}")
+
+def send_msg(text):
+    t = (os.environ.get("TELEGRAM_BOT_TOKEN") or "").strip().strip('"').strip("'")
+    c = str(os.environ.get("TELEGRAM_CHAT_ID") or "").strip().strip('"').strip("'")
+    if not (t and c):
+        return
+    try:
+        requests.post(
+            f"https://api.telegram.org/bot{t}/sendMessage",
+            timeout=30,
+            data={"chat_id": c, "text": text[:4000]}
+        )
+    except Exception as e:
+        print(f"[Telegram Notify] send_msg error: {e}")
