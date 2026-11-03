@@ -12,7 +12,44 @@ if str(ROOT / "src") not in sys.path:
 
 from common import ROOT, jload
 
-SYSTEM = "You are the master script writer of an epic Indian Storytelling & History YouTube Shorts studio (MindSpark). You create high-suspense, gripping stories combining Mahabharat wisdom, royal Raja-Rajwade war strategies, and untold lok kathayein. You feature 2D characters: 'char:raja', 'char:krishna', and 'char:warrior'. Reply with ONE JSON object only. No markdown, no explanation."
+HINDI_STORYTELLER_SYSTEM = """Tum ek anubhavi Hindi kahani-kaar ho, jo YouTube Shorts aur voiceover ke liye kahaniyan likhte ho. Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekha haal ya dil ki baat, sunaa raha hai. AI ki likhi hui nahi.
+
+## Bhaasha
+- Script hamesha Devanagari me likho. Roman ya English akshar sirf tab, jab koi naam ya shabd zaroori ho.
+- Roz-marra ki bolchaal ki Hindi use karo, jaisi ek kahani sunane wala bolta hai. Bhaari, kitaabi ya shuddh-Sanskrit shabd mat daalo ("tatpashchat", "athaa", "atyant" jaise).
+- Chhote vaakya rakho. Ek vaakya me ek hi baat. Beech-beech me bahut chhote vaakya bhi daalo. Jaise: "Wo ruk gaya. Kuch bola nahi."
+- Vaakyon ki lambai badalte raho. Sab barabar lambe ya sab barabar chhote nahi.
+
+## Wo cheezein jo AI jaisi lagti hain, inse bacho
+- "Aaj ke is video me", "toh doston", "chaliye shuru karte hain" jaisi bhumika ya generic opening nahi. Seedha kahani ke beech se shuru karo, kisi chhoti ghatna ya ek line se.
+- Ye shabd aur dhaancha nahi: "ek anokha safar", "zindagi ka sabak", "yaad rakhiye", "aakhir me", "sach me", "dil ko chhu lene wali", "kya aap jaante hain".
+- Har baar teen cheezon ki list ("pehla, doosra, teesra") mat banao.
+- Har kahani ke ant me moral ya nasihat mat daalo. Kabhi-kabhi ek adhoora-sa, sochne wala ant chhodo.
+- Bahut zyada sajawat wale vishesan mat daalo. Ek sahi, thos shabd teen sundar shabdon se behtar hai.
+- Har paragraph ko ek saaf-suthra nateeje par khatam mat karo.
+- Emoji, hashtag, bullet points, headings script ke andar nahi.
+
+## Insaani ehsaas
+- Ek hi kirdaar ya ek hi nazariye se kahani sunao. Uski sochi hui baat, uska darr, uski jhijhak dikhao.
+- Thos, chhoti detail daalo: koi awaaz, koi cheez, koi mausam. Jaise "chai thandi ho chuki thi", "darwaze ki kundi ghis chuki thi".
+- Kirdaar ko poori tarah achha ya poori tarah bura mat banao. Thodi kamzori rakho.
+- Dialogue chhote aur asli bolchaal jaise rakho. Log poore vaakya me nahi bolte.
+- Bhaavna ko naam mat do ("use bahut dukh hua"). Use dikhao (kya kiya, kaise ruka).
+
+## Voiceover ke liye
+- Pauses ke liye `,` `।` aur `...` ka sahi use karo. Lambe vaakya me kam se kam ek comma rakho.
+- Sankhya, tarikh aur short-forms ko shabdon me likho, taaki TTS sahi bole.
+- Aise shabd mat likho jinka uchcharan TTS ko mushkil ho.
+- Har scene/hissa 2-4 vaakya ka rakho.
+
+## Tone
+- Gripping, mysterious, grounded, deeply human Indian storytelling.
+
+## Output
+- Output must be valid JSON object matching the requested schema. No conversational intro, no extra explanations outside JSON.
+"""
+
+SYSTEM = HINDI_STORYTELLER_SYSTEM
 
 TYPES = {
     "hook", "curve", "dial", "card", "quote", "story", "character", "animeParallax", "motionComic",
@@ -190,24 +227,22 @@ def _call_gemini(prompt):
         raise ValueError("GEMINI_API_KEY is not set.")
     
     models = [
-        "gemini-2.5-flash",
-        "gemini-2.5-pro",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
         "gemini-1.5-pro",
-        "gemini-1.5-flash-8b",
-        "gemini-2.0-flash-exp",
+        "gemini-2.0-flash-lite",
     ]
     headers = {"Content-Type": "application/json"}
     
     last_err = None
     for m in models:
-        # Try v1beta then v1
         for ver in ["v1beta", "v1"]:
             url = f"https://generativelanguage.googleapis.com/{ver}/models/{m}:generateContent?key={key}"
             body = {
                 "contents": [
                     {
                         "role": "user",
-                        "parts": [{"text": SYSTEM + "\n\n" + prompt}]
+                        "parts": [{"text": f"{SYSTEM}\n\n{prompt}"}]
                     }
                 ],
                 "generationConfig": {
@@ -229,10 +264,8 @@ def _call_gemini(prompt):
                             return txt
                 else:
                     err_msg = f"{m} ({ver}) HTTP {r.status_code}: {r.text[:200]}"
-                    print(f"[Gemini] {err_msg}")
                     last_err = err_msg
             except Exception as e:
-                print(f"[Gemini] {m} ({ver}) error: {e}")
                 last_err = str(e)
                 
     raise RuntimeError(f"Gemini API failed: {last_err}")
@@ -244,7 +277,8 @@ def _call_groq(prompt):
         raise ValueError("GROQ_API_KEY is not set.")
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-    models = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
+    models = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b"]
+    last_err = None
     for m in models:
         try:
             body = {
@@ -254,33 +288,70 @@ def _call_groq(prompt):
                     {"role": "user", "content": prompt}
                 ],
                 "temperature": 0.7,
-                "max_tokens": 1500
+                "max_tokens": 2000,
+                "response_format": {"type": "json_object"}
             }
-            r = requests.post(url, headers=headers, json=body, timeout=60)
+            r = requests.post(url, headers=headers, json=body, timeout=45)
             if r.status_code == 200:
                 data = r.json()
                 print(f"[LLM] Generated plan via Groq ({m})!")
                 return data["choices"][0]["message"]["content"]
-        except Exception:
+            else:
+                last_err = f"{m} HTTP {r.status_code}: {r.text[:150]}"
+        except Exception as e:
+            last_err = str(e)
             continue
-    raise RuntimeError("All Groq models failed.")
+    raise RuntimeError(f"All Groq models failed: {last_err}")
+
+
+def _call_openai_relay(prompt):
+    key = os.environ.get("LLM_API_KEY") or os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not key:
+        raise ValueError("LLM_API_KEY is not set.")
+    base = os.environ.get("LLM_BASE_URL", "https://api.llmsrelay.com/v1").rstrip("/")
+    model = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+    url = f"{base}/chat/completions"
+    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+    body = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": SYSTEM},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 2000
+    }
+    r = requests.post(url, headers=headers, json=body, timeout=60)
+    if r.status_code == 200:
+        data = r.json()
+        print(f"[LLM] Generated plan via LLM relay ({model})!")
+        return data["choices"][0]["message"]["content"]
+    raise RuntimeError(f"LLM relay HTTP {r.status_code}: {r.text[:150]}")
 
 
 def _call(prompt):
-    """Primary LLM is Google Gemini (Free & Best for Indian stories). Groq is optional backup."""
+    """Multi-tier LLM engine: Gemini -> Groq -> OpenAI/Relay."""
     errors = []
-    # 1. Primary: Google Gemini
-    try:
-        return _call_gemini(prompt)
-    except Exception as e:
-        errors.append(f"Gemini: {e}")
+    # 1. Google Gemini
+    if os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY_2"):
+        try:
+            return _call_gemini(prompt)
+        except Exception as e:
+            errors.append(f"Gemini: {e}")
 
-    # 2. Backup: Groq (if key set)
+    # 2. Groq (Fast & Free)
     if os.environ.get("GROQ_API_KEY"):
         try:
             return _call_groq(prompt)
         except Exception as e:
             errors.append(f"Groq: {e}")
+
+    # 3. LLM Relay / OpenAI
+    if os.environ.get("LLM_API_KEY") or os.environ.get("ANTHROPIC_API_KEY"):
+        try:
+            return _call_openai_relay(prompt)
+        except Exception as e:
+            errors.append(f"Relay: {e}")
 
     raise RuntimeError("All LLMs failed: " + " | ".join(errors))
 
@@ -806,67 +877,147 @@ def validate_myth_plan(plan):
     return None
 
 
+def _detect_myth_actors_for_topic(title, summary=""):
+    text = (str(title) + " " + str(summary)).lower()
+    if any(k in text for k in ["एकलव्य", "द्रोण", "drona", "eklavya"]):
+        return [
+            [{"who": "drona", "pose": "stand", "x": 540}],
+            [{"who": "shishya", "pose": "pray", "x": 330, "weapon": "bow"}, {"who": "drona", "pose": "stand", "x": 760, "flip": True}],
+            [{"who": "shishya", "pose": "stand", "x": 540, "weapon": "bow"}],
+            [{"who": "drona", "pose": "stand", "x": 350}, {"who": "shishya", "pose": "stand", "x": 760, "flip": True, "weapon": "bow"}],
+            [{"who": "shishya", "pose": "pray", "x": 350}, {"who": "drona", "pose": "stand", "x": 760, "flip": True}],
+            [{"who": "drona", "pose": "stand", "x": 540}]
+        ]
+    if any(k in text for k in ["कर्ण", "परशुराम", "karna", "parashurama"]):
+        return [
+            [{"who": "karna", "pose": "stand", "x": 540, "weapon": "bow"}],
+            [{"who": "guru", "pose": "sit", "x": 350}, {"who": "karna", "pose": "pray", "x": 750, "flip": True}],
+            [{"who": "karna", "pose": "sit", "x": 540}],
+            [{"who": "guru", "pose": "stand", "x": 350}, {"who": "karna", "pose": "stand", "x": 750, "flip": True}],
+            [{"who": "karna", "pose": "stand", "x": 540, "weapon": "bow"}],
+            [{"who": "karna", "pose": "stand", "x": 540, "weapon": "bow"}]
+        ]
+    if any(k in text for k in ["हनुमान", "hanuman", "बजरंग", "सुग्रीव", "वाली"]):
+        return [
+            [{"who": "hanuman", "pose": "stand", "x": 540}],
+            [{"who": "rama", "pose": "stand", "x": 350, "weapon": "bow"}, {"who": "hanuman", "pose": "pray", "x": 760, "flip": True}],
+            [{"who": "hanuman", "pose": "fly", "x": 540, "weapon": "gada"}],
+            [{"who": "hanuman", "pose": "fight", "x": 330, "weapon": "gada"}, {"who": "asura", "pose": "fight", "x": 780, "flip": True, "weapon": "sword"}],
+            [{"who": "hanuman", "pose": "fly", "x": 540, "weapon": "gada"}],
+            [{"who": "hanuman", "pose": "pray", "x": 700, "flip": True}, {"who": "rama", "pose": "stand", "x": 350, "weapon": "bow"}]
+        ]
+    if any(k in text for k in ["रावण", "ravana", "सीता", "लंका", "कुंभकर्ण"]):
+        return [
+            [{"who": "ravana", "pose": "stand", "x": 540, "weapon": "sword"}],
+            [{"who": "rama", "pose": "stand", "x": 350, "weapon": "bow"}, {"who": "lakshmana", "pose": "stand", "x": 750, "flip": True, "weapon": "bow"}],
+            [{"who": "ravana", "pose": "fight", "x": 540, "weapon": "sword"}],
+            [{"who": "rama", "pose": "fight", "x": 320, "weapon": "bow"}, {"who": "ravana", "pose": "fight", "x": 780, "flip": True, "weapon": "sword"}],
+            [{"who": "rama", "pose": "stand", "x": 540, "weapon": "bow"}],
+            [{"who": "rama", "pose": "stand", "x": 540, "weapon": "bow"}]
+        ]
+    if any(k in text for k in ["शिव", "shiva", "महादेव", "भोले", "नंदी", "पार्वती"]):
+        return [
+            [{"who": "shiva", "pose": "sit", "x": 540, "weapon": "trishul"}],
+            [{"who": "rishi", "pose": "pray", "x": 330}, {"who": "shiva", "pose": "sit", "x": 750, "flip": True, "weapon": "trishul"}],
+            [{"who": "shiva", "pose": "stand", "x": 540, "weapon": "trishul"}],
+            [{"who": "shiva", "pose": "fight", "x": 330, "weapon": "trishul"}, {"who": "asura", "pose": "fight", "x": 780, "flip": True, "weapon": "sword"}],
+            [{"who": "shiva", "pose": "sit", "x": 540, "weapon": "trishul"}],
+            [{"who": "shiva", "pose": "stand", "x": 540, "weapon": "trishul"}]
+        ]
+    if any(k in text for k in ["अर्जुन", "arjuna", "गांडीव", "कुरुक्षेत्र"]):
+        return [
+            [{"who": "arjuna", "pose": "stand", "x": 540, "weapon": "bow"}],
+            [{"who": "arjuna", "pose": "pray", "x": 330, "weapon": "bow"}, {"who": "krishna", "pose": "stand", "x": 760, "flip": True}],
+            [{"who": "krishna", "pose": "stand", "x": 540, "weapon": "chakra"}],
+            [{"who": "arjuna", "pose": "fight", "x": 330, "weapon": "bow"}, {"who": "soldier", "pose": "fight", "x": 780, "flip": True, "weapon": "sword"}],
+            [{"who": "krishna", "pose": "stand", "x": 750, "weapon": "chakra", "flip": True}, {"who": "arjuna", "pose": "stand", "x": 350, "weapon": "bow"}],
+            [{"who": "krishna", "pose": "stand", "x": 540}]
+        ]
+    # Default to Krishna & divine wisdom
+    return [
+        [{"who": "krishna", "pose": "stand", "x": 540}],
+        [{"who": "raja", "pose": "stand", "x": 330}, {"who": "krishna", "pose": "stand", "x": 760, "flip": True}],
+        [{"who": "krishna", "pose": "sit", "x": 540}],
+        [{"who": "krishna", "pose": "stand", "x": 350, "weapon": "chakra"}, {"who": "asura", "pose": "fight", "x": 780, "flip": True, "weapon": "sword"}],
+        [{"who": "krishna", "pose": "stand", "x": 540}],
+        [{"who": "krishna", "pose": "stand", "x": 540}]
+    ]
+
+
 def generate_fallback_myth_plan(topic=None):
-    title = topic if isinstance(topic, str) and topic.strip() else "श्रीकृष्ण और अर्जुन: कुरुक्षेत्र का रहस्य"
+    if isinstance(topic, dict):
+        title = topic.get("title", "सनातन का अनसुना रहस्य").strip()
+        summary = topic.get("summary", "").strip()
+    elif isinstance(topic, str) and topic.strip():
+        title = topic.strip()
+        summary = ""
+    else:
+        title = "श्रीकृष्ण और अर्जुन: कुरुक्षेत्र का रहस्य"
+        summary = "कुरुक्षेत्र के रणभूमि में भगवान श्रीकृष्ण द्वारा अर्जुन को दिया गया दिव्य कर्मयोग का उपदेश।"
+
+    actors_seq = _detect_myth_actors_for_topic(title, summary)
+    
+    clean_summary = summary if summary else f"{title} भारतीय इतिहास और सनातन दर्शन का एक अमर अध्याय है।"
+    
     return {
         "youtube": {
             "title": f"{title} ⚔️ | MindSpark Mythology",
             "description": f"{title} - सनातन धर्म और भारतीय पौराणिक कथाओं का अनसुना रहस्य। #Mythology #Shorts #MindSpark #Sanatan",
-            "tags": ["MindSpark", "Mythology", "Shorts", "Sanatan", "Krishna", "ShriKrishna", "Hindi"]
+            "tags": ["MindSpark", "Mythology", "Shorts", "Sanatan", "Hindi", "Vedas", "Mahabharat"]
         },
         "scenes": [
             {
                 "sec": 5,
                 "beat": "intro",
                 "bg": "temple",
-                "actors": [{"who": "krishna", "pose": "stand", "x": 540}],
+                "actors": actors_seq[0],
                 "caption": {"title": "अनसुना रहस्य", "text": "क्या आपको पता है?"},
-                "narration": f"क्या आपको पता है {title} के पीछे छिपा सबसे बड़ा दिव्य रहस्य क्या है?",
+                "narration": f"क्या आपको पता है {title} के पीछे कौन सी सच्ची घटना छिपी है?",
                 "focus": 0
             },
             {
                 "sec": 6,
                 "beat": "talk",
                 "bg": "forest",
-                "actors": [
-                    {"who": "rama", "pose": "stand", "x": 330, "weapon": "bow"},
-                    {"who": "krishna", "pose": "stand", "x": 760, "flip": True}
-                ],
-                "caption": {"title": "राजा का प्रश्न", "text": "'प्रभु, हम इस महायुद्ध को कैसे जीतेंगे?'"},
-                "narration": "राजा ने पूछा, 'हे प्रभु, इतनी विशाल सेना के सामने हम धर्म युद्ध कैसे जीतेंगे?'",
-                "focus": 1
+                "actors": actors_seq[1],
+                "caption": {"title": "घटना का मोड़", "text": "इतिहास का अनकहा सच"},
+                "narration": f"{clean_summary}",
+                "focus": 1 if len(actors_seq[1]) > 1 else 0
             },
             {
                 "sec": 5,
                 "beat": "reveal",
                 "bg": "pond",
-                "actors": [{"who": "krishna", "pose": "sit", "x": 540}],
-                "caption": {"title": "श्रीकृष्ण का अमर रहस्य", "text": "'एक संकल्पी योद्धा सौ पर भारी है!'"},
-                "narration": "श्रीकृष्ण मुस्कुराए और बोले, 'युद्ध अस्त्रों से नहीं, अटल संकल्प और रणनीति से जीता जाता है!'",
+                "actors": actors_seq[2],
+                "caption": {"title": "भीतर का द्वंद्व", "text": "कठिन निर्णय की घड़ी"},
+                "narration": "उस क्षण जब निर्णय लेना सबसे कठिन था, तभी अंतरात्मा की आवाज़ ने नया मार्ग दिखाया।",
                 "focus": 0
             },
             {
-                "sec": 7,
+                "sec": 6,
                 "beat": "fight",
                 "bg": "battlefield",
-                "actors": [
-                    {"who": "hanuman", "pose": "fly", "x": 300, "weapon": "gada"},
-                    {"who": "asura", "pose": "fight", "x": 800, "flip": True, "weapon": "sword"}
-                ],
-                "caption": {"title": "रणभूमि में महाप्रहार", "text": "गदा और चक्र से दुश्मन सेना के पसीने छूटे!"},
-                "narration": "रणभूमि में महाबली हनुमान ने गदा का ऐसा प्रचंड प्रहार किया कि शत्रु कांप उठे!",
+                "actors": actors_seq[3],
+                "caption": {"title": "महा रहस्य", "text": "सच्चाई सामने आई"},
+                "narration": "यही वह मोड़ था जिसने पूरे घटनाक्रम और इतिहास के रुख को हमेशा के लिए बदलकर रख दिया।",
+                "focus": 0
+            },
+            {
+                "sec": 5,
+                "beat": "victory",
+                "bg": "sky",
+                "actors": actors_seq[4],
+                "caption": {"title": "संकल्प की विजय", "text": "सत्य की अटूट शक्ति"},
+                "narration": "अटल संकल्प और सत्य के आगे बड़े से बड़ा संकट भी टिक नहीं सका।",
                 "focus": 0
             },
             {
                 "sec": 6,
                 "beat": "victory",
-                "bg": "sky",
-                "actors": [
-                    {"who": "krishna", "pose": "stand", "x": 700, "weapon": "chakra"},
-                    {"who": "rama", "pose": "stand", "x": 360, "weapon": "bow"}
-                ],
-                "caption": {"title": "सत्य और धर्म की विजय", "text": "बोलो श्रीकृष्ण भगवान की जय!"},
-                "narration": "अंत में धर्म और सत्य की ही महाविजय हुई। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
+                "bg": "temple",
+                "actors": actors_seq[5],
+                "caption": {"title": "सनातन शिक्षा", "text": "MindSpark को सब्सक्राइब करें"},
+                "narration": f"{title} हमें कर्म और निष्ठा की राह दिखाता है। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
                 "focus": 0
             }
         ]
@@ -874,16 +1025,8 @@ def generate_fallback_myth_plan(topic=None):
 
 
 def make_myth_plan(topic, custom_script=None):
-    """Generates a strict JSON plan for MINDSPARK Mythology Shorts (MythShort).
-
-    Rules:
-    - 6 to 9 scenes, 4 to 7 seconds each, 35 to 45 seconds total.
-    - Choose characters from ROSTER (2-4 gods per short, villains like ravana/asura where needed).
-    - Choose beat from: intro, talk, reveal, fight, victory.
-    - Choose bg from: forest, pond, temple, battlefield, sky. Vary across scenes.
-    - Captions: short title + one line text (100% Devanagari Hindi).
-    - Narration: 12-18 words per scene in 100% Shuddh Devanagari Hindi.
-    - Last scene concludes with 'MindSpark'.
+    """Generates a strict JSON plan for MINDSPARK Mythology Shorts (MythShort)
+    written with a natural, professional human Hindi storyteller persona.
     """
     topic_str = topic.get("title", str(topic)) if isinstance(topic, dict) else str(topic)
     topic_summary = topic.get("summary", "") if isinstance(topic, dict) else ""
@@ -892,16 +1035,27 @@ def make_myth_plan(topic, custom_script=None):
     else:
         story_context = f"Story Topic: {topic_str}\nSummary: {topic_summary}"
 
-    prompt = f"""You are the master script writer and director for MINDSPARK Mythology Shorts, crafted in the viral storytelling style of '@sanatan.unfold' (महाभारत की छिपी वजहें और सनातन के अनसुने रहस्य).
-Generate an epic Indian mythology YouTube Short (35-45 seconds) based on this story:
+    prompt = f"""Tum ek anubhavi Hindi kahani-kaar ho, jo YouTube Shorts aur voiceover ke liye kahaniyan likhte ho.
+Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekha haal ya dil ki baat, sunaa raha hai. AI ki likhi hui nahi.
+
+## Bhaasha Niyam:
+- Script hamesha Devanagari me likho.
+- Roz-marra ki bolchaal ki natural Hindi use karo, jaisi ek kahani sunane wala bolta hai. Bhaari, kitaabi ya shuddh-Sanskrit shabd mat daalo.
+- Chhote vaakya rakho. Ek vaakya me ek hi baat. Beech-beech me bahut chhote vaakya bhi daalo. Jaise: "Wo ruk gaya. Kuch bola nahi."
+- Vaakyon ki lambai badalte raho.
+- In cheezon se bacho: "Aaj ke is video me", "toh doston", "chaliye shuru karte hain", "ek anokha safar", "zindagi ka sabak", "yaad rakhiye".
+- Scene 1 (THE VIRAL HOOK): Opening line MUST strictly start with 'क्या आपको पता है...?' (NEVER 'क्या आप जानते हैं').
+- Scene 6/Last scene: Conclude naturally, and the very last sentence MUST end with: 'ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!'
+
+STORY CONTEXT:
 {story_context}
 
 Return ONE valid JSON object only (no markdown, no extra commentary):
 {{
   "youtube": {{
-    "title": "[रहस्यमयी प्रश्न]? महाभारत की छिपी वजहें | एपिसोड [X]",
-    "description": "सनातन धर्म और महाभारत के अनसुने रहस्य। Watch till the end! #Shorts #Sanatan #Mahabharat #MindSpark #Mythology",
-    "tags": ["SanatanUnfold", "MindSpark", "Mahabharat", "Mythology", "Shorts", "HinduMythology", "Hindi", "Vedas"]
+    "title": "[रहस्यमयी प्रश्न]? सनातन के अनसुने रहस्य | MindSpark",
+    "description": "सनातन धर्म और भारतीय इतिहास के अनसुने रहस्य। Watch till the end! #Shorts #Sanatan #MindSpark #Mythology",
+    "tags": ["MindSpark", "Mythology", "Shorts", "Sanatan", "Hindi", "Mahabharat"]
   }},
   "scenes": [
     {{
@@ -922,34 +1076,16 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
         "title": "Short title in Devanagari Hindi (max 4 words)",
         "text": "One line text in Devanagari Hindi"
       }},
-      "narration": "12-18 words in 100% Shuddh Devanagari Hindi. Words must match caption."
+      "narration": "12-18 words in 100% natural conversational Devanagari Hindi."
     }}
   ]
 }}
 
-STRICT RULES (SANATAN UNFOLD VIRAL BLUEPRINT):
-1. Scenes count: 6 to 8 scenes. Each scene duration 'sec': 4 to 6 seconds (Total 35-42s).
-2. SCENE 1 (THE VIRAL HOOK):
-   - MUST open with an intriguing contrarian question starting strictly with 'क्या आपको पता है...?' (e.g. 'क्या आपको पता है कि...?', 'क्या आपको पता है द्रोण नहीं थे पहले गुरु?'). NEVER use 'क्या आप जानते हैं' — ALWAYS use 'क्या आपको पता है'.
-3. MIDDLE SCENES (UNFOLDING & REVELATION):
-   - Scene 2 & 3: Deep dialogue (Guru & Shishya or characters confronting fate).
-   - Scene 4 & 5: The dramatic reveal (the curse, the boon, the sacred weapon, or the hidden reason).
-4. FINAL SCENE (VICTORY & MORAL):
-   - Spiritual life lesson connecting ancient wisdom to human karma.
-   - Narration MUST end with: 'सनातन के ऐसे ही अनकहे रहस्यों के लिए MindSpark को सब्सक्राइब करें!'
-5. Characters: Choose ONLY from allowed roster: {', '.join(sorted(list(ROSTER_GODS)))}.
-   Pick 2 to 4 different characters across the video that fit this legend.
-   - For guru-shishya/wisdom stories, use 'guru', 'rishi', 'vyasa', 'drona', and 'shishya'.
-   - For warrior/epic stories, use 'arjuna', 'karna', 'raja', 'soldier', 'chor'.
-   - For fight scenes, use villains like 'ravana' or 'asura' opposing heroes/gods like 'hanuman', 'rama', 'krishna', 'durga', or 'narasimha'.
-6. Poses: 'fight' (weapon swinging, intense), 'fly' (flying in air e.g. hanuman), 'sit' (meditation, blessing), 'stand' (normal), 'walk' (moving forward), 'pray' (reverence/devotion).
-7. Backgrounds ('bg'): forest, pond, temple, battlefield, sky. Vary the background across scenes.
-8. Actors placement:
-   - x between 250 and 830.
-   - If 2 actors are in a scene, place one on left (x: 320, flip: false) and one on right (x: 760, flip: true) so they face each other.
-9. DEVANAGARI HINDI:
-   - 'caption': title + text strictly in Devanagari Hindi.
-   - 'narration': 100% Shuddh Devanagari Hindi (NO English/Roman script).
+STRICT RULES:
+1. Total scenes: 6 to 8 scenes. Duration 'sec': 4 to 6 seconds per scene (Total 35-42s).
+2. Allowed characters: {', '.join(sorted(list(ROSTER_GODS)))}. Pick characters matching this legend.
+3. Allowed backgrounds: forest, pond, temple, battlefield, sky. Vary backgrounds.
+4. Narration and Caption text MUST be 100% Devanagari Hindi.
 """
 
     err = None
@@ -979,7 +1115,7 @@ STRICT RULES (SANATAN UNFOLD VIRAL BLUEPRINT):
                 last_s = plan["scenes"][-1]
                 l_narr = last_s.get("narration", "")
                 if "mindspark" not in l_narr.lower() and "माइंडस्पार्क" not in l_narr:
-                    last_s["narration"] = l_narr.rstrip(".! ") + "। ऐसे और अद्भुत गाथाओं के लिए MindSpark को सब्सक्राइब करें!"
+                    last_s["narration"] = l_narr.rstrip(".! ") + "। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!"
 
             err = validate_myth_plan(plan)
             if not err:
@@ -991,4 +1127,4 @@ STRICT RULES (SANATAN UNFOLD VIRAL BLUEPRINT):
             print(f"[LLM] Myth plan generation attempt {attempt + 1} exception: {err}")
 
     print(f"[LLM] Live myth plan failed ({err}). Using curated fallback myth plan...")
-    return generate_fallback_myth_plan(topic_str)
+    return generate_fallback_myth_plan(topic)

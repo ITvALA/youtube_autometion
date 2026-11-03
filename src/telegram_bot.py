@@ -473,10 +473,11 @@ def trigger_workflow_custom_script(script_text):
             print(f"[GH Trigger Custom Script Error]: {ge}")
     return False
 
-def trigger_workflow_make_video(book_name):
-    next_file = ROOT / "data" / "next_book.txt"
-    next_file.write_text(book_name, encoding="utf-8")
-    git_sync_changes(f"Queue next book: {book_name}")
+def trigger_workflow_make_video(book_name=""):
+    if book_name:
+        next_file = ROOT / "data" / "next_book.txt"
+        next_file.write_text(book_name, encoding="utf-8")
+        git_sync_changes(f"Queue next book: {book_name}")
 
     gh_token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     if gh_token:
@@ -486,7 +487,10 @@ def trigger_workflow_make_video(book_name):
                 "Accept": "application/vnd.github.v3+json"
             }
             url = "https://api.github.com/repos/ITvALA/youtube_autometion/actions/workflows/daily.yml/dispatches"
-            r = requests.post(url, headers=headers, json={"ref": "main", "inputs": {"force": True, "book": book_name}}, timeout=10)
+            payload = {"ref": "main", "inputs": {"force": True, "mode": "myth"}}
+            if book_name:
+                payload["inputs"]["book"] = book_name
+            r = requests.post(url, headers=headers, json=payload, timeout=10)
             if r.status_code in (204, 200, 201):
                 return True
             else:
@@ -634,6 +638,22 @@ def start_bot():
                             send_msg(sender_chat, f"✅ *Custom Script Queued!*\n\n📝 *Aapka Script:*\n\"{preview}\"\n\nNext video ke liye yeh script save ho gaya hai! Agle run me yeh video generate hogi.")
                     else:
                         send_msg(sender_chat, "⚠️ Kripya apna script ya topic likhein.\nExample: `/script Subah jaldi uthne ke 3 sabse bade fayde...`")
+
+                # Command: /make (no args), /myth, /video, /run -> trigger live myth video
+                elif cmd_lower in ("/make", "make", "/myth", "myth", "/video", "video", "/run", "run"):
+                    triggered = trigger_workflow_make_video("")
+                    if triggered:
+                        send_msg(sender_chat, "🚀 *Live Sanatan Video Generation Started!*
+
+GitHub Actions par naya video banna shuru ho gaya hai!
+• Naya Topic: 'क्या आपको पता है...' viral hook
+• Voice: 4C Cool Master + Dynamic Scene Cadence
+• BGM: @sanatan.unfold Lo-Fi Chill Beat
+
+Lagbhag 7-8 minute me video yahan review ke liye receive ho jayegi! 🎬")
+                    else:
+                        send_msg(sender_chat, "✅ *Video Triggered!*
+Hourly loop automatically new Sanatan video generate karega.")
 
                 # Command: /make <Book Name> or /next <Book Name>
                 elif cmd_lower.startswith("/make ") or cmd_lower.startswith("/next ") or cmd_lower.startswith("make "):
