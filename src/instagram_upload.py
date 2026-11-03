@@ -9,6 +9,7 @@ import sys
 import json
 import time
 import threading
+import subprocess
 from pathlib import Path
 
 import requests
@@ -202,10 +203,22 @@ def upload_reel(video_path, meta=None, book_title=None, progress_callback=None):
         if progress_callback:
             progress_callback(40)
 
+        # Generate thumbnail using ffmpeg to avoid MoviePy requirement
+        thumb_path = video_path.with_suffix(".jpg")
+        if not thumb_path.exists():
+            try:
+                subprocess.run([
+                    "ffmpeg", "-y", "-ss", "00:00:01", "-i", str(video_path),
+                    "-vframes", "1", "-q:v", "2", str(thumb_path)
+                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+            except Exception as e:
+                print(f"[Instagram] Thumbnail extraction warning: {e}")
+
         print(f"[Instagram] Uploading reel: {video_path.name} ({video_path.stat().st_size / (1024*1024):.2f} MB)...")
         media = cl.clip_upload(
             path=str(video_path),
-            caption=caption
+            caption=caption,
+            thumbnail=str(thumb_path) if thumb_path.exists() else None
         )
 
         try:
