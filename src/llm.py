@@ -891,16 +891,16 @@ def make_myth_plan(topic, custom_script=None):
     else:
         story_context = f"Story Topic: {topic_str}\nSummary: {topic_summary}"
 
-    prompt = f"""You are the master script writer and director for MINDSPARK Mythology Shorts.
+    prompt = f"""You are the master script writer and director for MINDSPARK Mythology Shorts, crafted in the viral storytelling style of '@sanatan.unfold' (महाभारत की छिपी वजहें और सनातन के अनसुने रहस्य).
 Generate an epic Indian mythology YouTube Short (35-45 seconds) based on this story:
 {story_context}
 
 Return ONE valid JSON object only (no markdown, no extra commentary):
 {{
   "youtube": {{
-    "title": "Epic title under 65 chars with ⚔️/🔱/✨",
-    "description": "2 lines description with #Shorts #Mythology #MindSpark",
-    "tags": ["MindSpark", "Mythology", "Shorts", "HinduMythology", "Hindi"]
+    "title": "[रहस्यमयी प्रश्न]? महाभारत की छिपी वजहें | एपिसोड [X]",
+    "description": "सनातन धर्म और महाभारत के अनसुने रहस्य। Watch till the end! #Shorts #Sanatan #Mahabharat #MindSpark #Mythology",
+    "tags": ["SanatanUnfold", "MindSpark", "Mahabharat", "Mythology", "Shorts", "HinduMythology", "Hindi", "Vedas"]
   }},
   "scenes": [
     {{
@@ -910,7 +910,7 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
       "actors": [
         {{
           "who": "one of: {', '.join(sorted(list(ROSTER_GODS)))}",
-          "pose": "stand" | "sit" | "fly" | "fight",
+          "pose": "stand" | "sit" | "fly" | "fight" | "walk" | "pray",
           "x": 350,
           "weapon": "none" | "gada" | "bow" | "trishul" | "chakra" | "sword",
           "flip": false
@@ -926,26 +926,29 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
   ]
 }}
 
-STRICT RULES:
-1. Scenes count: 6 to 9 scenes. Each scene duration 'sec': 4 to 7 seconds.
-2. Characters: Choose ONLY from allowed roster: {', '.join(sorted(list(ROSTER_GODS)))}.
+STRICT RULES (SANATAN UNFOLD VIRAL BLUEPRINT):
+1. Scenes count: 6 to 8 scenes. Each scene duration 'sec': 4 to 6 seconds (Total 35-42s).
+2. SCENE 1 (THE VIRAL HOOK):
+   - MUST open with an intriguing contrarian question or unheard secret like Sanatan Unfold (e.g. 'क्या आप जानते हैं कि...?', 'द्रोण नहीं थे पहले गुरु?').
+3. MIDDLE SCENES (UNFOLDING & REVELATION):
+   - Scene 2 & 3: Deep dialogue (Guru & Shishya or characters confronting fate).
+   - Scene 4 & 5: The dramatic reveal (the curse, the boon, the sacred weapon, or the hidden reason).
+4. FINAL SCENE (VICTORY & MORAL):
+   - Spiritual life lesson connecting ancient wisdom to human karma.
+   - Narration MUST end with: 'सनातन के ऐसे ही अनकहे रहस्यों के लिए MindSpark को सब्सक्राइब करें!'
+5. Characters: Choose ONLY from allowed roster: {', '.join(sorted(list(ROSTER_GODS)))}.
    Pick 2 to 4 different characters across the video that fit this legend.
    - For guru-shishya/wisdom stories, use 'guru', 'rishi', 'vyasa', 'drona', and 'shishya'.
    - For warrior/epic stories, use 'arjuna', 'karna', 'raja', 'soldier', 'chor'.
    - For fight scenes, use villains like 'ravana' or 'asura' opposing heroes/gods like 'hanuman', 'rama', 'krishna', 'durga', or 'narasimha'.
-3. Poses: 'fight' (weapon swinging, intense), 'fly' (flying in air e.g. hanuman), 'sit' (meditation, blessing), 'stand' (normal), 'walk' (moving forward), 'pray' (reverence/devotion).
-4. Backgrounds ('bg'): forest, pond, temple, battlefield, sky. Vary the background across scenes.
-5. Actors placement:
+6. Poses: 'fight' (weapon swinging, intense), 'fly' (flying in air e.g. hanuman), 'sit' (meditation, blessing), 'stand' (normal), 'walk' (moving forward), 'pray' (reverence/devotion).
+7. Backgrounds ('bg'): forest, pond, temple, battlefield, sky. Vary the background across scenes.
+8. Actors placement:
    - x between 250 and 830.
    - If 2 actors are in a scene, place one on left (x: 320, flip: false) and one on right (x: 760, flip: true) so they face each other.
-6. Story Beats:
-   - Scene 1: intro
-   - Middle scenes: talk, reveal, fight
-   - Final scene: victory
-7. DEVANAGARI HINDI:
+9. DEVANAGARI HINDI:
    - 'caption': title + text strictly in Devanagari Hindi.
    - 'narration': 100% Shuddh Devanagari Hindi (NO English/Roman script).
-   - Last scene narration MUST conclude with 'MindSpark' (e.g. '...ऐसे और रहस्यों के लिए MindSpark को सब्सक्राइब करें!').
 """
 
     err = None

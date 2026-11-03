@@ -512,6 +512,42 @@ const Caption: React.FC<{ title: string; text: string }> = ({ title, text }) => 
   </div>
 );
 
+/* Divine floating embers / golden particles for sacred ambiance */
+const DivineParticles: React.FC<{ frame: number; seed: number }> = ({ frame, seed }) => {
+  const r = rng(seed * 313);
+  const sparks = useMemo(() => Array.from({ length: 22 }).map(() => ({
+    x: 80 + r() * 920,
+    baseY: 400 + r() * 1200,
+    speed: 1.2 + r() * 2.2,
+    sway: 12 + r() * 25,
+    size: 2.5 + r() * 4.5,
+    op: 0.35 + r() * 0.55,
+  })), [seed]);
+
+  return (
+    <AbsoluteFill style={{ pointerEvents: 'none' }}>
+      <svg width={1080} height={1920} style={{ position: 'absolute' }}>
+        {sparks.map((s, i) => {
+          const y = ((s.baseY - frame * s.speed) % 1800 + 1800) % 1800;
+          const x = s.x + Math.sin((frame + i * 20) / 18) * s.sway;
+          const pulse = 0.6 + 0.4 * Math.sin(frame / 8 + i);
+          return (
+            <circle
+              key={i}
+              cx={x}
+              cy={y}
+              r={s.size}
+              fill="#ffd43b"
+              opacity={s.op * pulse}
+              style={{ filter: 'drop-shadow(0 0 6px #f59f00)' }}
+            />
+          );
+        })}
+      </svg>
+    </AbsoluteFill>
+  );
+};
+
 /* ───────────────────────── SCENE + VIDEO ───────────────────────── */
 const SceneView: React.FC<{ scene: Scene; seed: number; dur: number }> = ({ scene, seed, dur }) => {
   const frame = useCurrentFrame();
@@ -527,6 +563,7 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number }> = ({ scen
         {scene.actors.map((ac, i) => (<Character key={i} a={ac} frame={frame} />))}
         <Foreground kind={scene.bg} seed={seed} />
       </Camera>
+      <DivineParticles frame={frame} seed={seed} />
       <Caption title={scene.caption.title} text={scene.caption.text} />
     </AbsoluteFill>
   );
