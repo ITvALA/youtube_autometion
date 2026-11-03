@@ -88,9 +88,10 @@ def pick_myth_topic(forced=None):
     if not topics:
         return {"title": "श्रीकृष्ण और अर्जुन: कुरुक्षेत्र का रहस्य", "summary": "कुरुक्षेत्र में गीता ज्ञान और विराट रूप।"}
     hist = jload(ROOT / "data" / "myth_history.json", [])
-    used = {h.get("topic_title", "") for h in hist[-5:] if isinstance(h, dict)}
+    used = {h.get("topic_title", "") for h in hist[-25:] if isinstance(h, dict)}
     left = [t for t in topics if t.get("title") not in used]
     if not left:
+        print("[Myth] All recent topics exhausted. Resetting topic pool...")
         left = topics
     return random.choice(left)
 

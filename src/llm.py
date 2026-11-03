@@ -722,14 +722,15 @@ def generate_fallback_plan(book, custom_script=None):
 # ==============================================================================
 
 ROSTER_GODS = {
-    "krishna", "rama", "hanuman", "shiva", "vishnu", "brahma",
+    "krishna", "guru", "rishi", "vyasa", "drona", "shishya", "arjuna", "karna", "raja", "chor", "soldier",
+    "rama", "hanuman", "shiva", "vishnu", "brahma",
     "ganesha", "kartikeya", "indra", "surya", "vayu", "varuna",
     "durga", "lakshmi", "saraswati", "parvati", "kali", "narasimha",
     "ravana", "asura"
 }
 MYTH_BEATS = {"intro", "talk", "reveal", "fight", "victory"}
 MYTH_BGS = {"forest", "pond", "temple", "battlefield", "sky"}
-MYTH_POSES = {"stand", "sit", "fly", "fight"}
+MYTH_POSES = {"stand", "sit", "fly", "fight", "walk", "pray"}
 MYTH_WEAPONS = {"none", "gada", "bow", "trishul", "chakra", "sword"}
 MYTH_SHOTS = {"wide", "medium", "closeup", "extreme", "low", "high", "dutch", "side", "sideR", "over"}
 MYTH_MOVES = {"still", "pushIn", "pullOut", "panL", "panR", "tiltUp", "craneDown", "orbit", "shake", "whip"}
@@ -927,10 +928,12 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
 
 STRICT RULES:
 1. Scenes count: 6 to 9 scenes. Each scene duration 'sec': 4 to 7 seconds.
-2. Characters: Choose ONLY from allowed gods: {', '.join(sorted(list(ROSTER_GODS)))}.
+2. Characters: Choose ONLY from allowed roster: {', '.join(sorted(list(ROSTER_GODS)))}.
    Pick 2 to 4 different characters across the video that fit this legend.
-   For fight scenes, use villains like 'ravana' or 'asura' opposing gods like 'hanuman', 'rama', 'krishna', 'durga', or 'narasimha'.
-3. Poses: 'fight' (weapon swinging, intense), 'fly' (flying in air e.g. hanuman), 'sit' (meditation, blessing), 'stand' (normal).
+   - For guru-shishya/wisdom stories, use 'guru', 'rishi', 'vyasa', 'drona', and 'shishya'.
+   - For warrior/epic stories, use 'arjuna', 'karna', 'raja', 'soldier', 'chor'.
+   - For fight scenes, use villains like 'ravana' or 'asura' opposing heroes/gods like 'hanuman', 'rama', 'krishna', 'durga', or 'narasimha'.
+3. Poses: 'fight' (weapon swinging, intense), 'fly' (flying in air e.g. hanuman), 'sit' (meditation, blessing), 'stand' (normal), 'walk' (moving forward), 'pray' (reverence/devotion).
 4. Backgrounds ('bg'): forest, pond, temple, battlefield, sky. Vary the background across scenes.
 5. Actors placement:
    - x between 250 and 830.
