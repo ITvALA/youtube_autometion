@@ -16,3 +16,4 @@ instagrapi>=2.1.2
 pyotp>=2.9.0
 
 gradio_client>=2.7.0
+moviepy
