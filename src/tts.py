@@ -353,14 +353,12 @@ def _synth_raju_clone(text, cfg, out):
 
         ref_input = handle_file(str(local_ref)) if (has_handle_file and local_ref.exists()) else (str(local_ref) if local_ref.exists() else ref_url)
 
-        primary_space = cfg.get("xtts_space") or "hasanbasbunar/Voice-Cloning-XTTS-v2"
+        primary_space = cfg.get("xtts_space") or "JymNils/Voice-Cloning-XTTS-v2"
         all_spaces = cfg.get("xtts_spaces") or [
             primary_space,
-            "JymNils/Voice-Cloning-XTTS-v2",
             "minsus/Voice-Cloning-XTTS-v2",
             "Fatimamirza970/Voice-Cloning-XTTS-v2",
-            "coqui/XTTS-v2",
-            "asigalov61/XTTS-v2",
+            "hasanbasbunar/Voice-Cloning-XTTS-v2",
         ]
         spaces = [primary_space] + [s for s in all_spaces if s != primary_space]
 
@@ -370,16 +368,17 @@ def _synth_raju_clone(text, cfg, out):
                     print(f"[XTTS-v2] Synthesizing scene via {space} (attempt {attempt}/2)...")
                     cl = Client(space, token=token)
                     try:
+                        # Explicitly pass example_audio_name=None so Gradio doesn't inject default 'audio_1.wav'
                         res = cl.predict(
                             text=clean_text,
-                            reference_audio_url=ref_input,
+                            reference_audio_url=ref_url,
+                            example_audio_name=None,
                             language="Hindi",
                             temperature=float(cfg.get("temperature", 0.75)),
                             speed=float(cfg.get("speed", 1.0)),
                             api_name="/voice_clone_synthesis"
                         )
                     except Exception as pe:
-                        # Fallback signature with example_audio_name=None or raw url
                         try:
                             res = cl.predict(
                                 text=clean_text,

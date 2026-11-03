@@ -34,11 +34,9 @@
   "eq_preset": "level1_warm",
   "description": "Demo 3 Locked: Raju XTTS-v2 + Level 1 Warm Studio Mic EQ + 1.0 Tempo + 0.12s Lead + 0.5s Tail + -0.5 Squeeze.",
   "xtts_spaces": [
-    "hasanbasbunar/Voice-Cloning-XTTS-v2",
     "JymNils/Voice-Cloning-XTTS-v2",
     "minsus/Voice-Cloning-XTTS-v2",
     "Fatimamirza970/Voice-Cloning-XTTS-v2",
-    "coqui/XTTS-v2",
-    "asigalov61/XTTS-v2"
+    "hasanbasbunar/Voice-Cloning-XTTS-v2"
   ]
 }
