@@ -26,7 +26,7 @@ import { loadFont as loadNoto } from '@remotion/google-fonts/NotoSansDevanagari'
 const devanagariFont = loadNoto('normal', { weights: ['400', '700', '800'], subsets: ['devanagari'] }).fontFamily;
 
 /* ───────────────────────── TYPES ───────────────────────── */
-export type Pose = 'stand' | 'sit' | 'fly' | 'fight';
+export type Pose = 'stand' | 'sit' | 'fly' | 'fight' | 'pray' | 'point' | 'talk' | 'walk';
 export type Weapon = 'none' | 'gada' | 'bow' | 'trishul' | 'chakra' | 'sword';
 export type BgKind = 'forest' | 'pond' | 'temple' | 'battlefield' | 'sky';
 export type Beat = 'intro' | 'talk' | 'reveal' | 'fight' | 'victory';
@@ -59,15 +59,26 @@ export type Scene = {
   camera?: { shot: ShotName; move: MoveName }; // optional manual override
 };
 
-/* ───────────────────────── 20 AVATARS ───────────────────────── */
-type Crown = 'mukut' | 'jata' | 'monkey' | 'ganesha' | 'lion' | 'ravan' | 'horns' | 'none';
+/* ───────────────────────── 20+ AVATARS (Gods, Rishis, Gurus, Warriors) ───────────────────────── */
+type Crown = 'mukut' | 'jata' | 'monkey' | 'ganesha' | 'lion' | 'ravan' | 'horns' | 'none' | 'guru' | 'pagdi' | 'royal_mukut' | 'bandana';
 type God = {
   skin: string; cloth: string; crown: Crown; halo: string;
   weapon: Weapon; long?: boolean; arms4?: boolean;
+  beard?: boolean; mustache?: boolean; janeu?: boolean; sash?: string;
 };
 
 export const ROSTER: Record<string, God> = {
   krishna:   { skin: '#3fa7a0', cloth: '#e8641b', crown: 'mukut',   halo: '#8a1f12', weapon: 'chakra' },
+  guru:      { skin: '#c88c58', cloth: '#f4ede2', crown: 'guru',    halo: '#e09838', weapon: 'none', beard: true, mustache: true, janeu: true, sash: '#8a2020' },
+  rishi:     { skin: '#b87c48', cloth: '#ffffff', crown: 'guru',    halo: '#d08030', weapon: 'none', beard: true, mustache: true, janeu: true, sash: '#b04020' },
+  vyasa:     { skin: '#c88c58', cloth: '#fdfbf7', crown: 'guru',    halo: '#e5a030', weapon: 'none', beard: true, mustache: true, janeu: true, sash: '#7a1c1c' },
+  drona:     { skin: '#c08450', cloth: '#f4ede2', crown: 'guru',    halo: '#c07020', weapon: 'bow',  beard: true, mustache: true, janeu: true, sash: '#8a2020' },
+  shishya:   { skin: '#c88c58', cloth: '#2d4b73', crown: 'pagdi',   halo: '#f2b632', weapon: 'none' },
+  arjuna:    { skin: '#c88c58', cloth: '#1b3b6f', crown: 'pagdi',   halo: '#ffd43b', weapon: 'bow' },
+  karna:     { skin: '#d89c68', cloth: '#8c2d19', crown: 'mukut',   halo: '#f2a93b', weapon: 'bow' },
+  raja:      { skin: '#c88c58', cloth: '#701a25', crown: 'royal_mukut', halo: '#f2b632', weapon: 'sword' },
+  chor:      { skin: '#a86c38', cloth: '#3a4a2b', crown: 'bandana', halo: '#504030', weapon: 'sword', mustache: true },
+  soldier:   { skin: '#b87c48', cloth: '#2b3a4a', crown: 'pagdi',   halo: '#806040', weapon: 'sword' },
   rama:      { skin: '#5a8fd0', cloth: '#f2b632', crown: 'mukut',   halo: '#c9561a', weapon: 'bow' },
   hanuman:   { skin: '#e3a63c', cloth: '#b8321f', crown: 'monkey',  halo: '#f0b429', weapon: 'gada' },
   shiva:     { skin: '#9fb7d6', cloth: '#7a4a2b', crown: 'jata',    halo: '#4a6fa5', weapon: 'trishul' },
@@ -194,6 +205,10 @@ const POSES: Record<Pose, { aL: number; aR: number; bL: number; bR: number; lL: 
   fight: { aL: 70,  aR: -150, bL: 60,  bR: -30,  lL: 24, lR: -20, spread: 1 },
   sit:   { aL: 28,  aR: -28,  bL: 40,  bR: -40,  lL: 0,  lR: 0,   spread: 0 },
   fly:   { aL: 160, aR: -150, bL: 10,  bR: -10,  lL: -8, lR: 10,  spread: 0 },
+  pray:  { aL: 160, aR: -160, bL: 20,  bR: -20,  lL: 0,  lR: 0,   spread: 0 },
+  point: { aL: 14,  aR: -85,  bL: 10,  bR: 0,    lL: 5,  lR: -5,  spread: 0 },
+  talk:  { aL: 35,  aR: -45,  bL: 55,  bR: -65,  lL: 4,  lR: -4,  spread: 0 },
+  walk:  { aL: 25,  aR: -25,  bL: 15,  bR: -15,  lL: 18, lR: -18, spread: 0 },
 };
 
 const WeaponSvg: React.FC<{ w: Weapon; frame: number }> = ({ w, frame }) => {
@@ -238,7 +253,7 @@ const Arm: React.FC<{ sx: number; a: number; b: number; skin: string; weapon?: W
 
 const Head: React.FC<{ g: God; angry: boolean }> = ({ g, angry }) => (
   <g transform="translate(0,-300)">
-    {/* halo (spiky sun like the sample) */}
+    {/* halo */}
     <g>
       {Array.from({ length: 20 }).map((_, i) => (
         <polygon key={i} points="-14,-96 14,-96 0,-136" fill={g.halo} transform={`rotate(${i * 18})`} />))}
@@ -250,10 +265,38 @@ const Head: React.FC<{ g: God; angry: boolean }> = ({ g, angry }) => (
     {g.crown === 'monkey' && <ellipse cx={0} cy={22} rx={42} ry={34} fill="#f6d9a0" stroke={INK} strokeWidth={3} />}
     {g.crown === 'lion' && Array.from({ length: 14 }).map((_, i) => (
       <polygon key={i} points="-12,-62 12,-62 0,-100" fill="#c2761a" transform={`rotate(${i * 25.7})`} />))}
-    {/* crown */}
+    {/* crowns & headgears */}
     {(g.crown === 'mukut' || g.crown === 'monkey' || g.crown === 'ganesha' || g.crown === 'ravan') && (
       <g><polygon points="-44,-52 0,-170 44,-52" fill={GOLD} stroke={INK} strokeWidth={4} />
         <circle cx={0} cy={-100} r={9} fill="#d6336c" /></g>)}
+    {g.crown === 'royal_mukut' && (
+      <g>
+        <polygon points="-56,-52 -28,-180 0,-130 28,-180 56,-52" fill={GOLD} stroke={INK} strokeWidth={4} />
+        <circle cx={0} cy={-85} r={12} fill="#c92a2a" />
+      </g>
+    )}
+    {g.crown === 'pagdi' && (
+      <g>
+        <ellipse cx={0} cy={-50} rx={66} ry={36} fill={g.cloth} stroke={INK} strokeWidth={4} />
+        <circle cx={0} cy={-55} r={11} fill={GOLD} />
+        <path d="M40,-50 Q60,-20 54,20" stroke={g.cloth} strokeWidth={16} fill="none" strokeLinecap="round" />
+      </g>
+    )}
+    {g.crown === 'bandana' && (
+      <g>
+        <path d="M-64,-30 Q0,-75 64,-30 L60,-55 Q0,-95 -60,-55 Z" fill="#2b3a1a" stroke={INK} strokeWidth={4} />
+      </g>
+    )}
+    {g.crown === 'guru' && (
+      <g>
+        <ellipse cx={0} cy={-60} rx={58} ry={38} fill="#231812" stroke={INK} strokeWidth={4} />
+        <circle cx={0} cy={-86} r={26} fill="#231812" stroke={INK} strokeWidth={4} />
+        {/* Rudraksha mala on bun */}
+        {[-20, -10, 0, 10, 20].map((x, i) => (
+          <circle key={i} cx={x} cy={-70 + Math.abs(x) * 0.3} r={4.5} fill="#b05820" stroke={INK} strokeWidth={1.5} />
+        ))}
+      </g>
+    )}
     {g.crown === 'ravan' && [-60, 60].map((x, i) => (
       <polygon key={i} points={`${x - 26},-40 ${x},-130 ${x + 26},-40`} fill={GOLD} stroke={INK} strokeWidth={3} />))}
     {g.crown === 'jata' && (<path d="M-60,-20 Q-70,-120 0,-130 Q70,-120 60,-20 Q30,-60 -60,-20" fill="#3a2a22" stroke={INK} strokeWidth={4} />)}
@@ -264,20 +307,41 @@ const Head: React.FC<{ g: God; angry: boolean }> = ({ g, angry }) => (
     <circle cx={-24} cy={-4} r={6} fill={angry ? '#e03131' : '#222'} /><circle cx={24} cy={-4} r={6} fill={angry ? '#e03131' : '#222'} />
     <path d={angry ? 'M-42,-26 L-8,-14 M42,-26 L8,-14' : 'M-40,-22 L-10,-24 M40,-22 L10,-24'} stroke={INK} strokeWidth={6} strokeLinecap="round" />
     <path d={angry ? 'M-18,38 Q0,28 18,38' : 'M-18,32 Q0,44 18,32'} fill="none" stroke={INK} strokeWidth={5} strokeLinecap="round" />
-    <path d="M-8,-30 L8,-30 L0,-44 Z" fill="#e03131" opacity={0.85} />
+
+    {/* Tilak / Tripund */}
+    {g.crown === 'guru' ? (
+      <g>
+        <line x1={-18} y1={-32} x2={18} y2={-32} stroke="#ffffff" strokeWidth={3} />
+        <line x1={-18} y1={-26} x2={18} y2={-26} stroke="#ffffff" strokeWidth={3} />
+        <circle cx={0} cy={-29} r={4} fill="#e03131" />
+      </g>
+    ) : (
+      <path d="M-8,-30 L8,-30 L0,-44 Z" fill="#e03131" opacity={0.85} />
+    )}
+
+    {/* Mustache */}
+    {(g.mustache || g.beard) && (
+      <path d="M-34,22 Q-14,32 0,22 Q14,32 34,22 Q24,13 0,16 Q-24,13 -34,22 Z" fill="#231812" stroke={INK} strokeWidth={2.5} />
+    )}
+
+    {/* Long Pointed Guru/Rishi Beard (Sanatan Unfold Style) */}
+    {g.beard && (
+      <path d="M-44,22 Q-32,150 0,185 Q32,150 44,22 Q28,50 0,55 Q-28,50 -44,22 Z" fill="#231812" stroke={INK} strokeWidth={4} />
+    )}
   </g>
 );
 
 const Character: React.FC<{ a: Actor; frame: number }> = ({ a, frame }) => {
   const g = ROSTER[a.who as string] ?? ROSTER.krishna;
-  const P = POSES[a.pose];
+  const P = POSES[a.pose] ?? POSES.stand;
   const sc = a.scale ?? 1;
   const ground = a.y ?? 1280;
   const weapon = a.weapon ?? g.weapon;
   const angry = a.angry ?? a.pose === 'fight';
   const idle = Math.sin(frame / 9);
-  const swing = a.pose === 'fight' ? Math.sin(frame / 3.2) * 38 : idle * 4;
-  const bob = a.pose === 'fly' ? Math.sin(frame / 7) * 22 : a.pose === 'sit' ? Math.sin(frame / 14) * 10 : idle * 3;
+  const walkPhase = a.pose === 'walk' ? Math.sin(frame / 3) * 22 : 0;
+  const swing = a.pose === 'fight' ? Math.sin(frame / 3.2) * 38 : a.pose === 'walk' ? -walkPhase : idle * 4;
+  const bob = a.pose === 'fly' ? Math.sin(frame / 7) * 22 : a.pose === 'sit' ? Math.sin(frame / 14) * 10 : a.pose === 'walk' ? Math.abs(Math.sin(frame / 3)) * 12 : idle * 3;
   const sitDrop = a.pose === 'sit' ? 125 : 0;
   const flyRot = a.pose === 'fly' ? 72 : 0;
   const lift = a.pose === 'fly' ? -260 : 0;
@@ -293,7 +357,7 @@ const Character: React.FC<{ a: Actor; frame: number }> = ({ a, frame }) => {
           <ellipse cx={0} cy={60} rx={120} ry={22} fill={g.skin} stroke={INK} strokeWidth={4} /></g>
       ) : (
         [-1, 1].map((s) => (
-          <g key={s} transform={`translate(${s * 38},-6) rotate(${s < 0 ? P.lL + swing * 0.2 : P.lR - swing * 0.2})`}>
+          <g key={s} transform={`translate(${s * 38},-6) rotate(${s < 0 ? P.lL + swing * 0.2 + (a.pose === 'walk' ? walkPhase : 0) : P.lR - swing * 0.2 - (a.pose === 'walk' ? walkPhase : 0)})`}>
             <rect x={-22} y={0} width={44} height={226} rx={22} fill={g.skin} stroke={INK} strokeWidth={4} />
             <rect x={-26} y={176} width={52} height={14} rx={7} fill={GOLD} />
             <ellipse cx={s * 6} cy={228} rx={34} ry={14} fill="#3a2418" />
@@ -306,6 +370,14 @@ const Character: React.FC<{ a: Actor; frame: number }> = ({ a, frame }) => {
       </g>)}
       {/* torso + cloth */}
       <path d="M-78,-215 L78,-215 L64,-4 L-64,-4 Z" fill={g.skin} stroke={INK} strokeWidth={5} />
+      {/* Janeu (sacred thread) */}
+      {g.janeu && (
+        <line x1={-54} y1={-215} x2={44} y2={-4} stroke="#ffffff" strokeWidth={4} opacity={0.9} />
+      )}
+      {/* Shoulder sash (chadar) */}
+      {g.sash && (
+        <path d="M-78,-215 L-32,-215 L-14,-4 L-64,-4 Z" fill={g.sash} stroke={INK} strokeWidth={3} />
+      )}
       <path d={g.long ? 'M-74,-120 L74,-120 L120,215 L-120,215 Z' : 'M-70,-14 L70,-14 L56,150 L0,200 L-56,150 Z'} fill={g.cloth} stroke={INK} strokeWidth={5} />
       <rect x={-72} y={-24} width={144} height={22} rx={8} fill={GOLD} stroke={INK} strokeWidth={3} />
       <path d="M-70,-215 L70,-215 L0,-100 Z" fill="#ffffff" opacity={0.15} />
@@ -426,14 +498,17 @@ const Foreground: React.FC<{ kind: BgKind; seed: number }> = ({ kind, seed }) =>
   );
 };
 
-/* ───────────────────────── CAPTION ───────────────────────── */
+/* ───────────────────────── CAPTION (Sanatan Unfold Floating Style) ───────────────────────── */
 const Caption: React.FC<{ title: string; text: string }> = ({ title, text }) => (
   <div style={{
-    position: 'absolute', left: 60, right: 60, bottom: 120, padding: '28px 34px', borderRadius: 30,
-    background: 'rgba(20,28,38,0.92)', border: `3px solid ${GOLD}`, color: '#fff',
-    fontFamily: `${devanagariFont}, 'Noto Sans Devanagari', 'Mukta', sans-serif`, fontSize: 46, lineHeight: 1.35, textAlign: 'center',
+    position: 'absolute', left: 40, right: 40, bottom: 130, padding: '16px 24px',
+    color: '#ffffff',
+    textShadow: '0 4px 16px rgba(0,0,0,0.95), 0 2px 4px rgba(0,0,0,0.9)',
+    fontFamily: `${devanagariFont}, 'Noto Sans Devanagari', 'Mukta', sans-serif`,
+    fontSize: 52, lineHeight: 1.35, textAlign: 'center', fontWeight: 700,
   }}>
-    <span style={{ color: GOLD, textDecoration: 'underline', fontWeight: 800 }}>{title}</span> {text}
+    {title && <div style={{ color: '#f5c842', fontSize: 44, marginBottom: 8, fontWeight: 800 }}>{title}</div>}
+    <div>{text}</div>
   </div>
 );
 
@@ -539,22 +614,28 @@ export const MythShort: React.FC<{
   );
 };
 
-/* ───────────────────────── EXAMPLE (the sample video as scenes) ───────────────────────── */
+/* ───────────────────────── EXAMPLE (Sanatan Unfold Guru & Shishya scenes) ───────────────────────── */
 export const EXAMPLE_SCENES: Scene[] = [
-  { sec: 5, beat: 'intro', bg: 'temple',
-    actors: [{ who: 'ravana', pose: 'stand', x: 540, weapon: 'gada' }],
-    caption: { title: '५००० सैनिक बनाम १ लाख', text: 'राजा युद्ध से पहले घबरा गया...' } },
+  { sec: 5, beat: 'intro', bg: 'forest',
+    actors: [
+      { who: 'guru', pose: 'pray', x: 400 },
+      { who: 'shishya', pose: 'stand', x: 760, flip: true }
+    ],
+    caption: { title: 'महाभारत की छिपी वजहें', text: 'गुरु द्रोण और उनके शिष्यों का सबसे बड़ा रहस्य!' } },
   { sec: 6, beat: 'talk', bg: 'forest',
-    actors: [{ who: 'rama', pose: 'stand', x: 330, weapon: 'gada' }, { who: 'krishna', pose: 'stand', x: 760, flip: true }],
-    focus: 1, caption: { title: 'राजा का प्रश्न', text: "'प्रभु, हम इस महायुद्ध को कैसे जीतेंगे?'" } },
+    actors: [
+      { who: 'guru', pose: 'point', x: 340 },
+      { who: 'shishya', pose: 'talk', x: 740, flip: true }
+    ],
+    focus: 0, caption: { title: 'गुरु का आदेश', text: "'धनुष उठाओ वत्स! धर्म की रक्षा ही तुम्हारा कर्तव्य है।'" } },
   { sec: 5, beat: 'reveal', bg: 'pond',
-    actors: [{ who: 'krishna', pose: 'sit', x: 540 }],
-    caption: { title: 'श्रीकृष्ण का अमर रहस्य', text: "'एक संकल्पी योद्धा सौ पर भारी है!'" } },
+    actors: [{ who: 'rishi', pose: 'sit', x: 540 }],
+    caption: { title: 'तपस्या का फल', text: "'अधर्म चाहे कितना भी बलवान हो, अंत सत्य का ही होगा!'" } },
   { sec: 7, beat: 'fight', bg: 'battlefield',
-    actors: [{ who: 'hanuman', pose: 'fly', x: 300, y: 1280 }, { who: 'asura', pose: 'fight', x: 800, flip: true }],
-    caption: { title: 'रणभूमि में महाप्रहार', text: 'गदा-धनुष से दुश्मन सेना के पसीने छुड़ा दिए!' } },
+    actors: [{ who: 'arjuna', pose: 'fight', x: 320, weapon: 'bow' }, { who: 'asura', pose: 'fight', x: 800, flip: true }],
+    caption: { title: 'रणभूमि में महाप्रहार', text: 'गांडीव की टंकार से थर्रा उठी शत्रु सेना!' } },
   { sec: 5, beat: 'victory', bg: 'sky',
-    actors: [{ who: 'krishna', pose: 'stand', x: 700, weapon: 'chakra' }, { who: 'rama', pose: 'stand', x: 360 }],
-    caption: { title: 'सत्य और धर्म की विजय', text: 'बोलो श्रीकृष्ण भगवान की जय!' } },
+    actors: [{ who: 'krishna', pose: 'stand', x: 700, weapon: 'chakra' }, { who: 'guru', pose: 'pray', x: 360 }],
+    caption: { title: 'धर्म की विजय', text: 'बोलो श्रीकृष्ण भगवान की जय!' } },
 ];
 

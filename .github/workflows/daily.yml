@@ -9,12 +9,12 @@ on:
         type: boolean
         default: false
       mode:
-        description: "Video Mode: book (Books & Wisdom) or myth (MindSpark Mythology)"
+        description: "Video Mode: myth (MindSpark Mythology & Puppet) or book (Books & Wisdom)"
         type: choice
         options:
-          - book
           - myth
-        default: book
+          - book
+        default: myth
       book:
         description: "Custom Topic or Book Name (Leave empty for automatic)"
         type: string
@@ -104,6 +104,22 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: node scripts/make-myth-audio.mjs
 
+      - name: Verify Telegram Secrets
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python3 -c "
+          import os
+          t = os.environ.get('TELEGRAM_BOT_TOKEN', '').strip()
+          c = os.environ.get('TELEGRAM_CHAT_ID', '').strip()
+          print('Telegram Bot Token present:', bool(t), f'({len(t)} chars)')
+          print('Telegram Chat ID present:', bool(c), f'({c[:3]}***{c[-2:] if len(c)>2 else \"\"})')
+          if not (t and c):
+              print('::warning::TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is missing from GitHub Secrets!')
+          "
+
       - name: Make Reel Video
         if: steps.guard.outputs.skip != 'true'
         env:
@@ -121,7 +137,7 @@ jobs:
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
         run: |
-          MODE="${{ inputs.mode || 'book' }}"
+          MODE="${{ inputs.mode || 'myth' }}"
           if [ -n "${{ inputs.book }}" ]; then
             python src/daily_pipeline.py --headless --mode "$MODE" --book "${{ inputs.book }}"
           else

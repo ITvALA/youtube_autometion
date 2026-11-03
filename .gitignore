@@ -19,3 +19,9 @@ output/
 data/models/
 data/tts_cache/
 data/voice_references/*.mp3
+
+data/dataset_sanatan/
+*.zip
+*.mp3
+*.wav
+
