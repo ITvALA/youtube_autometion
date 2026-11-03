@@ -60,7 +60,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu || true
-          pip install TTS || true
+          pip install "transformers==4.40.0" TTS || true
 
       # ── Cache XTTS-v2 Local Model weights so it loads instantly from cache ──
       - name: Cache XTTS-v2 Local Model

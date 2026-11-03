@@ -322,6 +322,21 @@ def _synth_raju_clone(text, cfg, out):
 
     # 1. Try Local Coqui XTTS-v2 first if installed
     try:
+        try:
+            import transformers
+            if not hasattr(transformers, "BeamSearchScorer"):
+                try:
+                    from transformers.generation import BeamSearchScorer
+                    transformers.BeamSearchScorer = BeamSearchScorer
+                except Exception:
+                    try:
+                        from transformers.generation.beam_search import BeamSearchScorer
+                        transformers.BeamSearchScorer = BeamSearchScorer
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
         from TTS.api import TTS
         os.environ["COQUI_TOS_AGREED"] = "1"
         print("[XTTS-v2] Synthesizing scene via local Coqui XTTS-v2 on CPU...")
@@ -379,6 +394,7 @@ def _synth_raju_clone(text, cfg, out):
                             api_name="/voice_clone_synthesis"
                         )
                     except Exception as pe:
+                        # Fallback signature with local audio handle or without example_audio_name
                         try:
                             res = cl.predict(
                                 text=clean_text,
