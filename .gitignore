@@ -25,3 +25,8 @@ data/dataset_sanatan/
 *.mp3
 *.wav
 
+
+*.pth
+etc/
+models/
+
