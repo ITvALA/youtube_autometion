@@ -365,15 +365,11 @@ def _synth_raju_clone(text, cfg, out):
         try:
             import transformers
             if not hasattr(transformers, "BeamSearchScorer"):
-                try:
-                    from transformers.generation import BeamSearchScorer
-                    transformers.BeamSearchScorer = BeamSearchScorer
-                except Exception:
-                    try:
-                        from transformers.generation.beam_search import BeamSearchScorer
-                        transformers.BeamSearchScorer = BeamSearchScorer
-                    except Exception:
+                class _DummyBeamSearchScorer:
+                    def __init__(self, *args, **kwargs):
                         pass
+                transformers.BeamSearchScorer = _DummyBeamSearchScorer
+                sys.modules["transformers"].BeamSearchScorer = _DummyBeamSearchScorer
         except Exception:
             pass
 
@@ -423,22 +419,35 @@ def _synth_raju_clone(text, cfg, out):
                     print(f"[XTTS-v2] Synthesizing scene via {space} (attempt {attempt}/2)...")
                     cl = Client(space, token=token)
                     try:
-                        # Explicitly pass example_audio_name=None so Gradio doesn't inject default 'audio_1.wav'
+                        # 1. Positional call: explicit None for example_audio_name to prevent default audio_1.wav injection
                         res = cl.predict(
-                            text=clean_text,
-                            reference_audio_url=ref_url,
-                            example_audio_name=None,
-                            language="Hindi",
-                            temperature=float(cfg.get("temperature", 0.75)),
-                            speed=float(cfg.get("speed", 1.0)),
+                            clean_text,                                  # text
+                            ref_url,                                     # reference_audio_url
+                            None,                                        # example_audio_name (MUST be None)
+                            "Hindi",                                     # language
+                            float(cfg.get("temperature", 0.75)),         # temperature
+                            float(cfg.get("speed", 1.0)),                # speed
+                            True,                                        # do_sample
+                            5.0,                                         # repetition_penalty
+                            1.0,                                         # length_penalty
+                            30,                                          # gpt_cond_len
+                            50,                                          # top_k
+                            0.85,                                        # top_p
+                            True,                                        # remove_silence_enabled
+                            -45,                                         # silence_threshold
+                            300,                                         # min_silence_len
+                            100,                                         # keep_silence
+                            "Native XTTS splitting",                     # text_splitting_method
+                            250,                                         # max_chars_per_segment
+                            False,                                       # enable_preprocessing
                             api_name="/voice_clone_synthesis"
                         )
                     except Exception as pe:
-                        # Fallback signature with local audio handle or without example_audio_name
+                        # 2. Named call with explicit None
                         try:
                             res = cl.predict(
                                 text=clean_text,
-                                reference_audio_url=ref_input,
+                                reference_audio_url=ref_url,
                                 example_audio_name=None,
                                 language="Hindi",
                                 temperature=float(cfg.get("temperature", 0.75)),
@@ -446,9 +455,11 @@ def _synth_raju_clone(text, cfg, out):
                                 api_name="/voice_clone_synthesis"
                             )
                         except Exception:
+                            # 3. Local file handle if available
                             res = cl.predict(
                                 text=clean_text,
-                                reference_audio_url=ref_url,
+                                reference_audio_url=ref_input,
+                                example_audio_name=None,
                                 language="Hindi",
                                 temperature=float(cfg.get("temperature", 0.75)),
                                 speed=float(cfg.get("speed", 1.0)),
