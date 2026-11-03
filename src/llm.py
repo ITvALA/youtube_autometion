@@ -586,9 +586,9 @@ Available Scene types and their data:
 - quote: wisdom quote. {{"quote":"quote text", "by":"{book.get('author', 'Author')}"}}
 
 Rules: 5 or 6 scenes. First scene = hook. Last scene = card, quote, or quotePoster. At least 3 different scene types.
-DUAL-SCRIPT SYSTEM + SPOKEN STYLE (insaani awaaz ke liye sabse zaroori):
-   - 'narration': Clean Hinglish (Roman letters, 12-22 words) on-screen subtitles ke liye. Isme koi <tag> mat likho.
-   - 'tts_text': Devanagari Hindi, narration ka hi matlab, lekin bilkul waise jaise insaan BOLTA hai (kitab ki bhasha nahi).
+DEVANAGARI HINDI LYRICS & AUDIO (100% MANDATORY DEVANAGARI):
+   - 'narration': Shuddh Devanagari Hindi (12-20 shabd). Screen par yahi Hindi lyrics/subtitles ke roop me dikhega! Koi bhi Roman/English alphabet nahi hona chahiye.
+   - 'tts_text': Bilkul wahi EXACT Shuddh Devanagari Hindi text jo narration me hai! Dono 100% same Devanagari me hone chahiye, koi farak nahi!
    - 'delivery': 2-5 English words, is scene ko kaise bolna hai. e.g. "curious, leaning in", "warm and reassuring", "slow and reflective", "energetic, upbeat".
    tts_text rules:
    * Chhote vaakya (5-10 shabd). Ek chhota vaakya, phir thoda lamba. Kabhi ek lamba vaakya nahi.
@@ -598,8 +598,8 @@ DUAL-SCRIPT SYSTEM + SPOKEN STYLE (insaani awaaz ke liye sabse zaroori):
    * Numbers/symbols shabdon me likho (एक प्रतिशत, 1% nahi).
    * Hook scene: chauka dene wali line ya sawal se shuru. Last scene: garam, ek saaf call-to-action.
 BRANDING MANDATES:
-- First scene narration MUST start directly with "{book['title']} hume sikhati hai..." (NO greetings like 'Namaste dosto', NO 'Kitab' prefix, start directly with the book title).
-- Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...aise aur powerful insights ke liye MindSpark ko subscribe karein!").
+- First scene narration MUST start directly with "{book['title']} हमें सिखाती है..." (NO greetings like 'Namaste dosto', NO 'Kitab' prefix, start directly with the book title).
+- Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...ऐसे और शक्तिशाली विचारों के लिए MindSpark को सब्सक्राइब करें!").
 Avoid these recent scene sequences: {json.dumps(recent_sequences or [])}.
 youtube.title under 70 chars, description 2 short lines + hashtags."""
 
@@ -624,8 +624,8 @@ youtube.title under 70 chars, description 2 short lines + hashtags."""
                 first_s["narration"] = f_narr
 
                 l_narr = last_s.get("narration", "")
-                if "mindspark" not in l_narr.lower():
-                    last_s["narration"] = l_narr.rstrip(".! ") + ". Aise aur aitihasik rahasyo ke liye MindSpark ko subscribe karein!"
+                if "mindspark" not in l_narr.lower() and "माइंडस्पार्क" not in l_narr:
+                    last_s["narration"] = l_narr.rstrip(".! ") + ". ऐसे और शक्तिशाली विचारों के लिए MindSpark को सब्सक्राइब करें!"
 
                 # Ensure tts_text exists on each scene
                 for sc in plan["scenes"]:

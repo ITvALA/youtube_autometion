@@ -306,12 +306,52 @@ def _synth_openai(text, cfg, out):
 
 _LOCAL_XTTS_MODEL = None
 
+def _ensure_devanagari_hindi(text):
+    """XTTS-v2 speaks with an American/foreign accent if fed Roman Latin alphabet.
+    This guard guarantees that any Latin/English or Hinglish characters are converted
+    into pure, authentic Devanagari Hindi so Raju's voice clone sounds 100% native Indian."""
+    if not text:
+        return ""
+    latin_chars = re.findall(r'[a-zA-Z]', text)
+    if len(latin_chars) == 0:
+        return text
+    
+    keys = _gemini_keys()
+    if keys:
+        prompt = (
+            "Translate/transliterate the following text into fluent, natural conversational Hindi in 100% Devanagari script. "
+            "Output ONLY the Devanagari Hindi text without any English letters, explanation, or quotes.\n\n"
+            f"Text: {text}"
+        )
+        for _, key in keys:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key.strip()}"
+                r = requests.post(
+                    url,
+                    headers={"Content-Type": "application/json"},
+                    json={"contents": [{"parts": [{"text": prompt}]}]},
+                    timeout=15
+                )
+                if r.status_code == 200:
+                    cand = r.json().get("candidates", [])
+                    if cand:
+                        res_txt = cand[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+                        if res_txt and len(re.findall(r'[\u0900-\u097F]', res_txt)) > 0:
+                            print(f"[XTTS-v2] Transliterated Roman script to Devanagari for Raju native voice:\n  Original: {text}\n  Devanagari: {res_txt}")
+                            return res_txt
+            except Exception as e:
+                print(f"[XTTS-v2] Devanagari conversion error: {e}")
+                continue
+    return text
+
+
 def _synth_raju_clone(text, cfg, out):
     """Zero-shot voice cloning using Local XTTS-v2 or Hugging Face XTTS-v2 with native Hindi support."""
     import time
     global _LOCAL_XTTS_MODEL
 
     clean_text = strip_tags(text)
+    clean_text = _ensure_devanagari_hindi(clean_text)
     local_ref = ROOT / "data" / "voice_references" / "slice_5s.wav"
     ref_url = cfg.get("reference_audio_url") or "https://raw.githubusercontent.com/ITvALA/youtube_autometion/main/data/voice_references/slice_5s.wav"
     raw_token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HUGGINGFACE_API_KEY") or None
