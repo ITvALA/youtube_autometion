@@ -4,8 +4,8 @@
     "raju_clone"
   ],
   "provider": "edge-tts",
-  "selected_voice_id": "raju_golden_edge",
-  "selected_voice_name": "Raju Voice (Edge-TTS Golden Formula: -6Hz/-3Hz)",
+  "selected_voice_id": "sanatan_cool_master",
+  "selected_voice_name": "Sanatan Cool Master (Setting 4C / Pitch +8Hz, Rate +4%)",
   "voice": "hi-IN-MadhurNeural",
   "voices": {
     "edge-tts": "hi-IN-MadhurNeural",
@@ -17,23 +17,28 @@
     "gemini-3.8-flash-tts",
     "gemini-3.8-flash-lite-tts"
   ],
-  "style": "warm, storytelling, engaging viral hook",
+  "style": "cool divine storytelling, lean, crisp, punchy",
   "language": "hi",
   "language_code": "hi-IN",
   "fallback_voice": "hi-IN-MadhurNeural",
-  "speed": 1.0,
-  "rate": "-10%",
-  "pitch": "-6Hz",
-  "volume": "+5%",
-  "rate_dialogue": "-5%",
-  "pitch_dialogue": "-3Hz",
+  "speed": 1.04,
+  "rate": "+4%",
+  "pitch": "+8Hz",
+  "volume": "+0%",
+  "rate_dialogue": "+2%",
+  "pitch_dialogue": "+6Hz",
   "monthly_char_limit": 950000,
   "cache": true,
   "normalize": true,
   "tempo": 1.0,
-  "lead": 0.12,
-  "tail": 0.5,
-  "tail_last": 0.5,
+  "lead": 0.08,
+  "tail": 0.30,
+  "tail_last": 0.40,
   "squeeze_pauses": 0.0,
-  "description": "Raju Golden Formula: hi-IN-MadhurNeural with Narration (-10% / -6Hz) & Dialogue (-5% / -3Hz) + Devanagari Pauses."
+  "filter_profile": "cool_master_4c",
+  "filter_chain": "highpass=f=130,equalizer=f=280:width_type=o:width=1.0:g=-3.8,equalizer=f=3600:width_type=o:width=1.0:g=2.4,acompressor=threshold=-14dB:ratio=2.5:attack=15:release=120,loudnorm=I=-14:TP=-1.0:LRA=8",
+  "lofi": {
+    "enabled": false
+  },
+  "description": "Sanatan Cool Master (Setting 4C): hi-IN-MadhurNeural with Pitch (+8Hz), Rate (+4%), 130Hz Highpass, 280Hz chest mud cut (-3.8dB), 3.6kHz clarity boost (+2.4dB), smooth studio compressor, and -14 LUFS mobile punch."
 }

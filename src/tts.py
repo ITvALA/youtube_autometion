@@ -259,19 +259,48 @@ def _synth_gemini(text, cfg, out):
 async def _synth_edge_async(text, cfg, out):
     import edge_tts
     voice = cfg.get("voice") or "hi-IN-MadhurNeural"
-    # Dialogue vs Narration Raju tuning:
+    # Dynamic Emotion & Cadence Adaptation based on scene delivery/style and text cues:
     is_dialogue = bool(
         "'" in text or '"' in text or "‘" in text or "’" in text or "“" in text or "”" in text or
         "बोले" in text or "कहा" in text or "पूछा" in text
     )
-    if is_dialogue:
-        rate = cfg.get("rate_dialogue", "-5%")
-        pitch = cfg.get("pitch_dialogue", "-3Hz")
-    else:
-        rate = cfg.get("rate", "-10%")
-        pitch = cfg.get("pitch", "-6Hz")
 
-    vol = cfg.get("volume", "+5%")
+    base_rate_val = 4   # default cool rate +4%
+    base_pitch_val = 8  # default cool pitch +8Hz
+    try:
+        base_rate_val = int(str(cfg.get("rate", "+4%")).replace("%", "").replace("+", ""))
+    except Exception:
+        pass
+    try:
+        base_pitch_val = int(str(cfg.get("pitch", "+8Hz")).replace("Hz", "").replace("+", ""))
+    except Exception:
+        pass
+
+    style_lower = (str(cfg.get("style", "")) + " " + str(cfg.get("delivery", ""))).lower()
+
+    # 1. Action / Intense / Urgent / Fast / Fight / Climax:
+    if any(k in style_lower for k in ["urgent", "action", "intense", "fast", "shocking", "fight", "climax", "war"]):
+        rate_val = base_rate_val + 3   # e.g. +7%
+        pitch_val = base_pitch_val + 2  # e.g. +10Hz
+    # 2. Suspenseful / Mysterious / Secret / Whisper:
+    elif any(k in style_lower for k in ["suspense", "mysterious", "secret", "whisper", "deep"]):
+        rate_val = base_rate_val - 2   # e.g. +2% (paced for suspense)
+        pitch_val = base_pitch_val - 1  # e.g. +7Hz
+    # 3. Thoughtful / Emotional / Sorrow / Devotional / Peaceful / Calm:
+    elif any(k in style_lower for k in ["thoughtful", "emotional", "sorrow", "devotional", "peaceful", "calm", "wisdom", "sad"]):
+        rate_val = base_rate_val - 3   # e.g. +1% (deep, serene)
+        pitch_val = base_pitch_val - 2  # e.g. +6Hz
+    # 4. Dialogue (direct quoted speech):
+    elif is_dialogue:
+        rate_val = base_rate_val - 1   # e.g. +3%
+        pitch_val = base_pitch_val - 2  # e.g. +6Hz
+    else:
+        rate_val = base_rate_val
+        pitch_val = base_pitch_val
+
+    rate = f"{'+' if rate_val >= 0 else ''}{rate_val}%"
+    pitch = f"{'+' if pitch_val >= 0 else ''}{pitch_val}Hz"
+    vol = cfg.get("volume", "+0%")
     comm = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch, volume=vol)
     with open(out, "wb") as f:
         async for ch in comm.stream():
@@ -571,17 +600,19 @@ def synth_speech(text, cfg, out):
 
 
 # ------------------------------------------------------- post-processing
-def _tighten(raw, out, tempo, lead, tail, squeeze=0.0, normalize=True):
+def _tighten(raw, out, tempo, lead, tail, squeeze=0.0, normalize=True, filter_chain=None):
     """Trim leading/trailing silence, optional gentle pause squeeze, tempo, loudness, lead/tail pad."""
     trim = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05"
     af = f"{trim},areverse,{trim},areverse"
+    if filter_chain:
+        af += f",{filter_chain}"
+    elif normalize:
+        af += ",loudnorm=I=-16:TP=-1.5:LRA=11"
     if squeeze and squeeze > 0:
         # only shorten pauses longer than `squeeze` sec, down to 0.25s (keeps natural breathing)
         af += f",silenceremove=stop_periods=-1:stop_duration={squeeze}:stop_threshold=-42dB:stop_silence=0.25"
     if abs(tempo - 1.0) > 0.01:
         af += f",atempo={tempo:.3f}"
-    if normalize:
-        af += ",loudnorm=I=-16:TP=-1.5:LRA=11"
     af += f",adelay={int(lead * 1000)}:all=1,apad=pad_dur={tail},asetpts=PTS-STARTPTS"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-fflags", "+genpts", "-avoid_negative_ts", "make_zero",
                     "-i", str(raw), "-af", af,
@@ -617,7 +648,18 @@ def narrate(scenes, workdir, cfg, pad=0.45):
 
         tail = tail_last_s if i == len(scenes) - 1 else tail_s
         try:
-            _tighten(raw, padded, tempo, lead_s, tail, squeeze, normalize)
+            filter_chain = cfg.get("filter_chain")
+            if not filter_chain and cfg.get("lofi", {}).get("enabled"):
+                l = cfg["lofi"]
+                filter_chain = (
+                    f"highpass=f={l.get('highpass_hz', 120)},"
+                    f"lowpass=f={l.get('lowpass_hz', 3800)},"
+                    f"acrusher=bits={l.get('bitcrush_bits', 12)}:mix={l.get('bitcrush_mix', 0.25)},"
+                    f"equalizer=f=1600:width_type=o:width=1.0:g=2.5,"
+                    f"aecho=0.9:{l.get('echo_gain', 0.08)}:{l.get('reverb_ms', 60)}:{l.get('reverb_decay', 0.25)},"
+                    f"loudnorm=I=-14:TP=-1.0:LRA=8"
+                )
+            _tighten(raw, padded, tempo, lead_s, tail, squeeze, normalize, filter_chain=filter_chain)
             if dur(padded) < lead_s + tail + 0.4:
                 raise RuntimeError("over-trimmed")
         except Exception as e:

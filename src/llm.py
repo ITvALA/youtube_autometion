@@ -652,65 +652,66 @@ STYLE_RULE = {
 
 
 def generate_fallback_plan(book, custom_script=None):
-    b_title = book.get("title", "5000 VS 1 LAKH")
+    b_title = book.get("title", "सनातन ज्ञान और कर्म की शक्ति")
+    clean_title = re.sub(r'[:|/\\]+', ' ', b_title).strip()
     return {
         "youtube": {
-            "title": f"{b_title}: Raja Ka Krishna War Secret ⚔️ | MindSpark",
-            "description": f"{b_title} - Mahabharat aur Rajput itihas ka wo gupt rahasya jo itihaas badal gaya. #Shorts #MindSpark #History",
-            "tags": ["MindSpark", "Mahabharat", "History", "KrishnaNeeti", "Shorts"]
+            "title": f"{clean_title} | सनातन का अनसुना रहस्य 🔱",
+            "description": f"{clean_title} - सनातन धर्म, वेदों और कर्म की वो दिव्य शक्ति जो आपका जीवन बदल देगी। #Shorts #Sanatan #MindSpark #Karma",
+            "tags": ["MindSpark", "Sanatan", "Karma", "Wisdom", "Shorts", "Mahabharat"]
         },
         "scenes": [
             {
                 "type": "hook",
-                "narration": "5000 सैनिक और सामने 1 लाख की फ़ौज! राजा हारने वाला था, तभी याद आई श्रीकृष्ण की गुप्त नीति।",
-                "tts_text": "5000 सैनिक और सामने 1 लाख की फ़ौज! राजा हारने वाला था, तभी याद आई श्रीकृष्ण की गुप्त नीति।",
+                "narration": f"क्या आप जानते हैं {clean_title} के पीछे छिपा सबसे बड़ा रहस्य क्या है?",
+                "tts_text": f"क्या आप जानते हैं {clean_title} के पीछे छिपा सबसे बड़ा रहस्य क्या है?",
                 "delivery": "suspenseful, urgent",
                 "data": {
-                    "title": "5000 VS 1 LAKH",
-                    "sub": "Krishna War Secret",
-                    "visual": {"items": [{"icon": "char:raja", "label": "महाराणा राजा"}, {"icon": "skull", "label": "१ लाख फ़ौज"}]}
+                    "title": clean_title[:20].upper(),
+                    "sub": "Sanatan Secret",
+                    "visual": {"items": [{"icon": "char:krishna", "label": "दिव्य ज्ञान"}, {"icon": "crown", "label": "सनातन सत्य"}]}
                 }
             },
             {
                 "type": "card",
-                "narration": "गीता में श्रीकृष्ण ने सिखाया था: युद्ध शक्ति से नहीं, दुश्मन के दिमाग में भय पैदा करके जीतो।",
-                "tts_text": "गीता में श्रीकृष्ण ने सिखाया था: युद्ध शक्ति से नहीं, दुश्मन के दिमाग में भय पैदा करके जीतो।",
-                "delivery": "deep, strategic",
+                "narration": "संसार में हर कर्म का फल निश्चित है। जो धैर्य और सत्य के साथ चलता है, विजय उसी की होती है।",
+                "tts_text": "संसार में हर कर्म का फल निश्चित है। जो धैर्य और सत्य के साथ चलता है, विजय उसी की होती है।",
+                "delivery": "thoughtful, deep",
                 "data": {
-                    "lines": ["Dushman ke dimaag ko todo", "Raat ke andhere ka istemaal", "Aapas me bhidwa do"],
-                    "visual": {"items": [{"icon": "char:krishna", "label": "श्रीकृष्ण नीति"}, {"icon": "chess", "label": "रणनीति"}]}
+                    "lines": ["Satya par dridh raho", "Dhairya hi sabse bada bal hai", "Karm ka niyam atal hai"],
+                    "visual": {"items": [{"icon": "om", "label": "सत्य"}, {"icon": "shield", "label": "धैर्य"}]}
                 }
             },
             {
                 "type": "paper",
-                "narration": "रात के अँधेरे में राजा ने पहाड़ों पर हज़ारों मशालें जला दीं, दुश्मन में भगदड़ मच गई।",
-                "tts_text": "रात के अँधेरे में राजा ने पहाड़ों पर हज़ारों मशालें जला दीं, दुश्मन में भगदड़ मच गई।",
-                "delivery": "mysterious, intense",
+                "narration": "कठिन से कठिन परिस्थिति में भी यदि आपका मन शांत है, तो कोई शक्ति आपको पराजित नहीं कर सकती।",
+                "tts_text": "कठिन से कठिन परिस्थिति में भी यदि आपका मन शांत है, तो कोई शक्ति आपको पराजित नहीं कर सकती।",
+                "delivery": "wisdom, calm",
                 "data": {
-                    "title": "RAAT KA CHAKRAVYUH",
-                    "points": ["Pahadon par hazaron mashaalein", "Bhaari sena ka bhram", "Dushman me afra-tafri"],
-                    "visual": {"items": [{"icon": "char:warrior", "label": "राजપૂત योद्धा"}, {"icon": "fire", "label": "मशालों की आग"}]}
+                    "title": "SHANT MAN KA BAL",
+                    "points": ["Man ki shanti", "Sahi nirnay", "Aparajit sankalp"],
+                    "visual": {"items": [{"icon": "char:guru", "label": "ऋषि ज्ञान"}, {"icon": "fire", "label": "आत्मबल"}]}
                 }
             },
             {
                 "type": "beforeAfter",
-                "narration": "दुश्मन आपस में ही लड़कर ख़त्म हो गया, और 5000 सैनिकों ने इतिहास रच दिया!",
-                "tts_text": "दुश्मन आपस में ही लड़कर ख़त्म हो गया, और 5000 सैनिकों ने इतिहास रच दिया!",
-                "delivery": "shocking, dramatic",
+                "narration": "भय और संशय हार का कारण बनते हैं, जबकि ईश्वर पर विश्वास असंभव को भी संभव बना देता है!",
+                "tts_text": "भय और संशय हार का कारण बनते हैं, जबकि ईश्वर पर विश्वास असंभव को भी संभव बना देता है!",
+                "delivery": "shocking, powerful",
                 "data": {
-                    "before": "1 Lakh Mughal Fauj",
-                    "after": "5000 Sainikon Ki Jeet",
-                    "visual": {"items": [{"icon": "char:raja", "label": "राजा की जीत"}, {"icon": "trophy", "label": "इतिहास रचा"}]}
+                    "before": "Bhay aur Sanshay",
+                    "after": "Ishwar Par Vishwas",
+                    "visual": {"items": [{"icon": "target", "label": "लक्ष्य"}, {"icon": "trophy", "label": "महाविजय"}]}
                 }
             },
             {
                 "type": "quote",
-                "narration": "संकट चाहे 1 लाख का हो, श्रीकृष्ण की नीति से जीत निश्चित है। फॉलो माइंडस्पार्क!",
-                "tts_text": "संकट चाहे 1 लाख का हो, श्रीकृष्ण की नीति से जीत निश्चित है। फॉलो माइंडस्पार्क!",
-                "delivery": "powerful, inspiring",
+                "narration": "सत्य और धर्म की राह पर चलने वालों का मार्गदर्शन स्वयं परमात्मा करते हैं। सब्सक्राइब करें MindSpark!",
+                "tts_text": "सत्य और धर्म की राह पर चलने वालों का मार्गदर्शन स्वयं परमात्मा करते हैं। सब्सक्राइब करें MindSpark!",
+                "delivery": "inspiring, devotional",
                 "data": {
-                    "quote": "Neeti Sahi Ho Toh Jeet Nischit Hai",
-                    "by": "Shri Krishna Neeti"
+                    "quote": "Dharmo Rakshati Rakshitah",
+                    "by": "Sanatan Satya"
                 }
             }
         ]

@@ -4,7 +4,7 @@
  * Creates public/myth-audio/{score,whoosh,bell,bell2,thump,snap}.wav used by mindspark-myth-engine.tsx
  * Change SEED to get a differently-textured score for a new video style.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, statSync, mkdirSync, writeFileSync } from 'node:fs';
 
 const SR = 44100;
 const DIRS = ['public/myth-audio', 'remotion/public/myth-audio'];
@@ -31,16 +31,21 @@ const wav = (name, data, gain = 0.8) => {
 };
 const make = (sec, fn) => Float64Array.from({ length: Math.floor(SR * sec) }, (_, i) => fn(i / SR, i));
 
-// SCORE: 60 s drone pad (loops in Remotion). Loop-safe: all LFO periods divide 60 s.
-wav('score', make(60, (t) => {
-  let v = 0;
-  for (const [f, g] of [[73.4, 0.5], [110, 0.35], [146.8, 0.25], [220.5, 0.12], [329.6, 0.05]]) {
-    const lfo = 0.7 + 0.3 * Math.sin(2 * Math.PI * (Math.round((0.11 + f / 2000) * 60) / 60) * t);
-    v += g * Math.sin(2 * Math.PI * f * t + 0.4 * Math.sin(2 * Math.PI * 0.2 * t)) * lfo;
-  }
-  const edge = Math.min(1, t / 0.05, (60 - t) / 0.05); // tiny edge fade, avoids loop click
-  return v * edge;
-}), 0.7);
+// SCORE: Preserved authentic Lo-Fi chill beat from @sanatan.unfold
+const scoreExists = DIRS.every(d => existsSync(`${d}/score.wav`) && statSync(`${d}/score.wav`).size > 500000);
+if (!scoreExists) {
+  wav('score', make(60, (t) => {
+    let v = 0;
+    for (const [f, g] of [[73.4, 0.5], [110, 0.35], [146.8, 0.25], [220.5, 0.12], [329.6, 0.05]]) {
+      const lfo = 0.7 + 0.3 * Math.sin(2 * Math.PI * (Math.round((0.11 + f / 2000) * 60) / 60) * t);
+      v += g * Math.sin(2 * Math.PI * f * t + 0.4 * Math.sin(2 * Math.PI * 0.2 * t)) * lfo;
+    }
+    const edge = Math.min(1, t / 0.05, (60 - t) / 0.05); // tiny edge fade, avoids loop click
+    return v * edge;
+  }), 0.7);
+} else {
+  console.log('Preserving authentic Lo-Fi chill score.wav');
+}
 
 // WHOOSH: filtered noise swell (scene transition)
 {

@@ -82,14 +82,15 @@ def pick_myth_topic(forced=None):
     topics = jload(ROOT / "data" / "myth_topics.json", [])
     if forced:
         for t in topics:
-            if t["title"].lower() == forced.lower() or t.get("topic", "").lower() == forced.lower():
+            if t.get("topic", "").lower() == forced.lower() or t.get("title", "").lower() == forced.lower():
                 return t
-        return {"title": forced, "summary": forced}
+        return {"title": forced, "summary": forced, "topic": slug(forced) or "custom"}
     if not topics:
-        return {"title": "श्रीकृष्ण और अर्जुन: कुरुक्षेत्र का रहस्य", "summary": "कुरुक्षेत्र में गीता ज्ञान और विराट रूप।"}
+        return {"title": "श्रीकृष्ण और अर्जुन: कुरुक्षेत्र का रहस्य", "topic": "krishna_arjuna", "summary": "कुरुक्षेत्र में गीता ज्ञान और विराट रूप।"}
     hist = jload(ROOT / "data" / "myth_history.json", [])
-    used = {h.get("topic_title", "") for h in hist[-25:] if isinstance(h, dict)}
-    left = [t for t in topics if t.get("title") not in used]
+    used_ids = {h.get("topic_id") for h in hist if isinstance(h, dict) and h.get("topic_id")}
+    used_titles = {h.get("topic_title") for h in hist if isinstance(h, dict) and h.get("topic_title")}
+    left = [t for t in topics if t.get("topic") not in used_ids and t.get("title") not in used_titles]
     if not left:
         print("[Myth] All recent topics exhausted. Resetting topic pool...")
         left = topics
@@ -118,14 +119,15 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
     plan = llm.make_myth_plan(topic, custom_script=custom_script)
 
     unique_ts = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    key = f"{unique_ts}_myth_{slug(topic['title'])}"
+    topic_slug = topic.get("topic") or slug(topic.get("title", "")) or f"story_{seed}"
+    key = f"{unique_ts}_myth_{topic_slug}"
     work = ROOT / "data" / "work" / key
     out = ROOT / "data" / "output" / key
     work.mkdir(parents=True, exist_ok=True)
     out.mkdir(parents=True, exist_ok=True)
 
-    # Voiceover generation per scene
-    print(f"🎙️ Synthesizing scene voiceovers via {voice_cfg.get('provider', 'raju_clone')}...")
+    # Voiceover generation per scene with Cool Master Filter Chain + Dynamic Emotion Modulation
+    print(f"🎙️ Synthesizing scene voiceovers via {voice_cfg.get('provider', 'edge-tts')} (Cool Master 4C + Dynamic Cadence)...")
     rem_voice_dir = ROOT / "remotion" / "public" / "voice" / key
     pub_voice_dir = ROOT / "public" / "voice" / key
     rem_voice_dir.mkdir(parents=True, exist_ok=True)
@@ -133,31 +135,44 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
 
     for i, sc in enumerate(plan["scenes"]):
         raw_mp3 = work / f"s{i}_raw.mp3"
+        proc_mp3 = work / f"s{i}_proc.mp3"
         voice_rel = f"voice/{key}/s{i}.mp3"
         dest_rem = rem_voice_dir / f"s{i}.mp3"
         dest_pub = pub_voice_dir / f"s{i}.mp3"
 
         narr_text = sc.get("narration", "").strip()
-        tts.synth_speech(narr_text, voice_cfg, raw_mp3)
-        shutil.copyfile(raw_mp3, dest_rem)
-        shutil.copyfile(raw_mp3, dest_pub)
+        sc_cfg = dict(voice_cfg)
+        if sc.get("delivery"):
+            sc_cfg["delivery"] = sc["delivery"]
+            sc_cfg["style"] = sc["delivery"]
+        tts.synth_speech(narr_text, sc_cfg, raw_mp3)
+
+        # Apply 4C Cool Tone DSP Filter Chain (-14 LUFS, crisp presence, 280Hz mud cut, zero ringing):
+        try:
+            tts._tighten(raw_mp3, proc_mp3, tempo=1.0, lead=0.08, tail=0.32, filter_chain=voice_cfg.get("filter_chain"))
+        except Exception as te:
+            print(f"[Myth] Tighten skipped for scene {i}: {te}")
+            shutil.copyfile(raw_mp3, proc_mp3)
+
+        shutil.copyfile(proc_mp3, dest_rem)
+        shutil.copyfile(proc_mp3, dest_pub)
 
         try:
-            v_sec = round(tts.dur(raw_mp3), 3)
+            v_sec = round(tts.dur(proc_mp3), 3)
         except Exception:
             v_sec = float(sc.get("sec", 5))
 
         sc["voice"] = voice_rel
         sc["voiceSec"] = v_sec
-        print(f"  [Scene {i}] {v_sec}s | {sc.get('beat')} | voice: {voice_rel}")
+        print(f"  [Scene {i}] {v_sec}s | {sc.get('beat')} | delivery: {sc.get('delivery')} | voice: {voice_rel}")
 
     myth_props = {
         "scenes": plan["scenes"],
         "seed": seed,
         "music": True,
         "sfx": True,
-        "musicVol": 0.5,
-        "duckedVol": 0.2,
+        "musicVol": 0.16,
+        "duckedVol": 0.08,
         "voiceVol": 1.0
     }
     jsave(work / "myth_props.json", myth_props)
@@ -213,8 +228,10 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
     jsave(out / "meta.json", meta)
     jsave(out / "plan.json", myth_props)
 
+    topic_id = topic.get("topic") or slug(topic.get("title", "")) or f"topic_{seed}"
     myth_hist = jload(ROOT / "data" / "myth_history.json", [])
     myth_hist.append({
+        "topic_id": topic_id,
         "topic_title": topic["title"],
         "date": str(datetime.date.today()),
         "seed": seed,
@@ -243,7 +260,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--book")
     ap.add_argument("--script", help="Custom user script or arbitrary topic")
-    ap.add_argument("--mode", choices=["book", "myth"], default="book", help="Pipeline mode: 'book' (default) or 'myth'")
+    ap.add_argument("--mode", choices=["book", "myth"], default="myth", help="Pipeline mode: 'myth' (default) or 'book'")
     ap.add_argument("--myth", action="store_true", help="Shortcut for --mode myth")
     ap.add_argument("--template")
     ap.add_argument("--style", help="Force Vox style ID (v001 ... v212)")
