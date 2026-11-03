@@ -2187,10 +2187,10 @@
     ]
   },
   {
-    "book": "Raja Vikramaditya Aur Betaal: Nyaya Ki Gupt Kathayein",
+    "book": "Bhishma Pitamah Ka Gupt Vachan Aur Ichha Mrityu",
     "date": "2026-11-03",
     "theme": {
-      "palette": "Style v198 (v3)",
+      "palette": "Style v125 (v0)",
       "colors": {
         "bg1": "#111111",
         "bg2": "#222222",
@@ -2210,7 +2210,7 @@
       },
       "formatName": "vertical"
     },
-    "template_id": "style_v198",
+    "template_id": "style_v125",
     "sceneTypes": [
       "hook",
       "card",
