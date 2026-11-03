@@ -1,10 +1,26 @@
 {
-  "dir_name": "out",
-  "file_id": "BAACAgUAAxkDAAIBFmrpkGVZdDfxZh8ceB9RUtluuhilAALEKQACQ7xJVxf3LseLm5_tPQQ",
-  "file_unique_id": "AgADxCkAAkO8SVc",
-  "message_id": 278,
-  "caption": "\ud83c\udfac *New Reel Ready for Review!*\n\nTest caption from notify.py with _special_ *markdown* chars [test]\n\n\ud83d\udc49 Tap *PASS* button to upload immediately to YouTube!",
-  "meta": {},
-  "timestamp": 1793691750,
-  "status": "pending_review"
+  "dir_name": "2026-11-03_083938_myth_",
+  "file_id": "BAACAgUAAxkDAAIBF2rpnq4Y5jcScHJOSWQgGPNauHCOAAJqKgACQ7xJV_2H8vj7qx-rPQQ",
+  "file_unique_id": "AgADaioAAkO8SVc",
+  "message_id": 279,
+  "caption": "🎬 *New Reel Ready for Review!*\n\n🔱 *नृसिंह अवतार: जब खंभे से निकले भगवान! 🔱*\n\n✨ MindSpark Mythology Shorts (MythShort)\n🎲 Seed: 165778 | 9:16 Vertical\n\n👉 Tap *PASS* button to upload immediately to YouTube!",
+  "meta": {
+    "mode": "myth",
+    "topic": "भगवान नृसिंह अवतार: भक्त प्रह्लाद की रक्षा",
+    "title": "नृसिंह अवतार: जब खंभे से निकले भगवान! 🔱",
+    "description": "हिरण्यकश्यप के अहंकार को तोड़कर खंभे से प्रकट हुए भगवान नृसिंह का महाप्रलयकारी रूप। भक्त प्रह्लाद की अद्भुत कहानी! #Shorts #Mythology #MindSpark",
+    "tags": [
+      "MindSpark",
+      "Mythology",
+      "Shorts",
+      "HinduMythology",
+      "Hindi"
+    ],
+    "privacy": "public",
+    "seed": 165778,
+    "scenes_count": 7
+  },
+  "timestamp": 1793695406,
+  "status": "pending_review",
+  "run_id": "41604266357"
 }
