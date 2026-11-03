@@ -259,7 +259,20 @@ def _synth_gemini(text, cfg, out):
 async def _synth_edge_async(text, cfg, out):
     import edge_tts
     voice = cfg.get("voice") or "hi-IN-MadhurNeural"
-    comm = edge_tts.Communicate(text, voice, rate=cfg.get("rate", "+0%"), pitch=cfg.get("pitch", "+0Hz"))
+    # Dialogue vs Narration Raju tuning:
+    is_dialogue = bool(
+        "'" in text or '"' in text or "‘" in text or "’" in text or "“" in text or "”" in text or
+        "बोले" in text or "कहा" in text or "पूछा" in text
+    )
+    if is_dialogue:
+        rate = cfg.get("rate_dialogue", "-5%")
+        pitch = cfg.get("pitch_dialogue", "-3Hz")
+    else:
+        rate = cfg.get("rate", "-10%")
+        pitch = cfg.get("pitch", "-6Hz")
+
+    vol = cfg.get("volume", "+5%")
+    comm = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch, volume=vol)
     with open(out, "wb") as f:
         async for ch in comm.stream():
             if ch["type"] == "audio":
@@ -489,7 +502,7 @@ def _synth_raju_clone(text, cfg, out):
 
 
 PROVIDERS = {
-    "raju_clone": _synth_raju_clone, "xtts_clone": _synth_raju_clone, "voice_clone": _synth_raju_clone,
+    "raju_clone": _synth_edge, "xtts_clone": _synth_edge, "voice_clone": _synth_edge, "raju": _synth_edge,
     "gemini_tts": _synth_gemini, "gemini": _synth_gemini,
     "google_chirp": _synth_google_chirp, "google": _synth_google_chirp, "chirp3": _synth_google_chirp,
     "edge-tts": _synth_edge, "edge": _synth_edge,

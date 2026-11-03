@@ -1,16 +1,17 @@
 {
   "providers": [
+    "edge-tts",
     "raju_clone"
   ],
-  "provider": "raju_clone",
-  "selected_voice_id": "raju_xtts2_demo3",
-  "selected_voice_name": "Raju Clone XTTS-v2 (Level 1 Warm Studio Mic - Demo 3 Locked)",
-  "voice": "Raju_XTTS2",
+  "provider": "edge-tts",
+  "selected_voice_id": "raju_golden_edge",
+  "selected_voice_name": "Raju Voice (Edge-TTS Golden Formula: -6Hz/-3Hz)",
+  "voice": "hi-IN-MadhurNeural",
   "voices": {
-    "raju_clone": "https://raw.githubusercontent.com/ITvALA/youtube_autometion/main/data/voice_references/slice_5s.wav",
+    "edge-tts": "hi-IN-MadhurNeural",
+    "raju_clone": "hi-IN-MadhurNeural",
     "gemini_tts": "Charon",
-    "google_chirp": "hi-IN-Chirp3-HD-Charon",
-    "edge-tts": "hi-IN-MadhurNeural"
+    "google_chirp": "hi-IN-Chirp3-HD-Charon"
   },
   "gemini_models": [
     "gemini-3.8-flash-tts",
@@ -21,8 +22,11 @@
   "language_code": "hi-IN",
   "fallback_voice": "hi-IN-MadhurNeural",
   "speed": 1.0,
-  "rate": "+0%",
-  "pitch": "+0Hz",
+  "rate": "-10%",
+  "pitch": "-6Hz",
+  "volume": "+5%",
+  "rate_dialogue": "-5%",
+  "pitch_dialogue": "-3Hz",
   "monthly_char_limit": 950000,
   "cache": true,
   "normalize": true,
@@ -30,13 +34,6 @@
   "lead": 0.12,
   "tail": 0.5,
   "tail_last": 0.5,
-  "squeeze_pauses": -0.5,
-  "eq_preset": "level1_warm",
-  "description": "Demo 3 Locked: Raju XTTS-v2 + Level 1 Warm Studio Mic EQ + 1.0 Tempo + 0.12s Lead + 0.5s Tail + -0.5 Squeeze.",
-  "xtts_spaces": [
-    "JymNils/Voice-Cloning-XTTS-v2",
-    "minsus/Voice-Cloning-XTTS-v2",
-    "Fatimamirza970/Voice-Cloning-XTTS-v2",
-    "hasanbasbunar/Voice-Cloning-XTTS-v2"
-  ]
+  "squeeze_pauses": 0.0,
+  "description": "Raju Golden Formula: hi-IN-MadhurNeural with Narration (-10% / -6Hz) & Dialogue (-5% / -3Hz) + Devanagari Pauses."
 }
