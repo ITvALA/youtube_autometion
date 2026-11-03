@@ -663,8 +663,8 @@ def generate_fallback_plan(book, custom_script=None):
         "scenes": [
             {
                 "type": "hook",
-                "narration": f"क्या आप जानते हैं {clean_title} के पीछे छिपा सबसे बड़ा रहस्य क्या है?",
-                "tts_text": f"क्या आप जानते हैं {clean_title} के पीछे छिपा सबसे बड़ा रहस्य क्या है?",
+                "narration": f"क्या आपको पता है {clean_title} के पीछे छिपा सबसे बड़ा रहस्य क्या है?",
+                "tts_text": f"क्या आपको पता है {clean_title} के पीछे छिपा सबसे बड़ा रहस्य क्या है?",
                 "delivery": "suspenseful, urgent",
                 "data": {
                     "title": clean_title[:20].upper(),
@@ -811,17 +811,17 @@ def generate_fallback_myth_plan(topic=None):
     return {
         "youtube": {
             "title": f"{title} ⚔️ | MindSpark Mythology",
-            "description": f"{title} - भारतीय पौराणिक कथाओं का अद्भुत रहस्य और धर्म युद्ध। #Mythology #Shorts #MindSpark #Mahabharat",
-            "tags": ["MindSpark", "Mythology", "Shorts", "Mahabharat", "Krishna", "ShriKrishna", "Hindi"]
+            "description": f"{title} - सनातन धर्म और भारतीय पौराणिक कथाओं का अनसुना रहस्य। #Mythology #Shorts #MindSpark #Sanatan",
+            "tags": ["MindSpark", "Mythology", "Shorts", "Sanatan", "Krishna", "ShriKrishna", "Hindi"]
         },
         "scenes": [
             {
                 "sec": 5,
                 "beat": "intro",
                 "bg": "temple",
-                "actors": [{"who": "ravana", "pose": "stand", "x": 540, "weapon": "gada"}],
-                "caption": {"title": "५००० सैनिक बनाम १ लाख", "text": "राजा युद्ध से पहले घबरा गया..."},
-                "narration": "५००० सैनिक और सामने १ लाख की फ़ौज! राजा महायुद्ध से पहले घबरा गया।",
+                "actors": [{"who": "krishna", "pose": "stand", "x": 540}],
+                "caption": {"title": "अनसुना रहस्य", "text": "क्या आपको पता है?"},
+                "narration": f"क्या आपको पता है {title} के पीछे छिपा सबसे बड़ा दिव्य रहस्य क्या है?",
                 "focus": 0
             },
             {
@@ -930,7 +930,7 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
 STRICT RULES (SANATAN UNFOLD VIRAL BLUEPRINT):
 1. Scenes count: 6 to 8 scenes. Each scene duration 'sec': 4 to 6 seconds (Total 35-42s).
 2. SCENE 1 (THE VIRAL HOOK):
-   - MUST open with an intriguing contrarian question or unheard secret like Sanatan Unfold (e.g. 'क्या आप जानते हैं कि...?', 'द्रोण नहीं थे पहले गुरु?').
+   - MUST open with an intriguing contrarian question starting strictly with 'क्या आपको पता है...?' (e.g. 'क्या आपको पता है कि...?', 'क्या आपको पता है द्रोण नहीं थे पहले गुरु?'). NEVER use 'क्या आप जानते हैं' — ALWAYS use 'क्या आपको पता है'.
 3. MIDDLE SCENES (UNFOLDING & REVELATION):
    - Scene 2 & 3: Deep dialogue (Guru & Shishya or characters confronting fate).
    - Scene 4 & 5: The dramatic reveal (the curse, the boon, the sacred weapon, or the hidden reason).
@@ -963,6 +963,16 @@ STRICT RULES (SANATAN UNFOLD VIRAL BLUEPRINT):
             if "{" in raw and "}" in raw:
                 raw = raw[raw.index("{"): raw.rindex("}") + 1]
             plan = json.loads(raw)
+
+            # Auto-replace "क्या आप जानते" with "क्या आपको पता है" per user directive
+            for sc in plan.get("scenes", []):
+                for k in ["narration", "tts_text"]:
+                    if sc.get(k):
+                        sc[k] = sc[k].replace("क्या आप जानते हैं", "क्या आपको पता है").replace("क्या आप जानते हो", "क्या आपको पता है")
+                if sc.get("caption") and isinstance(sc["caption"], dict):
+                    for ck in ["title", "text"]:
+                        if sc["caption"].get(ck):
+                            sc["caption"][ck] = sc["caption"][ck].replace("क्या आप जानते हैं", "क्या आपको पता है").replace("क्या आप जानते हो", "क्या आपको पता है")
 
             # Enforce MindSpark brand at the end
             if plan.get("scenes") and len(plan["scenes"]) > 0:
