@@ -141,6 +141,8 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
         dest_pub = pub_voice_dir / f"s{i}.mp3"
 
         narr_text = sc.get("narration", "").strip()
+        # Ensure visual scene cues [Scene ...] or (Scene ...) are NEVER pronounced by TTS (100% silent)
+        narr_text = re.sub(r'\[.*?\]|\(.*?\)|दृश्य\s*\d*[:\-]?|Scene\s*\d*[:\-]?', '', narr_text).strip()
         sc_cfg = dict(voice_cfg)
         if sc.get("delivery"):
             sc_cfg["delivery"] = sc["delivery"]

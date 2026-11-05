@@ -277,7 +277,7 @@ def _call_groq(prompt):
         raise RuntimeError("GROQ_API_KEY not configured in environment")
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-    models = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b"]
+    models = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
     last_err = None
     for m in models:
         try:
@@ -801,7 +801,7 @@ ROSTER_GODS = {
 }
 MYTH_BEATS = {"intro", "talk", "reveal", "fight", "victory"}
 MYTH_BGS = {"forest", "pond", "temple", "battlefield", "sky"}
-MYTH_POSES = {"stand", "sit", "fly", "fight", "walk", "pray"}
+MYTH_POSES = {"stand", "sit", "fly", "fight", "walk", "pray", "point", "talk"}
 MYTH_WEAPONS = {"none", "gada", "bow", "trishul", "chakra", "sword"}
 MYTH_SHOTS = {"wide", "medium", "closeup", "extreme", "low", "high", "dutch", "side", "sideR", "over"}
 MYTH_MOVES = {"still", "pushIn", "pullOut", "panL", "panR", "tiltUp", "craneDown", "orbit", "shake", "whip"}
@@ -962,7 +962,7 @@ def _detect_myth_actors_for_topic(title, summary=""):
     if any(k in text for k in ["रावण", "ravana", "सीता", "लंका", "कुंभकर्ण"]):
         return [
             [{"who": "ravana", "pose": "stand", "x": 540, "weapon": "sword"}],
-            [{"who": "rama", "pose": "stand", "x": 350, "weapon": "bow"}, {"who": "lakshmana", "pose": "stand", "x": 750, "flip": True, "weapon": "bow"}],
+            [{"who": "rama", "pose": "stand", "x": 350, "weapon": "bow"}, {"who": "soldier", "pose": "stand", "x": 750, "flip": True, "weapon": "bow"}],
             [{"who": "ravana", "pose": "fight", "x": 540, "weapon": "sword"}],
             [{"who": "rama", "pose": "fight", "x": 320, "weapon": "bow"}, {"who": "ravana", "pose": "fight", "x": 780, "flip": True, "weapon": "sword"}],
             [{"who": "rama", "pose": "stand", "x": 540, "weapon": "bow"}],
@@ -1022,6 +1022,8 @@ def generate_fallback_myth_plan(topic=None):
                 "sec": 5,
                 "beat": "intro",
                 "bg": "temple",
+                "scene_description": f"प्राचीन दिव्य मंदिर में {title} का रहस्यमयी उद्घाटन",
+                "camera": {"shot": "wide", "move": "pushIn"},
                 "actors": actors_seq[0],
                 "caption": {"title": "अनसुना रहस्य", "text": "क्या आपको पता है?"},
                 "narration": f"क्या आपको पता है {title} के पीछे कौन सा गहरा रहस्य छिपा है?",
@@ -1031,6 +1033,8 @@ def generate_fallback_myth_plan(topic=None):
                 "sec": 6,
                 "beat": "talk",
                 "bg": "forest",
+                "scene_description": f"शांत तपोवन में संवाद और कथा का गूढ़ रहस्य",
+                "camera": {"shot": "medium", "move": "panR"},
                 "actors": actors_seq[1],
                 "caption": {"title": "घटना का मोड़", "text": "इतिहास का अनकहा सच"},
                 "narration": f"{clean_summary}",
@@ -1040,6 +1044,8 @@ def generate_fallback_myth_plan(topic=None):
                 "sec": 5,
                 "beat": "reveal",
                 "bg": "pond",
+                "scene_description": f"सरोवर तट पर परीक्षा की घड़ी और संकल्प",
+                "camera": {"shot": "closeup", "move": "tiltUp"},
                 "actors": actors_seq[2],
                 "caption": {"title": "कठिन परीक्षा", "text": "संकल्प की घड़ी"},
                 "narration": f"{title} की इस कथा में जब परीक्षा की घड़ी आई, तब एक ऐसा अद्भुत निर्णय लिया गया जिसने सबको हतप्रभ कर दिया।",
@@ -1049,6 +1055,8 @@ def generate_fallback_myth_plan(topic=None):
                 "sec": 6,
                 "beat": "fight",
                 "bg": "battlefield",
+                "scene_description": f"महासंग्राम के रणक्षेत्र में भीषण अस्त्र-शस्त्रों का द्वंद्व",
+                "camera": {"shot": "dutch", "move": "shake"},
                 "actors": actors_seq[3],
                 "caption": {"title": "महासंग्राम", "text": "धर्म की प्रतिष्ठा"},
                 "narration": "धार्मिक मर्यादा और सत्य की रक्षा के लिए वह अद्भुत पराक्रम दिखाया गया जो इतिहास के पन्नों में सदा के लिए अमर हो गया।",
@@ -1058,6 +1066,8 @@ def generate_fallback_myth_plan(topic=None):
                 "sec": 5,
                 "beat": "victory",
                 "bg": "sky",
+                "scene_description": f"आकाश में दिव्य ऊर्जा का संचार और सत्य की विजय",
+                "camera": {"shot": "wide", "move": "craneDown"},
                 "actors": actors_seq[4],
                 "caption": {"title": "सत्य की विजय", "text": "अटल संकल्प की शक्ति"},
                 "narration": "इस महान गाथा ने सिद्ध कर दिया कि संकट कितना भी विकट हो, अंत में विजय सदा सत्य और धर्म की ही होती है।",
@@ -1067,6 +1077,8 @@ def generate_fallback_myth_plan(topic=None):
                 "sec": 6,
                 "beat": "victory",
                 "bg": "temple",
+                "scene_description": f"पवित्र मंदिर में सनातन धर्म और कर्तव्य पथ की अमर प्रतिष्ठा",
+                "camera": {"shot": "medium", "move": "pullOut"},
                 "actors": actors_seq[5],
                 "caption": {"title": "सनातन ज्ञान", "text": "MindSpark को सब्सक्राइब करें"},
                 "narration": f"{title} की यह पावन गाथा हमें अपने कर्तव्य पथ पर अडिग रहना सिखाती है। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
@@ -1114,6 +1126,11 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
       "sec": 5,
       "beat": "intro" | "talk" | "reveal" | "fight" | "victory",
       "bg": "forest" | "pond" | "temple" | "battlefield" | "sky",
+      "scene_description": "Silent visual scene direction in Devanagari Hindi describing the visual action, characters, and mood (NOT SPOKEN BY TTS)",
+      "camera": {{
+        "shot": "wide" | "medium" | "closeup" | "low" | "high" | "dutch",
+        "move": "pushIn" | "pullOut" | "panL" | "panR" | "shake" | "orbit"
+      }},
       "actors": [
         {{
           "who": "one of: {', '.join(sorted(list(ROSTER_GODS)))}",

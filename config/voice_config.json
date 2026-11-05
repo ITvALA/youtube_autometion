@@ -32,13 +32,14 @@
   "normalize": true,
   "tempo": 1.0,
   "lead": 0.08,
-  "tail": 0.30,
-  "tail_last": 0.40,
+  "tail": 0.3,
+  "tail_last": 0.4,
   "squeeze_pauses": 0.0,
   "filter_profile": "cool_master_4c",
   "filter_chain": "highpass=f=130,equalizer=f=280:width_type=o:width=1.0:g=-3.8,equalizer=f=3600:width_type=o:width=1.0:g=2.4,acompressor=threshold=-14dB:ratio=2.5:attack=15:release=120,loudnorm=I=-14:TP=-1.0:LRA=8",
   "lofi": {
-    "enabled": false
+    "enabled": true,
+    "volume": 0.18
   },
   "description": "Sanatan Cool Master (Setting 4C): hi-IN-MadhurNeural with Pitch (+8Hz), Rate (+4%), 130Hz Highpass, 280Hz chest mud cut (-3.8dB), 3.6kHz clarity boost (+2.4dB), smooth studio compressor, and -14 LUFS mobile punch."
 }
