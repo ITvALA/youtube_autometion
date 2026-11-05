@@ -22,6 +22,7 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { AbsoluteFill, Audio, Easing, Sequence, Series, staticFile, useCurrentFrame } from 'remotion';
 import { loadFont as loadNoto } from '@remotion/google-fonts/NotoSansDevanagari';
+import { ClashSparks, SlashTrail, FlyingArrows, ArmyMarch } from '../components/PuppetKit';
 
 const devanagariFont = loadNoto('normal', { weights: ['400', '700', '800'], subsets: ['devanagari'] }).fontFamily;
 
@@ -339,12 +340,21 @@ const Character: React.FC<{ a: Actor; frame: number }> = ({ a, frame }) => {
   const weapon = a.weapon ?? g.weapon;
   const angry = a.angry ?? a.pose === 'fight';
   const idle = Math.sin(frame / 9);
-  const walkPhase = a.pose === 'walk' ? Math.sin(frame / 3) * 22 : 0;
-  const swing = a.pose === 'fight' ? Math.sin(frame / 3.2) * 38 : a.pose === 'walk' ? -walkPhase : idle * 4;
-  const bob = a.pose === 'fly' ? Math.sin(frame / 7) * 22 : a.pose === 'sit' ? Math.sin(frame / 14) * 10 : a.pose === 'walk' ? Math.abs(Math.sin(frame / 3)) * 12 : idle * 3;
+  const walkPhase = a.pose === 'walk' ? Math.sin(frame / 3) * 24 : 0;
+  const swing = a.pose === 'fight' ? Math.sin(frame / 3.2) * 44 : a.pose === 'walk' ? -walkPhase : idle * 4;
+  const bob = a.pose === 'fly' ? Math.sin(frame / 7) * 24 : a.pose === 'sit' ? Math.sin(frame / 14) * 10 : a.pose === 'walk' ? Math.abs(Math.sin(frame / 3)) * 14 : idle * 3;
   const sitDrop = a.pose === 'sit' ? 125 : 0;
   const flyRot = a.pose === 'fly' ? 72 : 0;
   const lift = a.pose === 'fly' ? -260 : 0;
+
+  // Real kinematics: dynamic walk translation across ground
+  const walkDelta = a.pose === 'walk'
+    ? (1 - Math.min(1, frame / 40)) * (a.flip ? 180 : -180)
+    : 0;
+  const lungeX = a.pose === 'fight'
+    ? Math.sin(frame / 3.2) * 26 * (a.flip ? -1 : 1)
+    : 0;
+  const posX = a.x + walkDelta + lungeX;
   const body = (
     <g transform={`translate(0,${sitDrop + bob}) rotate(${flyRot} 0 0)`}>
       {/* aura for flying */}
@@ -391,7 +401,13 @@ const Character: React.FC<{ a: Actor; frame: number }> = ({ a, frame }) => {
   return (
     <svg
       width={560 * sc} height={820 * sc} viewBox="-280 -520 560 820"
-      style={{ position: 'absolute', left: a.x - 280 * sc, top: ground - 740 * sc, overflow: 'visible', filter: 'drop-shadow(0 18px 22px rgba(0,0,0,.45))' }}
+      style={{
+        position: 'absolute',
+        left: posX - 280 * sc,
+        top: ground - 740 * sc,
+        overflow: 'visible',
+        filter: 'drop-shadow(0 18px 22px rgba(0,0,0,.45))'
+      }}
     >
       <g transform={`scale(${a.flip ? -1 : 1},1) translate(0,${lift})`}>{body}</g>
     </svg>
@@ -556,11 +572,67 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number }> = ({ scen
   const focus = a ? { x: a.x, y: (a.y ?? 1280) - 560 * sc } : { x: 540, y: 900 };
   const cam = scene.camera!;
   const fadeIn = Math.min(1, frame / 6);
+  const auraPulse = scene.beat === 'reveal' ? 1 + Math.sin(frame * 0.15) * 0.12 : 1;
+
   return (
     <AbsoluteFill style={{ opacity: fadeIn }}>
       <Camera shot={cam.shot} move={cam.move} dur={dur} focus={focus}>
         <World kind={scene.bg} seed={seed} frame={frame} />
+
+        {/* Battlefield Marching Army silhouettes in background */}
+        {scene.bg === 'battlefield' && (
+          <Layer depth={0.48}>
+            <ArmyMarch frame={frame} direction={1} />
+          </Layer>
+        )}
+
+        {/* Characters with dynamic walk kinematics and combat lunges */}
         {scene.actors.map((ac, i) => (<Character key={i} a={ac} frame={frame} />))}
+
+        {/* Action Combat VFX (Sparks, Weapon Slash, Flying Arrows) */}
+        {scene.beat === 'fight' && (
+          <Layer depth={0.92}>
+            <FlyingArrows frame={frame} count={5} />
+            {[20, 48, 76].map((tf) => (
+              <ClashSparks
+                key={tf}
+                x={focus.x + (Math.sin(tf) * 35)}
+                y={(a?.y ?? 1280) - 340}
+                triggerFrame={tf}
+                frame={frame}
+              />
+            ))}
+            {[16, 44, 72].map((sf) => (
+              <SlashTrail
+                key={sf}
+                cx={focus.x + (a?.flip ? -60 : 60)}
+                cy={(a?.y ?? 1280) - 380}
+                radius={190}
+                startAngle={a?.flip ? 130 : -50}
+                endAngle={a?.flip ? 230 : 50}
+                frame={frame}
+                startFrame={sf}
+                duration={10}
+              />
+            ))}
+          </Layer>
+        )}
+
+        {/* Divine Revelation Sunburst Glow */}
+        {scene.beat === 'reveal' && (
+          <Layer depth={0.35}>
+            <ellipse
+              cx={focus.x}
+              cy={(a?.y ?? 1280) - 460}
+              rx={380 * auraPulse}
+              ry={380 * auraPulse}
+              fill="#ffd43b"
+              opacity={0.22}
+              style={{ filter: 'blur(35px)' }}
+            />
+          </Layer>
+        )}
+
         <Foreground kind={scene.bg} seed={seed} />
       </Camera>
       <DivineParticles frame={frame} seed={seed} />

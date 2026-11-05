@@ -274,7 +274,7 @@ def _call_gemini(prompt):
 def _call_groq(prompt):
     key = os.environ.get("GROQ_API_KEY", "").strip()
     if not key:
-        raise ValueError("GROQ_API_KEY is not set.")
+        raise RuntimeError("GROQ_API_KEY not configured in environment")
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     models = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b"]
@@ -332,21 +332,20 @@ def _call_openai_relay(prompt):
 def _call(prompt):
     """Multi-tier LLM engine: Gemini -> Groq -> OpenAI/Relay."""
     errors = []
-    # 1. Google Gemini
+    # 1. Google Gemini (if key configured)
     if os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY_2"):
         try:
             return _call_gemini(prompt)
         except Exception as e:
             errors.append(f"Gemini: {e}")
 
-    # 2. Groq (Fast & Free)
-    if os.environ.get("GROQ_API_KEY"):
-        try:
-            return _call_groq(prompt)
-        except Exception as e:
-            errors.append(f"Groq: {e}")
+    # 2. Groq (Always available with high speed)
+    try:
+        return _call_groq(prompt)
+    except Exception as e:
+        errors.append(f"Groq: {e}")
 
-    # 3. LLM Relay / OpenAI
+    # 3. LLM Relay / OpenAI (Backup)
     if os.environ.get("LLM_API_KEY") or os.environ.get("ANTHROPIC_API_KEY"):
         try:
             return _call_openai_relay(prompt)
@@ -894,10 +893,64 @@ def _detect_myth_actors_for_topic(title, summary=""):
             [{"who": "guru", "pose": "sit", "x": 350}, {"who": "karna", "pose": "pray", "x": 750, "flip": True}],
             [{"who": "karna", "pose": "sit", "x": 540}],
             [{"who": "guru", "pose": "stand", "x": 350}, {"who": "karna", "pose": "stand", "x": 750, "flip": True}],
-            [{"who": "karna", "pose": "stand", "x": 540, "weapon": "bow"}],
+            [{"who": "karna", "pose": "fight", "x": 340, "weapon": "bow"}, {"who": "soldier", "pose": "fight", "x": 760, "flip": True, "weapon": "sword"}],
             [{"who": "karna", "pose": "stand", "x": 540, "weapon": "bow"}]
         ]
-    if any(k in text for k in ["हनुमान", "hanuman", "बजरंग", "सुग्रीव", "वाली"]):
+    if any(k in text for k in ["बलि", "वामन", "bali", "vamana"]):
+        return [
+            [{"who": "raja", "pose": "stand", "x": 540}],
+            [{"who": "raja", "pose": "pray", "x": 330}, {"who": "vishnu", "pose": "stand", "x": 760, "flip": True, "weapon": "chakra"}],
+            [{"who": "vishnu", "pose": "stand", "x": 540, "weapon": "chakra"}],
+            [{"who": "raja", "pose": "pray", "x": 350}, {"who": "vishnu", "pose": "stand", "x": 750, "flip": True}],
+            [{"who": "raja", "pose": "pray", "x": 540}],
+            [{"who": "vishnu", "pose": "stand", "x": 540}]
+        ]
+    if any(k in text for k in ["भस्मासुर", "मोहिनी", "bhasmasura", "mohini"]):
+        return [
+            [{"who": "asura", "pose": "stand", "x": 540, "weapon": "gada"}],
+            [{"who": "shiva", "pose": "sit", "x": 330, "weapon": "trishul"}, {"who": "asura", "pose": "pray", "x": 760, "flip": True}],
+            [{"who": "asura", "pose": "fight", "x": 350, "weapon": "gada"}, {"who": "vishnu", "pose": "stand", "x": 750, "flip": True}],
+            [{"who": "vishnu", "pose": "stand", "x": 350}, {"who": "asura", "pose": "fight", "x": 750, "flip": True}],
+            [{"who": "asura", "pose": "fight", "x": 540}],
+            [{"who": "shiva", "pose": "stand", "x": 540, "weapon": "trishul"}]
+        ]
+    if any(k in text for k in ["दधीचि", "वज्र", "dadhichi", "vritrasura"]):
+        return [
+            [{"who": "rishi", "pose": "sit", "x": 540}],
+            [{"who": "rishi", "pose": "sit", "x": 330}, {"who": "indra", "pose": "pray", "x": 750, "flip": True, "weapon": "sword"}],
+            [{"who": "rishi", "pose": "pray", "x": 540}],
+            [{"who": "indra", "pose": "fight", "x": 340, "weapon": "sword"}, {"who": "asura", "pose": "fight", "x": 770, "flip": True, "weapon": "gada"}],
+            [{"who": "indra", "pose": "stand", "x": 540, "weapon": "sword"}],
+            [{"who": "rishi", "pose": "stand", "x": 540}]
+        ]
+    if any(k in text for k in ["वाल्मीकि", "रत्नाकर", "valmiki", "ratnakar"]):
+        return [
+            [{"who": "chor", "pose": "stand", "x": 540, "weapon": "sword"}],
+            [{"who": "chor", "pose": "stand", "x": 330, "weapon": "sword"}, {"who": "rishi", "pose": "stand", "x": 760, "flip": True}],
+            [{"who": "chor", "pose": "pray", "x": 540}],
+            [{"who": "rishi", "pose": "sit", "x": 540}],
+            [{"who": "rishi", "pose": "stand", "x": 540}],
+            [{"who": "rishi", "pose": "stand", "x": 540}]
+        ]
+    if any(k in text for k in ["शबरी", "shabari", "बेर"]):
+        return [
+            [{"who": "rishi", "pose": "pray", "x": 540}],
+            [{"who": "rishi", "pose": "pray", "x": 330}, {"who": "rama", "pose": "stand", "x": 750, "flip": True, "weapon": "bow"}],
+            [{"who": "rama", "pose": "sit", "x": 540}],
+            [{"who": "rishi", "pose": "pray", "x": 330}, {"who": "rama", "pose": "sit", "x": 750, "flip": True}],
+            [{"who": "rama", "pose": "stand", "x": 540, "weapon": "bow"}],
+            [{"who": "rama", "pose": "stand", "x": 540, "weapon": "bow"}]
+        ]
+    if any(k in text for k in ["प्रह्लाद", "होलिका", "नृसिंह", "prahlada", "narasimha"]):
+        return [
+            [{"who": "shishya", "pose": "pray", "x": 540}],
+            [{"who": "asura", "pose": "stand", "x": 330, "weapon": "sword"}, {"who": "shishya", "pose": "pray", "x": 750, "flip": True}],
+            [{"who": "narasimha", "pose": "stand", "x": 540}],
+            [{"who": "narasimha", "pose": "fight", "x": 340}, {"who": "asura", "pose": "fight", "x": 760, "flip": True, "weapon": "sword"}],
+            [{"who": "narasimha", "pose": "stand", "x": 540}],
+            [{"who": "shishya", "pose": "pray", "x": 540}]
+        ]
+    if any(k in text for k in ["हनुमान", "hanuman", "बजरंग", "सुग्रीव", "वाली", "संजीवनी", "लंका"]):
         return [
             [{"who": "hanuman", "pose": "stand", "x": 540}],
             [{"who": "rama", "pose": "stand", "x": 350, "weapon": "bow"}, {"who": "hanuman", "pose": "pray", "x": 760, "flip": True}],
@@ -915,7 +968,7 @@ def _detect_myth_actors_for_topic(title, summary=""):
             [{"who": "rama", "pose": "stand", "x": 540, "weapon": "bow"}],
             [{"who": "rama", "pose": "stand", "x": 540, "weapon": "bow"}]
         ]
-    if any(k in text for k in ["शिव", "shiva", "महादेव", "भोले", "नंदी", "पार्वती"]):
+    if any(k in text for k in ["शिव", "shiva", "महादेव", "भोले", "नंदी", "पार्वती", "नीलकंठ"]):
         return [
             [{"who": "shiva", "pose": "sit", "x": 540, "weapon": "trishul"}],
             [{"who": "rishi", "pose": "pray", "x": 330}, {"who": "shiva", "pose": "sit", "x": 750, "flip": True, "weapon": "trishul"}],
@@ -924,7 +977,7 @@ def _detect_myth_actors_for_topic(title, summary=""):
             [{"who": "shiva", "pose": "sit", "x": 540, "weapon": "trishul"}],
             [{"who": "shiva", "pose": "stand", "x": 540, "weapon": "trishul"}]
         ]
-    if any(k in text for k in ["अर्जुन", "arjuna", "गांडीव", "कुरुक्षेत्र"]):
+    if any(k in text for k in ["अर्जुन", "arjuna", "गांडीव", "कुरुक्षेत्र", "गीता"]):
         return [
             [{"who": "arjuna", "pose": "stand", "x": 540, "weapon": "bow"}],
             [{"who": "arjuna", "pose": "pray", "x": 330, "weapon": "bow"}, {"who": "krishna", "pose": "stand", "x": 760, "flip": True}],
@@ -936,7 +989,7 @@ def _detect_myth_actors_for_topic(title, summary=""):
     # Default to Krishna & divine wisdom
     return [
         [{"who": "krishna", "pose": "stand", "x": 540}],
-        [{"who": "raja", "pose": "stand", "x": 330}, {"who": "krishna", "pose": "stand", "x": 760, "flip": True}],
+        [{"who": "guru", "pose": "stand", "x": 330}, {"who": "shishya", "pose": "pray", "x": 760, "flip": True}],
         [{"who": "krishna", "pose": "sit", "x": 540}],
         [{"who": "krishna", "pose": "stand", "x": 350, "weapon": "chakra"}, {"who": "asura", "pose": "fight", "x": 780, "flip": True, "weapon": "sword"}],
         [{"who": "krishna", "pose": "stand", "x": 540}],
@@ -956,7 +1009,6 @@ def generate_fallback_myth_plan(topic=None):
         summary = "कुरुक्षेत्र के रणभूमि में भगवान श्रीकृष्ण द्वारा अर्जुन को दिया गया दिव्य कर्मयोग का उपदेश।"
 
     actors_seq = _detect_myth_actors_for_topic(title, summary)
-    
     clean_summary = summary if summary else f"{title} भारतीय इतिहास और सनातन दर्शन का एक अमर अध्याय है।"
     
     return {
@@ -972,7 +1024,7 @@ def generate_fallback_myth_plan(topic=None):
                 "bg": "temple",
                 "actors": actors_seq[0],
                 "caption": {"title": "अनसुना रहस्य", "text": "क्या आपको पता है?"},
-                "narration": f"क्या आपको पता है {title} के पीछे कौन सी सच्ची घटना छिपी है?",
+                "narration": f"क्या आपको पता है {title} के पीछे कौन सा गहरा रहस्य छिपा है?",
                 "focus": 0
             },
             {
@@ -989,8 +1041,8 @@ def generate_fallback_myth_plan(topic=None):
                 "beat": "reveal",
                 "bg": "pond",
                 "actors": actors_seq[2],
-                "caption": {"title": "भीतर का द्वंद्व", "text": "कठिन निर्णय की घड़ी"},
-                "narration": "उस क्षण जब निर्णय लेना सबसे कठिन था, तभी अंतरात्मा की आवाज़ ने नया मार्ग दिखाया।",
+                "caption": {"title": "कठिन परीक्षा", "text": "संकल्प की घड़ी"},
+                "narration": f"{title} की इस कथा में जब परीक्षा की घड़ी आई, तब एक ऐसा अद्भुत निर्णय लिया गया जिसने सबको हतप्रभ कर दिया।",
                 "focus": 0
             },
             {
@@ -998,8 +1050,8 @@ def generate_fallback_myth_plan(topic=None):
                 "beat": "fight",
                 "bg": "battlefield",
                 "actors": actors_seq[3],
-                "caption": {"title": "महा रहस्य", "text": "सच्चाई सामने आई"},
-                "narration": "यही वह मोड़ था जिसने पूरे घटनाक्रम और इतिहास के रुख को हमेशा के लिए बदलकर रख दिया।",
+                "caption": {"title": "महासंग्राम", "text": "धर्म की प्रतिष्ठा"},
+                "narration": "धार्मिक मर्यादा और सत्य की रक्षा के लिए वह अद्भुत पराक्रम दिखाया गया जो इतिहास के पन्नों में सदा के लिए अमर हो गया।",
                 "focus": 0
             },
             {
@@ -1007,8 +1059,8 @@ def generate_fallback_myth_plan(topic=None):
                 "beat": "victory",
                 "bg": "sky",
                 "actors": actors_seq[4],
-                "caption": {"title": "संकल्प की विजय", "text": "सत्य की अटूट शक्ति"},
-                "narration": "अटल संकल्प और सत्य के आगे बड़े से बड़ा संकट भी टिक नहीं सका।",
+                "caption": {"title": "सत्य की विजय", "text": "अटल संकल्प की शक्ति"},
+                "narration": "इस महान गाथा ने सिद्ध कर दिया कि संकट कितना भी विकट हो, अंत में विजय सदा सत्य और धर्म की ही होती है।",
                 "focus": 0
             },
             {
@@ -1016,8 +1068,8 @@ def generate_fallback_myth_plan(topic=None):
                 "beat": "victory",
                 "bg": "temple",
                 "actors": actors_seq[5],
-                "caption": {"title": "सनातन शिक्षा", "text": "MindSpark को सब्सक्राइब करें"},
-                "narration": f"{title} हमें कर्म और निष्ठा की राह दिखाता है। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
+                "caption": {"title": "सनातन ज्ञान", "text": "MindSpark को सब्सक्राइब करें"},
+                "narration": f"{title} की यह पावन गाथा हमें अपने कर्तव्य पथ पर अडिग रहना सिखाती है। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
                 "focus": 0
             }
         ]
