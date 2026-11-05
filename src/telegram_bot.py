@@ -643,17 +643,19 @@ def start_bot():
                 elif cmd_lower in ("/make", "make", "/myth", "myth", "/video", "video", "/run", "run"):
                     triggered = trigger_workflow_make_video("")
                     if triggered:
-                        send_msg(sender_chat, "🚀 *Live Sanatan Video Generation Started!*
-
-GitHub Actions par naya video banna shuru ho gaya hai!
-• Naya Topic: 'क्या आपको पता है...' viral hook
-• Voice: 4C Cool Master + Dynamic Scene Cadence
-• BGM: @sanatan.unfold Lo-Fi Chill Beat
-
-Lagbhag 7-8 minute me video yahan review ke liye receive ho jayegi! 🎬")
+                        send_msg(sender_chat, (
+                            "🚀 *Live Sanatan Video Generation Started!*\n\n"
+                            "GitHub Actions par naya video banna shuru ho gaya hai!\n"
+                            "• Naya Topic: 'क्या आपको पता है...' viral hook\n"
+                            "• Voice: 4C Cool Master + Dynamic Scene Cadence\n"
+                            "• BGM: sanatan.unfold Lo-Fi Chill Beat\n\n"
+                            "Lagbhag 7-8 minute me video yahan review ke liye receive ho jayegi! 🎬"
+                        ))
                     else:
-                        send_msg(sender_chat, "✅ *Video Triggered!*
-Hourly loop automatically new Sanatan video generate karega.")
+                        send_msg(sender_chat, (
+                            "✅ *Video Triggered!*\n"
+                            "Hourly loop automatically new Sanatan video generate karega."
+                        ))
 
                 # Command: /make <Book Name> or /next <Book Name>
                 elif cmd_lower.startswith("/make ") or cmd_lower.startswith("/next ") or cmd_lower.startswith("make "):

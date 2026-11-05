@@ -20,3 +20,4 @@
 | 14 | 2026-11-01 | Ikigai | Unknown | Self Improvement | https://youtu.be/39SqpZc9MJQ |
 | 15 | 2026-11-01 | Mindset | Unknown | Self Improvement | https://youtu.be/Sh6biSN0v3A |
 | 16 | 2026-11-01 | Essentialism | Unknown | Self Improvement | https://youtu.be/ndaVzeNM7uQ |
+| 17 | 2026-11-05 | गंगा पुत्र भीष्म की शरशैया: सूर्य के उत्तरायण की प्रतीक्षा | Unknown | Sanatan Mythology | https://youtu.be/LEyPPbeQrrA |

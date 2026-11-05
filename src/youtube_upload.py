@@ -28,7 +28,7 @@ def upload(d, dry_run=False, progress_callback=None):
             progress_callback(100)
         return "dry_run_video_id"
 
-    # Try local OAuth client first (from old project)
+    # 1. Try local OAuth client first
     token_file = ROOT / "config" / "youtube_token.json"
     secrets_file = ROOT / "config" / "client_secrets.json"
     if token_file.exists() and secrets_file.exists():
@@ -44,21 +44,66 @@ def upload(d, dry_run=False, progress_callback=None):
                 dry_run=False,
                 progress_callback=progress_callback
             )
-            return res.get("video_id", "uploaded")
+            vid = res.get("video_id")
+            if res.get("status") == "success" and vid and vid != "uploaded":
+                return vid
+            err_msg = res.get("error", str(res))
+            print(f"Warning: Local OAuth upload returned non-success ({err_msg}), falling back to direct token refresh...")
         except Exception as e:
-            print(f"Warning: Local OAuth upload failed ({e}), trying environment credentials...")
+            print(f"Warning: Local OAuth upload failed ({e}), trying direct refresh credentials...")
 
-    # Fallback to CI / GitHub Actions environment variables
+    # 2. Fallback to direct token refresh (works in CI and local)
     from google.oauth2.credentials import Credentials
     from googleapiclient.discovery import build
     from googleapiclient.http import MediaFileUpload
-    creds = Credentials(None, refresh_token=os.environ["YT_REFRESH_TOKEN"], token_uri="https://oauth2.googleapis.com/token",
-                        client_id=os.environ["YT_CLIENT_ID"], client_secret=os.environ["YT_CLIENT_SECRET"],
-                        scopes=["https://www.googleapis.com/auth/youtube.upload"])
+
+    # Load client id & secret from env, or secrets_file if present
+    client_id = os.environ.get("YT_CLIENT_ID")
+    client_secret = os.environ.get("YT_CLIENT_SECRET")
+    if (not client_id or not client_secret) and secrets_file.exists():
+        sec_data = jload(secrets_file, {})
+        installed = sec_data.get("installed") or sec_data.get("web") or {}
+        client_id = client_id or installed.get("client_id")
+        client_secret = client_secret or installed.get("client_secret")
+
+    refresh_token = os.environ.get("YT_REFRESH_TOKEN")
+    if not refresh_token and token_file.exists():
+        token_data = jload(token_file, {})
+        refresh_token = token_data.get("refresh_token")
+
+    if not client_id or not client_secret:
+        raise RuntimeError("Missing YT_CLIENT_ID or YT_CLIENT_SECRET in GitHub Secrets / environment")
+    if not refresh_token:
+        raise RuntimeError("Missing YT_REFRESH_TOKEN in GitHub Secrets / environment")
+
+    creds = Credentials(
+        None,
+        refresh_token=refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=["https://www.googleapis.com/auth/youtube.upload"]
+    )
     yt = build("youtube", "v3", credentials=creds)
-    body = {"snippet": {"title": title, "description": description, "tags": tags, "categoryId": "27"},
-            "status": {"privacyStatus": privacy, "selfDeclaredMadeForKids": False}}
-    req = yt.videos().insert(part="snippet,status", body=body, media_body=MediaFileUpload(video_path, chunksize=1024*1024, resumable=True))
+    body = {
+        "snippet": {
+            "title": title[:100],
+            "description": description[:5000],
+            "tags": tags,
+            "categoryId": "27",
+            "defaultLanguage": "hi",
+            "defaultAudioLanguage": "hi"
+        },
+        "status": {
+            "privacyStatus": privacy if privacy in ["private", "unlisted", "public"] else "public",
+            "selfDeclaredMadeForKids": False
+        }
+    }
+    req = yt.videos().insert(
+        part="snippet,status",
+        body=body,
+        media_body=MediaFileUpload(video_path, chunksize=1024*1024, resumable=True)
+    )
     resp = None
     while resp is None:
         status, resp = req.next_chunk()
