@@ -569,5 +569,14 @@
     "opening_fx": 1,
     "closing_fx": 0,
     "video_key": "2026-11-06_144632_myth_hanuman_sanjeevani"
+  },
+  {
+    "topic_id": "arjuna_kirata_shiva",
+    "topic_title": "अर्जुन और भगवान शिव: किरात युद्ध और पाशुपतास्त्र",
+    "date": "2026-11-06",
+    "seed": 149036,
+    "opening_fx": 3,
+    "closing_fx": 5,
+    "video_key": "2026-11-06_174609_myth_arjuna_kirata_shiva"
   }
 ]
