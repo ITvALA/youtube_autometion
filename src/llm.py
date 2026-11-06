@@ -802,7 +802,7 @@ ROSTER_GODS = {
     "ravana", "asura"
 }
 MYTH_BEATS = {"intro", "talk", "reveal", "fight", "victory"}
-MYTH_BGS = {"forest", "pond", "temple", "battlefield", "sky"}
+MYTH_BGS = {"forest", "pond", "temple", "battlefield", "sky", "palace"}
 MYTH_POSES = {"stand", "sit", "fly", "fight", "walk", "pray", "point", "talk"}
 MYTH_WEAPONS = {"none", "gada", "bow", "trishul", "chakra", "sword"}
 MYTH_SHOTS = {"wide", "medium", "closeup", "extreme", "low", "high", "dutch", "side", "sideR", "over"}
@@ -979,6 +979,15 @@ def _detect_myth_actors_for_topic(title, summary=""):
             [{"who": "shiva", "pose": "sit", "x": 540, "weapon": "trishul"}],
             [{"who": "shiva", "pose": "stand", "x": 540, "weapon": "trishul"}]
         ]
+    if any(k in text for k in ["द्रौपदी", "draupadi", "चीरहरण", "सभा", "हस्तिनापुर", "धृतराष्ट्र", "दुर्योधन", "दुःशासन", "अक्षय"]):
+        return [
+            [{"who": "raja", "pose": "sit", "x": 540}],
+            [{"who": "durga", "pose": "pray", "x": 340}, {"who": "soldier", "pose": "stand", "x": 760, "flip": True, "weapon": "sword"}],
+            [{"who": "krishna", "pose": "stand", "x": 540, "weapon": "chakra"}],
+            [{"who": "krishna", "pose": "stand", "x": 340, "weapon": "chakra"}, {"who": "soldier", "pose": "fight", "x": 780, "flip": True, "weapon": "sword"}],
+            [{"who": "durga", "pose": "pray", "x": 340}, {"who": "krishna", "pose": "stand", "x": 750, "flip": True}],
+            [{"who": "krishna", "pose": "stand", "x": 540}]
+        ]
     if any(k in text for k in ["अर्जुन", "arjuna", "गांडीव", "कुरुक्षेत्र", "गीता"]):
         return [
             [{"who": "arjuna", "pose": "stand", "x": 540, "weapon": "bow"}],
@@ -1058,6 +1067,19 @@ def choreograph_myth_plan(plan, seed=None):
             if wants and a["pose"] not in ("fly", "sit"):
                 a["enter"] = "right" if a["flip"] else "left"
 
+        # Ensure weapons in fight scenes
+        if beat == "fight":
+            for a in acts:
+                if not a.get("weapon") or a["weapon"] == "none":
+                    a["weapon"] = "gada" if a.get("who") == "hanuman" else ("bow" if a.get("who") in ("arjuna", "rama", "karna") else "sword")
+
+        # Context-aware background: Royal court / palace for sabha, raja, or seated king
+        desc_or_narr = (sc.get("scene_description", "") + " " + sc.get("narration", "")).lower()
+        has_king = any(a.get("who") == "raja" or a.get("pose") == "sit" for a in acts)
+        is_court = any(w in desc_or_narr for w in ["सभा", "महल", "दरबार", "हस्तिनापुर", "राजमहल", "चीरहरण", "सिंहासन", "palace", "court"])
+        if (has_king or is_court) and sc.get("bg") in ("forest", "battlefield"):
+            sc["bg"] = "palace"
+
         prev_who = {a["who"] for a in acts}
         prev_pose = {a["who"]: a["pose"] for a in acts}
     return plan
@@ -1074,11 +1096,11 @@ _FB_STRUCTURES = [
     [("intro", 0), ("reveal", 2), ("talk", 1), ("talk", 4), ("victory", 5)],
 ]
 _FB_BG = {
-    "intro": ["temple", "forest", "sky"],
-    "talk": ["forest", "pond", "temple"],
-    "reveal": ["pond", "sky", "temple"],
-    "fight": ["battlefield", "sky", "forest"],
-    "victory": ["sky", "temple", "pond"],
+    "intro": ["palace", "temple", "forest", "sky"],
+    "talk": ["palace", "forest", "pond", "temple"],
+    "reveal": ["palace", "pond", "sky", "temple"],
+    "fight": ["battlefield", "palace", "sky", "forest"],
+    "victory": ["palace", "sky", "temple", "pond"],
 }
 _FB_HOOKS = [
     "बात उस दिन की है, जब {short} की कथा ने अपना असली मोड़ लिया।",
@@ -1243,7 +1265,7 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
     {
       "sec": 5,
       "beat": "intro" | "talk" | "reveal" | "fight" | "victory",
-      "bg": "forest" | "pond" | "temple" | "battlefield" | "sky",
+      "bg": "palace" | "forest" | "pond" | "temple" | "battlefield" | "sky",
       "scene_description": "Silent visual direction in Devanagari Hindi: who is doing what, mood (NOT SPOKEN BY TTS)",
       "actors": [
         {
@@ -1267,7 +1289,7 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
 STRICT RULES:
 1. Total scenes: __N__ scenes. 'sec': 4 to 6 per scene.
 2. Allowed characters: __ROSTER__. Pick the characters of THIS legend (1 to 3 per scene), not random gods.
-3. Allowed backgrounds: forest, pond, temple, battlefield, sky. Use at least 4 different backgrounds and never the same one in two scenes in a row.
+3. Allowed backgrounds: palace, forest, pond, temple, battlefield, sky. Use 'palace' for court, durbar, sabha, king or palace scenes. Use at least 4 different backgrounds and never the same one in two scenes in a row.
 4. Beats are NOT a fixed order. First beat 'intro' or 'reveal', last beat 'victory'. Use 'fight' only if the story has a real clash; peaceful stories use talk / reveal / victory.
 5. Poses: vary them. Use 'walk' when someone arrives or leaves, 'sit' for meditation or serious talk, 'point'/'talk' while speaking, 'fly' only for characters who really fly.
 6. Two characters in a scene: x between 250 and 850, at least 250 apart, and the one on the right has flip true (they face each other).

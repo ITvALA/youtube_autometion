@@ -29,7 +29,7 @@ const devanagariFont = loadNoto('normal', { weights: ['400', '700', '800'], subs
 /* ───────────────────────── TYPES ───────────────────────── */
 export type Pose = 'stand' | 'sit' | 'fly' | 'fight' | 'pray' | 'point' | 'talk' | 'walk';
 export type Weapon = 'none' | 'gada' | 'bow' | 'trishul' | 'chakra' | 'sword';
-export type BgKind = 'forest' | 'pond' | 'temple' | 'battlefield' | 'sky';
+export type BgKind = 'forest' | 'pond' | 'temple' | 'battlefield' | 'sky' | 'palace';
 export type Beat = 'intro' | 'talk' | 'reveal' | 'fight' | 'victory';
 export type ShotName =
   | 'wide' | 'medium' | 'closeup' | 'extreme' | 'low' | 'high' | 'dutch' | 'side' | 'sideR' | 'over';
@@ -122,12 +122,12 @@ export const SHOTS: Record<ShotName, Cam & { focusW: number }> = {
   medium:  { x: 0,    y: 0,   z: 1.18, rx: 0,   ry: 0,   rz: 0,  focusW: 0.55 },
   closeup: { x: 0,    y: 0,   z: 1.9,  rx: 0,   ry: 0,   rz: 0,  focusW: 1 },
   extreme: { x: 0,    y: 0,   z: 2.9,  rx: 0,   ry: 0,   rz: 0,  focusW: 1 },
-  low:     { x: 0,    y: 40,  z: 1.35, rx: -14, ry: 0,   rz: 0,  focusW: 0.5 },   // hero looks huge
-  high:    { x: 0,    y: -30, z: 1.0,  rx: 16,  ry: 0,   rz: 0,  focusW: 0.2 },    // looking down on scene
-  dutch:   { x: 0,    y: 0,   z: 1.25, rx: 0,   ry: 0,   rz: -9, focusW: 0.4 },    // tilted, tense fight
-  side:    { x: 0,    y: 0,   z: 1.12, rx: 0,   ry: 24,  rz: 0,  focusW: 0.4 },
-  sideR:   { x: 0,    y: 0,   z: 1.12, rx: 0,   ry: -24, rz: 0,  focusW: 0.4 },
-  over:    { x: -140, y: 0,   z: 1.55, rx: 0,   ry: 14,  rz: 0,  focusW: 0.7 },
+  low:     { x: 0,    y: 65,  z: 1.4,  rx: -18, ry: 0,   rz: 0,  focusW: 0.55 },   // hero looks huge from low 3D angle
+  high:    { x: 0,    y: -45, z: 1.05, rx: 18,  ry: 0,   rz: 0,  focusW: 0.25 },   // looking down into 3D stage
+  dutch:   { x: 0,    y: 10,  z: 1.3,  rx: -6,  ry: 8,   rz: -11, focusW: 0.45 },   // tilted 3D fight camera
+  side:    { x: -50,  y: 0,   z: 1.2,  rx: -4,  ry: 26,  rz: 0,  focusW: 0.45 },   // 3D side perspective
+  sideR:   { x: 50,   y: 0,   z: 1.2,  rx: -4,  ry: -26, rz: 0,  focusW: 0.45 },
+  over:    { x: -140, y: 0,   z: 1.55, rx: 0,   ry: 16,  rz: 0,  focusW: 0.7 },
 };
 
 const MOVES: Record<MoveName, (t: number, f: number) => Partial<Cam>> = {
@@ -163,10 +163,11 @@ const Camera: React.FC<{
   };
   return (
     <CamCtx.Provider value={cam}>
-      <AbsoluteFill style={{ perspective: 1500, overflow: 'hidden' }}>
+      <AbsoluteFill style={{ perspective: 1400, overflow: 'hidden' }}>
         <div
           style={{
             position: 'absolute', inset: 0, transformOrigin: '50% 50%',
+            transformStyle: 'preserve-3d',
             transform: `translate(${cam.x}px, ${cam.y}px) scale(${cam.z}) rotateX(${cam.rx}deg) rotateY(${cam.ry}deg) rotateZ(${cam.rz}deg)`,
           }}
         >
@@ -186,9 +187,9 @@ const BEAT_RULES: Record<Beat, { shots: ShotName[]; moves: MoveName[] }> = {
   victory: { shots: ['low', 'wide', 'high'],                       moves: ['pullOut', 'tiltUp', 'orbit'] },
 };
 
-// first scene delays its voice a little so the opening effect can finish
+// first scene voice starts quickly with 4 frames lead so scene 0 is immediately active
 export const withLead = (scenes: Scene[]): Scene[] =>
-  scenes.map((s, i) => (i === 0 ? { ...s, voiceLead: s.voiceLead ?? 10 } : s));
+  scenes.map((s, i) => (i === 0 ? { ...s, voiceLead: s.voiceLead ?? 4 } : s));
 
 export function directCameras(rawScenes: Scene[], seed: number): Scene[] {
   const scenes = withLead(rawScenes);
@@ -219,7 +220,7 @@ export function directCameras(rawScenes: Scene[], seed: number): Scene[] {
 const POSES: Record<Pose, { aL: number; aR: number; bL: number; bR: number; lL: number; lR: number; spread: number }> = {
   stand: { aL: 12,  aR: -12,  bL: 6,   bR: -6,   lL: 5,  lR: -5,  spread: 0 },
   fight: { aL: 70,  aR: -150, bL: 60,  bR: -30,  lL: 24, lR: -20, spread: 1 },
-  sit:   { aL: 28,  aR: -28,  bL: 40,  bR: -40,  lL: 0,  lR: 0,   spread: 0 },
+  sit:   { aL: 32,  aR: -32,  bL: 20,  bR: -20,  lL: 0,  lR: 0,   spread: 0 },
   fly:   { aL: 160, aR: -150, bL: 10,  bR: -10,  lL: -8, lR: 10,  spread: 0 },
   pray:  { aL: 160, aR: -160, bL: 20,  bR: -20,  lL: 0,  lR: 0,   spread: 0 },
   point: { aL: 14,  aR: -85,  bL: 10,  bR: 0,    lL: 5,  lR: -5,  spread: 0 },
@@ -357,32 +358,109 @@ const Head: React.FC<{ g: God; angry: boolean; blink?: boolean; mouth?: number; 
   </g>
 );
 
-const ENTER_FRAMES = 38;
+/* ───────────────────────── ROYAL THRONE (सिंहासन) ───────────────────────── */
+const RoyalThrone: React.FC<{ isPalace?: boolean }> = () => (
+  <g transform="translate(0, 10)">
+    {/* Grand Golden Throne Backrest (High arch with sun-burst & ruby crest) */}
+    <path
+      d="M-135,20 L-135,-250 Q-135,-370 0,-425 Q135,-370 135,-250 L135,20 Z"
+      fill="#b8860b"
+      stroke={INK}
+      strokeWidth={6}
+    />
+    <path
+      d="M-115,10 L-115,-235 Q-115,-350 0,-400 Q115,-350 115,-235 L115,10 Z"
+      fill="#ffd700"
+      stroke={INK}
+      strokeWidth={3}
+    />
+    {/* Sun-burst / Peacock crest rays */}
+    {Array.from({ length: 11 }).map((_, i) => {
+      const ang = -60 + i * 12;
+      return (
+        <line
+          key={i}
+          x1={0}
+          y1={-400}
+          x2={Math.sin((ang * Math.PI) / 180) * 55}
+          y2={-400 - Math.cos((ang * Math.PI) / 180) * 55}
+          stroke={GOLD}
+          strokeWidth={5}
+          strokeLinecap="round"
+        />
+      );
+    })}
+    <circle cx={0} cy={-400} r={16} fill="#c92a2a" stroke={INK} strokeWidth={3} />
+    {/* Luxurious crimson velvet back cushion */}
+    <path
+      d="M-88,15 L-88,-200 Q-88,-295 0,-340 Q88,-295 88,-200 L88,15 Z"
+      fill="#7a1222"
+      stroke={INK}
+      strokeWidth={3}
+    />
+    {/* Quilted diamond tufting lines on crimson velvet */}
+    {[-50, -25, 0, 25, 50].map((x, i) => (
+      <line key={i} x1={x} y1={-250 + Math.abs(x) * 1.2} x2={x} y2={10} stroke="#a3182d" strokeWidth={2} />
+    ))}
+    {/* Carved Lion / Elephant Armrests */}
+    <g>
+      {/* Left armrest */}
+      <rect x={-152} y={-85} width={34} height={100} rx={12} fill={GOLD} stroke={INK} strokeWidth={4} />
+      <circle cx={-135} cy={-90} r={18} fill="#ffd700" stroke={INK} strokeWidth={3} />
+      <circle cx={-135} cy={-90} r={7} fill="#c92a2a" />
+      {/* Right armrest */}
+      <rect x={118} y={-85} width={34} height={100} rx={12} fill={GOLD} stroke={INK} strokeWidth={4} />
+      <circle cx={135} cy={-90} r={18} fill="#ffd700" stroke={INK} strokeWidth={3} />
+      <circle cx={135} cy={-90} r={7} fill="#c92a2a" />
+    </g>
+    {/* Ornate throne seat cushion */}
+    <rect x={-135} y={-12} width={270} height={46} rx={14} fill="#8b1525" stroke={INK} strokeWidth={4} />
+    <rect x={-128} y={-6} width={256} height={10} fill={GOLD} opacity={0.85} />
+    {/* Multi-tiered golden lion pedestal / foot base */}
+    <path d="M-150,34 L150,34 L170,110 L-170,110 Z" fill="#b8860b" stroke={INK} strokeWidth={5} />
+    <path d="M-140,42 L140,42 L155,102 L-155,102 Z" fill="#ffd700" stroke={INK} strokeWidth={2} />
+    {/* Lotus petal carvings on pedestal base */}
+    {[-110, -55, 0, 55, 110].map((px, i) => (
+      <path key={i} d={`M${px - 22},102 Q${px},70 ${px + 22},102 Z`} fill="#d49b13" stroke={INK} strokeWidth={2} />
+    ))}
+  </g>
+);
+
+const ENTER_FRAMES = 50;
 
 const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: number }> = ({ a, frame, talking = false, idx = 0 }) => {
   const g = ROSTER[a.who as string] ?? ROSTER.krishna;
   const dir = a.enter === 'left' ? -1 : a.enter === 'right' ? 1 : 0;
-  // Entrance: the actor WALKS in from the screen edge for the first ~1.2s of the scene
+  // Entrance: actor WALKS in from screen edge slowly with majestic gait
   const entering = dir !== 0 && frame < ENTER_FRAMES && a.pose !== 'fly' && a.pose !== 'sit';
   const pose: Pose = entering ? 'walk' : a.pose;
   const P = POSES[pose] ?? POSES.stand;
   const sc = a.scale ?? 1;
   const ground = a.y ?? 1280;
-  const weapon = a.weapon ?? g.weapon;
+
+  // in fight scenes, warrior MUST hold a weapon (gada, sword, bow, chakra, trishul)
+  const weapon: Weapon = (a.weapon && a.weapon !== 'none')
+    ? a.weapon
+    : (g.weapon && g.weapon !== 'none')
+      ? g.weapon
+      : (pose === 'fight' ? 'sword' : 'none');
+
   const angry = a.angry ?? pose === 'fight';
   const idle = Math.sin(frame / 9 + idx);
 
-  // explicit 'walk' pose: really travels in the facing direction (no more moon-walking on the spot)
-  const explicitTravel = a.pose === 'walk' && !entering ? Math.min(frame * 1.5, 260) : 0;
-  const walkingNow = pose === 'walk' && (entering || frame * 1.5 < 260);
-  const walkPhase = walkingNow ? Math.sin(frame / 3) * 24 : 0;
-  const swing = pose === 'fight' ? Math.sin(frame / 3.2) * 44 : walkingNow ? -walkPhase : idle * 4;
-  const bob = pose === 'fly' ? Math.sin(frame / 7) * 24 : pose === 'sit' ? Math.sin(frame / 14) * 10 : walkingNow ? Math.abs(Math.sin(frame / 3)) * 14 : idle * 3;
-  const sitDrop = pose === 'sit' ? 125 : 0;
+  // Slow, regal walking animation (frame / 7.5 instead of fast frame / 3)
+  const explicitTravel = a.pose === 'walk' && !entering ? Math.min(frame * 0.9, 240) : 0;
+  const walkingNow = pose === 'walk' && (entering || frame * 0.9 < 240);
+  const walkPhase = walkingNow ? Math.sin(frame / 7.5) * 16 : 0;
+
+  // In fight scenes: body stays firmly grounded (no sliding), only striking arms swing dynamically!
+  const swing = pose === 'fight' ? Math.sin(frame / 4.2) * 65 : walkingNow ? -walkPhase : idle * 4;
+  const bob = pose === 'fly' ? Math.sin(frame / 7) * 22 : pose === 'sit' ? Math.sin(frame / 14) * 3 : walkingNow ? Math.abs(Math.sin(frame / 7.5)) * 6 : idle * 2.5;
+  const sitDrop = pose === 'sit' ? 120 : 0;
   const flyRot = pose === 'fly' ? 72 : 0;
   const lift = pose === 'fly' ? -260 : 0;
 
-  // life: gestures while talking, body sway, blinking, mouth flap, head tilt
+  // life: natural gestures while speaking, subtle body sway, blinking, mouth flaps, head tilt
   const gest = talking || pose === 'talk' || pose === 'point' ? Math.sin(frame / 5 + idx * 2) * 9 : 0;
   const sway = pose === 'fight' || pose === 'fly' ? 0 : Math.sin(frame / 27 + idx) * 1.4;
   const blink = (frame + idx * 17) % 96 < 4;
@@ -391,39 +469,50 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
 
   const faceLeft = entering ? dir > 0 : !!a.flip;
   const dirFace = faceLeft ? -1 : 1;
-  const walkDelta = explicitTravel ? dirFace * (explicitTravel - 130) : 0;
+  const walkDelta = explicitTravel ? dirFace * (explicitTravel - 120) : 0;
   let enterX = 0;
   if (entering) {
-    const p = frame / ENTER_FRAMES;
-    enterX = (1 - (1 - (1 - p) * (1 - p))) * dir * 520; // ease-out: fast at first, settles softly
+    const p = Math.min(1, frame / ENTER_FRAMES);
+    enterX = Math.pow(1 - p, 2.5) * dir * 380; // majestic slow ease-in
   }
-  const lungeX = pose === 'fight'
-    ? Math.sin(frame / 3.2) * 26 * (faceLeft ? -1 : 1)
-    : 0;
+  // In fight scenes, feet are planted firmly: lungeX is 0!
+  const lungeX = 0;
   const posX = a.x + walkDelta + lungeX + enterX;
+
   const body = (
     <g transform={`translate(0,${sitDrop + bob}) rotate(${flyRot + sway} 0 0)`}>
+      {/* Royal Throne (सिंहासन) rendered behind character when seated */}
+      {pose === 'sit' && <RoyalThrone />}
+
       {/* aura for flying */}
       {pose === 'fly' && [0, 1, 2, 3].map((i) => (
         <line key={i} x1={-60 - ((frame * 22 + i * 90) % 360)} y1={-180 + i * 110} x2={-160 - ((frame * 22 + i * 90) % 360)} y2={-180 + i * 110}
           stroke="#fff" strokeOpacity={0.5} strokeWidth={6} strokeLinecap="round" />))}
+
       {/* legs / sitting base */}
       {pose === 'sit' ? (
-        <g><ellipse cx={0} cy={30} rx={170} ry={46} fill={g.cloth} stroke={INK} strokeWidth={4} />
-          <ellipse cx={0} cy={60} rx={120} ry={22} fill={g.skin} stroke={INK} strokeWidth={4} /></g>
+        <g>
+          {/* Folded legs sitting majestically on the golden throne */}
+          <ellipse cx={0} cy={22} rx={160} ry={42} fill={g.cloth} stroke={INK} strokeWidth={4} />
+          <ellipse cx={0} cy={50} rx={110} ry={20} fill={g.skin} stroke={INK} strokeWidth={4} />
+          <rect x={-75} y={40} width={24} height={8} rx={4} fill={GOLD} stroke={INK} strokeWidth={2} />
+          <rect x={51} y={40} width={24} height={8} rx={4} fill={GOLD} stroke={INK} strokeWidth={2} />
+        </g>
       ) : (
         [-1, 1].map((s) => (
-          <g key={s} transform={`translate(${s * 38},-6) rotate(${s < 0 ? P.lL + swing * 0.2 + (walkingNow ? walkPhase : 0) : P.lR - swing * 0.2 - (walkingNow ? walkPhase : 0)})`}>
+          <g key={s} transform={`translate(${s * 38},-6) rotate(${s < 0 ? P.lL + (pose === 'fight' ? 12 : swing * 0.2) + (walkingNow ? walkPhase : 0) : P.lR - (pose === 'fight' ? 12 : swing * 0.2) - (walkingNow ? walkPhase : 0)})`}>
             <rect x={-22} y={0} width={44} height={226} rx={22} fill={g.skin} stroke={INK} strokeWidth={4} />
             <rect x={-26} y={176} width={52} height={14} rx={7} fill={GOLD} />
             <ellipse cx={s * 6} cy={228} rx={34} ry={14} fill="#3a2418" />
           </g>))
       )}
+
       {/* back arms (4-armed gods) */}
       {g.arms4 && (<g opacity={0.95}>
         <Arm sx={-66} a={P.aL + 70 + gest} b={30} skin={g.skin} weapon="none" frame={frame} />
         <Arm sx={66} a={P.aR - 70 - gest} b={-30} skin={g.skin} weapon={weapon === 'none' ? 'trishul' : weapon === 'chakra' ? 'gada' : 'chakra'} frame={frame} />
       </g>)}
+
       {/* torso + cloth */}
       <path d="M-78,-215 L78,-215 L64,-4 L-64,-4 Z" fill={g.skin} stroke={INK} strokeWidth={5} />
       {/* Janeu (sacred thread) */}
@@ -438,8 +527,9 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
       <rect x={-72} y={-24} width={144} height={22} rx={8} fill={GOLD} stroke={INK} strokeWidth={3} />
       <path d="M-70,-215 L70,-215 L0,-100 Z" fill="#ffffff" opacity={0.15} />
       <circle cx={0} cy={-150} r={14} fill={GOLD} />
-      {/* main arms */}
-      <Arm sx={-80} a={P.aL + swing * 0.6 + gest * 0.5} b={P.bL} skin={g.skin} weapon="none" frame={frame} />
+
+      {/* main arms: left arm balances, right arm strikes with weapon */}
+      <Arm sx={-80} a={P.aL + (pose === 'fight' ? 25 : swing * 0.6) + gest * 0.5} b={P.bL} skin={g.skin} weapon="none" frame={frame} />
       <Arm sx={80} a={P.aR + swing + gest} b={P.bR} skin={g.skin} weapon={weapon} frame={frame} />
       <Head g={g} angry={angry} blink={blink} mouth={mouth} tilt={tilt} />
     </g>
@@ -460,12 +550,26 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
   );
 };
 
-/* ───────────────────────── WORLDS (backgrounds with parallax) ───────────────────────── */
+/* ───────────────────────── WORLDS (backgrounds with 3D multiplane parallax) ───────────────────────── */
 const Layer: React.FC<{ depth: number; children: React.ReactNode }> = ({ depth, children }) => {
   const cam = useContext(CamCtx);
-  // depth 0 = far (barely follows camera pan), 1 = near
+  // True 3D multiplane Z-depth + differential parallax pan
+  const zOffset = (depth - 0.75) * 450;
+  const xOffset = -cam.x * (1 - depth) * 0.7;
+  const yOffset = -cam.y * (1 - depth) * 0.4;
+  const rotY = cam.ry * (depth - 0.75) * 0.35;
   return (
-    <div style={{ position: 'absolute', left: -660, top: -480, width: 2400, height: 2880, transform: `translate(${-cam.x * (1 - depth) * 0.45}px,${-cam.y * (1 - depth) * 0.25}px)` }}>
+    <div
+      style={{
+        position: 'absolute',
+        left: -660,
+        top: -480,
+        width: 2400,
+        height: 2880,
+        transformStyle: 'preserve-3d',
+        transform: `translate3d(${xOffset}px, ${yOffset}px, ${zOffset}px) rotateY(${rotY}deg)`,
+      }}
+    >
       {children}
     </div>
   );
@@ -495,6 +599,7 @@ const World: React.FC<{ kind: BgKind; seed: number; frame: number }> = ({ kind, 
     temple: ['#1a0a06', '#5a2a12'],
     battlefield: ['#2a0a08', `hsl(${10 + warm},70%,32%)`],
     sky: ['#0a1030', '#4a6fd0'],
+    palace: ['#1a071d', '#421238'],
   };
   const [c1, c2] = sky[kind];
   const stars = useMemo(() => Array.from({ length: 50 }, () => ({ x: rng(seed + 9)() * 0, a: 0 })), [seed]);
@@ -529,24 +634,135 @@ const World: React.FC<{ kind: BgKind; seed: number; frame: number }> = ({ kind, 
             <path d={`M${x + 10},910 q${60},${20 + Math.sin(frame / 6 + i) * 10} ${120},0 l-${20},44 l${20},44 q-${60},${20} -${120},0 Z`} fill={i % 2 ? '#c92a2a' : GOLD} /></g>))}
         </svg></Layer>
       )}
+      {kind === 'palace' && (
+        <>
+          {/* Layer 0.2: Royal Arched Palace Domes & Glowing Jharokha Windows */}
+          <Layer depth={0.2}>
+            <svg width={2400} height={2880} style={{ position: 'absolute' }}>
+              {[380, 840, 1560, 2020].map((x, i) => (
+                <g key={i}>
+                  <path
+                    d={`M${x - 140},1300 L${x - 140},780 Q${x},520 ${x + 140},780 L${x + 140},1300 Z`}
+                    fill="#2a0d2e"
+                    stroke="#5a1848"
+                    strokeWidth={8}
+                  />
+                  <ellipse cx={x} cy={820} rx={42} ry={60} fill="#f59f00" opacity={0.65} style={{ filter: 'blur(8px)' }} />
+                  <circle cx={x} cy={820} r={18} fill="#ffd43b" opacity={0.9} />
+                </g>
+              ))}
+            </svg>
+          </Layer>
+
+          {/* Layer 0.45: Grand Carved Marble & Gold Pillars, Grand Royal Arches & Hanging Chandeliers */}
+          <Layer depth={0.45}>
+            <svg width={2400} height={2880} style={{ position: 'absolute' }}>
+              {/* Grand royal arches connecting columns */}
+              {[600, 1200, 1800].map((cx, i) => (
+                <path
+                  key={i}
+                  d={`M${cx - 300},1000 Q${cx},480 ${cx + 300},1000`}
+                  fill="none"
+                  stroke={GOLD}
+                  strokeWidth={22}
+                  strokeLinecap="round"
+                />
+              ))}
+              {/* Ornate Golden & Marble Pillars */}
+              {[300, 900, 1500, 2100].map((px, i) => (
+                <g key={i}>
+                  <path d={`M${px - 70},480 L${px + 70},480 L${px + 45},580 L${px - 45},580 Z`} fill={GOLD} stroke={INK} strokeWidth={4} />
+                  <rect x={px - 40} y={580} width={80} height={1200} fill="#ede6db" stroke={INK} strokeWidth={5} />
+                  {[-22, -8, 8, 22].map((ox, j) => (
+                    <line key={j} x1={px + ox} y1={585} x2={px + ox} y2={1775} stroke={GOLD} strokeWidth={3.5} />
+                  ))}
+                  <path d={`M${px - 65},1780 L${px + 65},1780 L${px + 85},1860 L${px - 85},1860 Z`} fill={GOLD} stroke={INK} strokeWidth={5} />
+                </g>
+              ))}
+              {/* Hanging Royal Chandeliers (झुमर) with warm glowing lamps */}
+              {[600, 1200, 1800].map((hx, i) => {
+                const swingChandelier = Math.sin(frame / 22 + i * 1.5) * 4;
+                return (
+                  <g key={i} transform={`translate(${hx + swingChandelier}, 540)`}>
+                    <line x1={0} y1={0} x2={0} y2={120} stroke={GOLD} strokeWidth={4} />
+                    <polygon points="-70,120 70,120 0,165" fill={GOLD} stroke={INK} strokeWidth={3} />
+                    {[-50, -25, 0, 25, 50].map((lx, j) => (
+                      <g key={j} transform={`translate(${lx}, 120)`}>
+                        <circle cx={0} cy={20} r={10} fill="#ffd43b" opacity={0.9} style={{ filter: 'drop-shadow(0 0 10px #ff922b)' }} />
+                        <ellipse cx={0} cy={16 + Math.sin(frame / 4 + j) * 2} rx={6} ry={14} fill="#ffe066" />
+                      </g>
+                    ))}
+                  </g>
+                );
+              })}
+              {/* Royal Crimson Silk Drapes on sides with Gold Tassels */}
+              <path d="M0,450 Q280,750 180,1400 Q80,1600 0,1800 Z" fill="#68101e" stroke={GOLD} strokeWidth={6} />
+              <path d="M2400,450 Q2120,750 2220,1400 Q2320,1600 2400,1800 Z" fill="#68101e" stroke={GOLD} strokeWidth={6} />
+            </svg>
+          </Layer>
+        </>
+      )}
       {/* ground */}
       <Layer depth={0.8}>
         <svg width={2400} height={2880} style={{ position: 'absolute' }}>
-          <rect x={0} y={1760} width={2400} height={1120} fill={kind === 'battlefield' ? '#3a1a10' : `hsl(${hue},35%,14%)`} />
+          <rect
+            x={0}
+            y={1760}
+            width={2400}
+            height={1120}
+            fill={kind === 'battlefield' ? '#3a1a10' : kind === 'palace' ? '#220e24' : `hsl(${hue},35%,14%)`}
+          />
           {kind === 'pond' && (<g>
             <ellipse cx={1200} cy={1840} rx={760} ry={150} fill="#2d5aa8" opacity={0.9} />
             {[0, 1, 2].map((i) => (<ellipse key={i} cx={1200} cy={1840} rx={140 + ((frame * 3 + i * 90) % 270)} ry={(140 + ((frame * 3 + i * 90) % 270)) * 0.2} fill="none" stroke="#bcd4ff" strokeOpacity={0.5} strokeWidth={4} />))}
             {[700, 1000, 1500, 1750].map((x, i) => (<g key={i}><ellipse cx={x} cy={1850 + (i % 2) * 40} rx={54} ry={14} fill="#2f9e44" /><circle cx={x} cy={1836 + (i % 2) * 40} r={14} fill="#f783ac" /></g>))}
           </g>)}
+          {/* Grand Red Velvet Royal Carpet with Gold Embroidery Borders in Palace */}
+          {kind === 'palace' && (
+            <g>
+              {Array.from({ length: 12 }).map((_, i) => (
+                <line key={i} x1={i * 200} y1={1760} x2={i * 200} y2={2880} stroke="#38183c" strokeWidth={3} opacity={0.5} />
+              ))}
+              <polygon points="760,1760 1640,1760 1840,2880 560,2880" fill="#781122" stroke={GOLD} strokeWidth={10} />
+              <polygon points="790,1760 1610,1760 1800,2880 600,2880" fill="none" stroke="#ffd700" strokeWidth={4} strokeDasharray="18 12" />
+            </g>
+          )}
         </svg>
       </Layer>
     </AbsoluteFill>
   );
 };
 
-/* Foreground plants (in front of characters) for depth */
+/* Foreground (in front of characters) for depth */
 const Foreground: React.FC<{ kind: BgKind; seed: number }> = ({ kind, seed }) => {
   if (kind === 'temple' || kind === 'sky') return null;
+  if (kind === 'palace') {
+    return (
+      <Layer depth={1.22}>
+        <svg width={2400} height={2880} style={{ position: 'absolute' }}>
+          {/* Foreground carved golden railings and corner pillars for intense 3D stage depth */}
+          <g transform="translate(180, 1920)">
+            <rect x={-40} y={-160} width={80} height={200} rx={12} fill={GOLD} stroke={INK} strokeWidth={6} />
+            <circle cx={0} cy={-175} r={28} fill="#ffd700" stroke={INK} strokeWidth={5} />
+            <line x1={0} y1={-80} x2={450} y2={-80} stroke={GOLD} strokeWidth={16} />
+            <line x1={0} y1={-10} x2={450} y2={-10} stroke={GOLD} strokeWidth={16} />
+            {[80, 160, 240, 320, 400].map((bx, j) => (
+              <rect key={j} x={bx - 8} y={-80} width={16} height={70} fill={GOLD} rx={5} stroke={INK} strokeWidth={3} />
+            ))}
+          </g>
+          <g transform="translate(2220, 1920)">
+            <rect x={-40} y={-160} width={80} height={200} rx={12} fill={GOLD} stroke={INK} strokeWidth={6} />
+            <circle cx={0} cy={-175} r={28} fill="#ffd700" stroke={INK} strokeWidth={5} />
+            <line x1={-450} y1={-80} x2={0} y2={-80} stroke={GOLD} strokeWidth={16} />
+            <line x1={-450} y1={-10} x2={0} y2={-10} stroke={GOLD} strokeWidth={16} />
+            {[-80, -160, -240, -320, -400].map((bx, j) => (
+              <rect key={j} x={bx - 8} y={-80} width={16} height={70} fill={GOLD} rx={5} stroke={INK} strokeWidth={3} />
+            ))}
+          </g>
+        </svg>
+      </Layer>
+    );
+  }
   const hue = 100 + Math.floor(rng(seed + 1)() * 90);
   return (
     <Layer depth={1.15}>
@@ -719,8 +935,8 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number; trans?: Tra
 
 /* ───────────────── OPENING / CLOSING effects (6 kinds each, picked per video) ───────────────── */
 export const FX_COUNT = 6;
-const OPEN_LEN = 40;
-const CLOSE_LEN = 46;
+const OPEN_LEN = 12;
+const CLOSE_LEN = 36;
 
 // p = how much of the screen is covered (1 = fully covered, 0 = nothing)
 const Cover: React.FC<{ kind: number; p: number; ox?: number; oy?: number }> = ({ kind, p, ox = 50, oy = 55 }) => {
@@ -776,13 +992,13 @@ const Cover: React.FC<{ kind: number; p: number; ox?: number; oy?: number }> = (
 
 const OpeningFX: React.FC<{ kind: number; ox: number; oy: number }> = ({ kind, ox, oy }) => {
   const f = useCurrentFrame();
-  const p = 1 - Easing.inOut(Easing.cubic)(Math.min(1, f / (OPEN_LEN - 4)));
+  const p = 1 - Easing.out(Easing.cubic)(Math.min(1, f / OPEN_LEN));
   return <Cover kind={kind} p={p} ox={ox} oy={oy} />;
 };
 
 const ClosingFX: React.FC<{ kind: number; ox: number; oy: number }> = ({ kind, ox, oy }) => {
   const f = useCurrentFrame();
-  const p = Easing.inOut(Easing.cubic)(Math.min(1, f / (CLOSE_LEN - 8)));
+  const p = Easing.inOut(Easing.cubic)(Math.min(1, f / CLOSE_LEN));
   return <Cover kind={kind} p={p} ox={ox} oy={oy} />;
 };
 
