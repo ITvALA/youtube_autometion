@@ -497,5 +497,14 @@
     "opening_fx": 2,
     "closing_fx": 5,
     "video_key": "2026-11-06_044653_myth_krishna_kaliya_daman"
+  },
+  {
+    "topic_id": "ram_setu_floating_stones",
+    "topic_title": "समुद्र पर रामसेतु: पानी पर तैरते विशाल पत्थर",
+    "date": "2026-11-06",
+    "seed": 922049,
+    "opening_fx": 3,
+    "closing_fx": 0,
+    "video_key": "2026-11-06_054622_myth_ram_setu_floating_stones"
   }
 ]
