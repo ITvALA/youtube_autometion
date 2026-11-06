@@ -118,29 +118,29 @@ const CamCtx = createContext<Cam>({ x: 0, y: 0, z: 1, rx: 0, ry: 0, rz: 0 });
 
 // focusW = how strongly the camera centres on the focused actor (0 = fixed frame, 1 = locked on face)
 export const SHOTS: Record<ShotName, Cam & { focusW: number }> = {
-  wide:    { x: 0,    y: 0,   z: 0.86, rx: 0,   ry: 0,   rz: 0,  focusW: 0 },
-  medium:  { x: 0,    y: 0,   z: 1.18, rx: 0,   ry: 0,   rz: 0,  focusW: 0.55 },
-  closeup: { x: 0,    y: 0,   z: 1.9,  rx: 0,   ry: 0,   rz: 0,  focusW: 1 },
-  extreme: { x: 0,    y: 0,   z: 2.9,  rx: 0,   ry: 0,   rz: 0,  focusW: 1 },
-  low:     { x: 0,    y: 65,  z: 1.4,  rx: -18, ry: 0,   rz: 0,  focusW: 0.55 },   // hero looks huge from low 3D angle
-  high:    { x: 0,    y: -45, z: 1.05, rx: 18,  ry: 0,   rz: 0,  focusW: 0.25 },   // looking down into 3D stage
-  dutch:   { x: 0,    y: 10,  z: 1.3,  rx: -6,  ry: 8,   rz: -11, focusW: 0.45 },   // tilted 3D fight camera
-  side:    { x: -50,  y: 0,   z: 1.2,  rx: -4,  ry: 26,  rz: 0,  focusW: 0.45 },   // 3D side perspective
-  sideR:   { x: 50,   y: 0,   z: 1.2,  rx: -4,  ry: -26, rz: 0,  focusW: 0.45 },
-  over:    { x: -140, y: 0,   z: 1.55, rx: 0,   ry: 16,  rz: 0,  focusW: 0.7 },
+  wide:    { x: 0,    y: -20, z: 0.82, rx: 0,   ry: 0,   rz: 0,  focusW: 0 },
+  medium:  { x: 0,    y: -10, z: 0.94, rx: 0,   ry: 0,   rz: 0,  focusW: 0.15 },
+  closeup: { x: 0,    y: 0,   z: 1.06, rx: 0,   ry: 0,   rz: 0,  focusW: 0.2 },
+  extreme: { x: 0,    y: 10,  z: 1.15, rx: 0,   ry: 0,   rz: 0,  focusW: 0.25 },
+  low:     { x: 0,    y: 30,  z: 0.98, rx: -8,  ry: 0,   rz: 0,  focusW: 0.15 },
+  high:    { x: 0,    y: -35, z: 0.90, rx: 10,  ry: 0,   rz: 0,  focusW: 0.1 },
+  dutch:   { x: 0,    y: 0,   z: 0.98, rx: -4,  ry: 6,   rz: -8, focusW: 0.15 },
+  side:    { x: -30,  y: -10, z: 0.94, rx: -2,  ry: 16,  rz: 0,  focusW: 0.15 },
+  sideR:   { x: 30,   y: -10, z: 0.94, rx: -2,  ry: -16, rz: 0,  focusW: 0.15 },
+  over:    { x: -50,  y: -10, z: 1.02, rx: 0,   ry: 10,  rz: 0,  focusW: 0.2 },
 };
 
 const MOVES: Record<MoveName, (t: number, f: number) => Partial<Cam>> = {
   still:     () => ({}),
-  pushIn:    (t) => ({ z: 0.28 * t }),
-  pullOut:   (t) => ({ z: 0.28 * (1 - t) - 0.05 }),
-  panL:      (t) => ({ x: 130 * (0.5 - t) }),
-  panR:      (t) => ({ x: -130 * (0.5 - t) }),
-  tiltUp:    (t) => ({ y: 170 * (1 - t) - 60, rx: -8 * t }),
-  craneDown: (t) => ({ y: -240 * (1 - t), rx: 14 * (1 - t) }),
-  orbit:     (t) => ({ ry: -20 + 40 * t, x: 50 * (0.5 - t) }),
-  shake:     (_t, f) => ({ x: Math.sin(f * 1.9) * 16, y: Math.cos(f * 2.3) * 12, rz: Math.sin(f * 1.3) * 0.9 }),
-  whip:      (t) => ({ x: 420 * Math.pow(1 - t, 3), rz: 3 * Math.pow(1 - t, 3) }),
+  pushIn:    (t) => ({ z: 0.12 * t }),
+  pullOut:   (t) => ({ z: 0.12 * (1 - t) }),
+  panL:      (t) => ({ x: 50 * (0.5 - t) }),
+  panR:      (t) => ({ x: -50 * (0.5 - t) }),
+  tiltUp:    (t) => ({ y: 50 * (1 - t) - 20, rx: -3 * t }),
+  craneDown: (t) => ({ y: -70 * (1 - t), rx: 5 * (1 - t) }),
+  orbit:     (t) => ({ ry: -10 + 20 * t, x: 20 * (0.5 - t) }),
+  shake:     (_t, f) => ({ x: Math.sin(f * 1.9) * 6, y: Math.cos(f * 2.3) * 5, rz: Math.sin(f * 1.3) * 0.4 }),
+  whip:      (t) => ({ x: 140 * Math.pow(1 - t, 3), rz: 1.5 * Math.pow(1 - t, 3) }),
 };
 
 const Camera: React.FC<{
@@ -154,9 +154,9 @@ const Camera: React.FC<{
   const z = b.z + (m.z ?? 0);
   const cam: Cam = {
     z,
-    // tiny always-on handheld drift so even a 'still' shot is never frozen
-    x: b.x + (m.x ?? 0) + Math.sin(f / 47) * 7 - b.focusW * z * (focus.x - 540),
-    y: b.y + (m.y ?? 0) + Math.cos(f / 61) * 5 - b.focusW * z * (focus.y - 960),
+    // grounded, subtle organic drift without disorienting pans
+    x: b.x + (m.x ?? 0) + Math.sin(f / 47) * 4 - b.focusW * z * (focus.x - 540) * 0.35,
+    y: b.y + (m.y ?? 0) + Math.cos(f / 61) * 3 - b.focusW * z * (focus.y - 960) * 0.25,
     rx: b.rx + (m.rx ?? 0),
     ry: b.ry + (m.ry ?? 0),
     rz: b.rz + (m.rz ?? 0),
@@ -435,8 +435,8 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
   const entering = dir !== 0 && frame < ENTER_FRAMES && a.pose !== 'fly' && a.pose !== 'sit';
   const pose: Pose = entering ? 'walk' : a.pose;
   const P = POSES[pose] ?? POSES.stand;
-  const sc = a.scale ?? 1;
-  const ground = a.y ?? 1280;
+  const sc = (a.scale ?? 1) * 0.70; // Character scaled down so entire grand background & scene are visible
+  const ground = a.y ?? 1360;
 
   // in fight scenes, warrior MUST hold a weapon (gada, sword, bow, chakra, trishul)
   const weapon: Weapon = (a.weapon && a.weapon !== 'none')
@@ -835,8 +835,8 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number; trans?: Tra
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const a = scene.actors[scene.focus ?? 0] ?? scene.actors[0];
-  const sc = a?.scale ?? 1;
-  const focus = a ? { x: a.x, y: (a.y ?? 1280) - 560 * sc } : { x: 540, y: 900 };
+  const sc = (a?.scale ?? 1) * 0.70;
+  const focus = a ? { x: a.x, y: (a.y ?? 1360) - 370 * sc } : { x: 540, y: 960 };
   const cam = scene.camera!;
   const auraPulse = scene.beat === 'reveal' ? 1 + Math.sin(frame * 0.15) * 0.12 : 1;
 
