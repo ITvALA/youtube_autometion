@@ -20,7 +20,7 @@
  *      Use your existing raju_clone TTS to create those files, then pass them in the scenes JSON.
  */
 import React, { createContext, useContext, useMemo } from 'react';
-import { AbsoluteFill, Audio, Easing, Sequence, Series, staticFile, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Audio, Easing, Sequence, Series, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { loadFont as loadNoto } from '@remotion/google-fonts/NotoSansDevanagari';
 import { ClashSparks, SlashTrail, FlyingArrows, ArmyMarch } from '../components/PuppetKit';
 
@@ -43,6 +43,7 @@ export type Actor = {
   y?: number;           // ground line (default 1280)
   scale?: number;       // default 1
   flip?: boolean;       // face left
+  enter?: 'left' | 'right' | 'none'; // walk in from the screen edge when the scene starts (set by the choreographer)
   weapon?: Weapon;      // overrides the god's default weapon
   angry?: boolean;
 };
@@ -57,7 +58,9 @@ export type Scene = {
   narration?: string;   // Hindi/Hinglish line for the TTS to speak in this scene (pipeline turns it into `voice`)
   voice?: string;       // voiceover file inside /public, e.g. 'voice/s1.mp3' (from your TTS)
   voiceSec?: number;    // length of that voice file in seconds (scene stretches to fit it)
-  camera?: { shot: ShotName; move: MoveName }; // optional manual override
+  voiceLead?: number;   // extra frames before the voice starts (first scene waits for the opening effect)
+  camera?: { shot: ShotName; move: MoveName }; // only honoured when cameraLock is true
+  cameraLock?: boolean; // true = use `camera` as-is; otherwise the seeded camera director decides
 };
 
 /* ───────────────────────── 20+ AVATARS (Gods, Rishis, Gurus, Warriors) ───────────────────────── */
@@ -151,8 +154,9 @@ const Camera: React.FC<{
   const z = b.z + (m.z ?? 0);
   const cam: Cam = {
     z,
-    x: b.x + (m.x ?? 0) - b.focusW * z * (focus.x - 540),
-    y: b.y + (m.y ?? 0) - b.focusW * z * (focus.y - 960),
+    // tiny always-on handheld drift so even a 'still' shot is never frozen
+    x: b.x + (m.x ?? 0) + Math.sin(f / 47) * 7 - b.focusW * z * (focus.x - 540),
+    y: b.y + (m.y ?? 0) + Math.cos(f / 61) * 5 - b.focusW * z * (focus.y - 960),
     rx: b.rx + (m.rx ?? 0),
     ry: b.ry + (m.ry ?? 0),
     rz: b.rz + (m.rz ?? 0),
@@ -182,20 +186,31 @@ const BEAT_RULES: Record<Beat, { shots: ShotName[]; moves: MoveName[] }> = {
   victory: { shots: ['low', 'wide', 'high'],                       moves: ['pullOut', 'tiltUp', 'orbit'] },
 };
 
-export function directCameras(scenes: Scene[], seed: number): Scene[] {
+// first scene delays its voice a little so the opening effect can finish
+export const withLead = (scenes: Scene[]): Scene[] =>
+  scenes.map((s, i) => (i === 0 ? { ...s, voiceLead: s.voiceLead ?? 10 } : s));
+
+export function directCameras(rawScenes: Scene[], seed: number): Scene[] {
+  const scenes = withLead(rawScenes);
   const r = rng(seed * 7919 + 13);
-  let prevShot: ShotName | null = null;
+  const recentShots: ShotName[] = [];
   let prevMove: MoveName | null = null;
+  const pickAvoid = <T,>(arr: T[], avoid: T[]) => {
+    const pool = arr.filter((a) => !avoid.includes(a));
+    const src = pool.length ? pool : arr;
+    return src[Math.floor(r() * src.length)];
+  };
   return scenes.map((s) => {
-    if (s.camera) { prevShot = s.camera.shot; prevMove = s.camera.move; return s; }
+    // The LLM / fallback plan used to ALWAYS carry a camera, which switched this director off.
+    // Now the director decides every scene (seeded, so every video differs) unless cameraLock is set.
+    if (s.camera && s.cameraLock) {
+      recentShots.push(s.camera.shot); prevMove = s.camera.move;
+      return s;
+    }
     const rule = BEAT_RULES[s.beat];
-    const pick = <T,>(arr: T[], avoid: T | null) => {
-      const pool = arr.filter((a) => a !== avoid);
-      return pool[Math.floor(r() * pool.length)] ?? arr[0];
-    };
-    const shot = pick(rule.shots, prevShot);
-    const move = pick(rule.moves, prevMove);
-    prevShot = shot; prevMove = move;
+    const shot = pickAvoid(rule.shots, recentShots.slice(-2));
+    const move = pickAvoid(rule.moves, prevMove ? [prevMove] : []);
+    recentShots.push(shot); prevMove = move;
     return { ...s, camera: { shot, move } };
   });
 }
@@ -252,8 +267,8 @@ const Arm: React.FC<{ sx: number; a: number; b: number; skin: string; weapon?: W
     </g>
   );
 
-const Head: React.FC<{ g: God; angry: boolean }> = ({ g, angry }) => (
-  <g transform="translate(0,-300)">
+const Head: React.FC<{ g: God; angry: boolean; blink?: boolean; mouth?: number; tilt?: number }> = ({ g, angry, blink = false, mouth = 0, tilt = 0 }) => (
+  <g transform={`translate(0,-300) rotate(${tilt})`}>
     {/* halo */}
     <g>
       {Array.from({ length: 20 }).map((_, i) => (
@@ -304,10 +319,20 @@ const Head: React.FC<{ g: God; angry: boolean }> = ({ g, angry }) => (
     {g.crown === 'horns' && (<g><polygon points="-52,-40 -86,-130 -20,-62" fill="#e9ecef" stroke={INK} strokeWidth={3} />
       <polygon points="52,-40 86,-130 20,-62" fill="#e9ecef" stroke={INK} strokeWidth={3} /></g>)}
     {/* face */}
-    <circle cx={-24} cy={-6} r={13} fill="#fff" /><circle cx={24} cy={-6} r={13} fill="#fff" />
-    <circle cx={-24} cy={-4} r={6} fill={angry ? '#e03131' : '#222'} /><circle cx={24} cy={-4} r={6} fill={angry ? '#e03131' : '#222'} />
+    {blink ? (
+      <path d="M-38,-5 Q-24,3 -10,-5 M10,-5 Q24,3 38,-5" fill="none" stroke={INK} strokeWidth={5} strokeLinecap="round" />
+    ) : (
+      <g>
+        <circle cx={-24} cy={-6} r={13} fill="#fff" /><circle cx={24} cy={-6} r={13} fill="#fff" />
+        <circle cx={-24} cy={-4} r={6} fill={angry ? '#e03131' : '#222'} /><circle cx={24} cy={-4} r={6} fill={angry ? '#e03131' : '#222'} />
+      </g>
+    )}
     <path d={angry ? 'M-42,-26 L-8,-14 M42,-26 L8,-14' : 'M-40,-22 L-10,-24 M40,-22 L10,-24'} stroke={INK} strokeWidth={6} strokeLinecap="round" />
-    <path d={angry ? 'M-18,38 Q0,28 18,38' : 'M-18,32 Q0,44 18,32'} fill="none" stroke={INK} strokeWidth={5} strokeLinecap="round" />
+    {mouth > 0.12 ? (
+      <ellipse cx={0} cy={36} rx={13 + mouth * 5} ry={3 + mouth * 14} fill="#4a0d0d" stroke={INK} strokeWidth={3} />
+    ) : (
+      <path d={angry ? 'M-18,38 Q0,28 18,38' : 'M-18,32 Q0,44 18,32'} fill="none" stroke={INK} strokeWidth={5} strokeLinecap="round" />
+    )}
 
     {/* Tilak / Tripund */}
     {g.crown === 'guru' ? (
@@ -332,42 +357,63 @@ const Head: React.FC<{ g: God; angry: boolean }> = ({ g, angry }) => (
   </g>
 );
 
-const Character: React.FC<{ a: Actor; frame: number }> = ({ a, frame }) => {
+const ENTER_FRAMES = 38;
+
+const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: number }> = ({ a, frame, talking = false, idx = 0 }) => {
   const g = ROSTER[a.who as string] ?? ROSTER.krishna;
-  const P = POSES[a.pose] ?? POSES.stand;
+  const dir = a.enter === 'left' ? -1 : a.enter === 'right' ? 1 : 0;
+  // Entrance: the actor WALKS in from the screen edge for the first ~1.2s of the scene
+  const entering = dir !== 0 && frame < ENTER_FRAMES && a.pose !== 'fly' && a.pose !== 'sit';
+  const pose: Pose = entering ? 'walk' : a.pose;
+  const P = POSES[pose] ?? POSES.stand;
   const sc = a.scale ?? 1;
   const ground = a.y ?? 1280;
   const weapon = a.weapon ?? g.weapon;
-  const angry = a.angry ?? a.pose === 'fight';
-  const idle = Math.sin(frame / 9);
-  const walkPhase = a.pose === 'walk' ? Math.sin(frame / 3) * 24 : 0;
-  const swing = a.pose === 'fight' ? Math.sin(frame / 3.2) * 44 : a.pose === 'walk' ? -walkPhase : idle * 4;
-  const bob = a.pose === 'fly' ? Math.sin(frame / 7) * 24 : a.pose === 'sit' ? Math.sin(frame / 14) * 10 : a.pose === 'walk' ? Math.abs(Math.sin(frame / 3)) * 14 : idle * 3;
-  const sitDrop = a.pose === 'sit' ? 125 : 0;
-  const flyRot = a.pose === 'fly' ? 72 : 0;
-  const lift = a.pose === 'fly' ? -260 : 0;
+  const angry = a.angry ?? pose === 'fight';
+  const idle = Math.sin(frame / 9 + idx);
 
-  // Real kinematics: dynamic walk translation across ground
-  const walkDelta = a.pose === 'walk'
-    ? (1 - Math.min(1, frame / 40)) * (a.flip ? 180 : -180)
+  // explicit 'walk' pose: really travels in the facing direction (no more moon-walking on the spot)
+  const explicitTravel = a.pose === 'walk' && !entering ? Math.min(frame * 1.5, 260) : 0;
+  const walkingNow = pose === 'walk' && (entering || frame * 1.5 < 260);
+  const walkPhase = walkingNow ? Math.sin(frame / 3) * 24 : 0;
+  const swing = pose === 'fight' ? Math.sin(frame / 3.2) * 44 : walkingNow ? -walkPhase : idle * 4;
+  const bob = pose === 'fly' ? Math.sin(frame / 7) * 24 : pose === 'sit' ? Math.sin(frame / 14) * 10 : walkingNow ? Math.abs(Math.sin(frame / 3)) * 14 : idle * 3;
+  const sitDrop = pose === 'sit' ? 125 : 0;
+  const flyRot = pose === 'fly' ? 72 : 0;
+  const lift = pose === 'fly' ? -260 : 0;
+
+  // life: gestures while talking, body sway, blinking, mouth flap, head tilt
+  const gest = talking || pose === 'talk' || pose === 'point' ? Math.sin(frame / 5 + idx * 2) * 9 : 0;
+  const sway = pose === 'fight' || pose === 'fly' ? 0 : Math.sin(frame / 27 + idx) * 1.4;
+  const blink = (frame + idx * 17) % 96 < 4;
+  const mouth = talking ? Math.abs(Math.sin(frame / 2.3 + idx)) * (0.55 + 0.45 * Math.sin(frame / 6.1)) : 0;
+  const tilt = Math.sin(frame / 23 + idx * 1.3) * 2.2 + (talking ? Math.sin(frame / 4) * 1.6 : 0);
+
+  const faceLeft = entering ? dir > 0 : !!a.flip;
+  const dirFace = faceLeft ? -1 : 1;
+  const walkDelta = explicitTravel ? dirFace * (explicitTravel - 130) : 0;
+  let enterX = 0;
+  if (entering) {
+    const p = frame / ENTER_FRAMES;
+    enterX = (1 - (1 - (1 - p) * (1 - p))) * dir * 520; // ease-out: fast at first, settles softly
+  }
+  const lungeX = pose === 'fight'
+    ? Math.sin(frame / 3.2) * 26 * (faceLeft ? -1 : 1)
     : 0;
-  const lungeX = a.pose === 'fight'
-    ? Math.sin(frame / 3.2) * 26 * (a.flip ? -1 : 1)
-    : 0;
-  const posX = a.x + walkDelta + lungeX;
+  const posX = a.x + walkDelta + lungeX + enterX;
   const body = (
-    <g transform={`translate(0,${sitDrop + bob}) rotate(${flyRot} 0 0)`}>
+    <g transform={`translate(0,${sitDrop + bob}) rotate(${flyRot + sway} 0 0)`}>
       {/* aura for flying */}
-      {a.pose === 'fly' && [0, 1, 2, 3].map((i) => (
+      {pose === 'fly' && [0, 1, 2, 3].map((i) => (
         <line key={i} x1={-60 - ((frame * 22 + i * 90) % 360)} y1={-180 + i * 110} x2={-160 - ((frame * 22 + i * 90) % 360)} y2={-180 + i * 110}
           stroke="#fff" strokeOpacity={0.5} strokeWidth={6} strokeLinecap="round" />))}
       {/* legs / sitting base */}
-      {a.pose === 'sit' ? (
+      {pose === 'sit' ? (
         <g><ellipse cx={0} cy={30} rx={170} ry={46} fill={g.cloth} stroke={INK} strokeWidth={4} />
           <ellipse cx={0} cy={60} rx={120} ry={22} fill={g.skin} stroke={INK} strokeWidth={4} /></g>
       ) : (
         [-1, 1].map((s) => (
-          <g key={s} transform={`translate(${s * 38},-6) rotate(${s < 0 ? P.lL + swing * 0.2 + (a.pose === 'walk' ? walkPhase : 0) : P.lR - swing * 0.2 - (a.pose === 'walk' ? walkPhase : 0)})`}>
+          <g key={s} transform={`translate(${s * 38},-6) rotate(${s < 0 ? P.lL + swing * 0.2 + (walkingNow ? walkPhase : 0) : P.lR - swing * 0.2 - (walkingNow ? walkPhase : 0)})`}>
             <rect x={-22} y={0} width={44} height={226} rx={22} fill={g.skin} stroke={INK} strokeWidth={4} />
             <rect x={-26} y={176} width={52} height={14} rx={7} fill={GOLD} />
             <ellipse cx={s * 6} cy={228} rx={34} ry={14} fill="#3a2418" />
@@ -375,8 +421,8 @@ const Character: React.FC<{ a: Actor; frame: number }> = ({ a, frame }) => {
       )}
       {/* back arms (4-armed gods) */}
       {g.arms4 && (<g opacity={0.95}>
-        <Arm sx={-66} a={P.aL + 70} b={30} skin={g.skin} weapon="none" frame={frame} />
-        <Arm sx={66} a={P.aR - 70} b={-30} skin={g.skin} weapon={weapon === 'none' ? 'trishul' : weapon === 'chakra' ? 'gada' : 'chakra'} frame={frame} />
+        <Arm sx={-66} a={P.aL + 70 + gest} b={30} skin={g.skin} weapon="none" frame={frame} />
+        <Arm sx={66} a={P.aR - 70 - gest} b={-30} skin={g.skin} weapon={weapon === 'none' ? 'trishul' : weapon === 'chakra' ? 'gada' : 'chakra'} frame={frame} />
       </g>)}
       {/* torso + cloth */}
       <path d="M-78,-215 L78,-215 L64,-4 L-64,-4 Z" fill={g.skin} stroke={INK} strokeWidth={5} />
@@ -393,9 +439,9 @@ const Character: React.FC<{ a: Actor; frame: number }> = ({ a, frame }) => {
       <path d="M-70,-215 L70,-215 L0,-100 Z" fill="#ffffff" opacity={0.15} />
       <circle cx={0} cy={-150} r={14} fill={GOLD} />
       {/* main arms */}
-      <Arm sx={-80} a={P.aL + swing * 0.6} b={P.bL} skin={g.skin} weapon="none" frame={frame} />
-      <Arm sx={80} a={P.aR + swing} b={P.bR} skin={g.skin} weapon={weapon} frame={frame} />
-      <Head g={g} angry={angry} />
+      <Arm sx={-80} a={P.aL + swing * 0.6 + gest * 0.5} b={P.bL} skin={g.skin} weapon="none" frame={frame} />
+      <Arm sx={80} a={P.aR + swing + gest} b={P.bR} skin={g.skin} weapon={weapon} frame={frame} />
+      <Head g={g} angry={angry} blink={blink} mouth={mouth} tilt={tilt} />
     </g>
   );
   return (
@@ -409,7 +455,7 @@ const Character: React.FC<{ a: Actor; frame: number }> = ({ a, frame }) => {
         filter: 'drop-shadow(0 18px 22px rgba(0,0,0,.45))'
       }}
     >
-      <g transform={`scale(${a.flip ? -1 : 1},1) translate(0,${lift})`}>{body}</g>
+      <g transform={`scale(${faceLeft ? -1 : 1},1) translate(0,${lift})`}>{body}</g>
     </svg>
   );
 };
@@ -565,17 +611,46 @@ const DivineParticles: React.FC<{ frame: number; seed: number }> = ({ frame, see
 };
 
 /* ───────────────────────── SCENE + VIDEO ───────────────────────── */
-const SceneView: React.FC<{ scene: Scene; seed: number; dur: number }> = ({ scene, seed, dur }) => {
+export type TransName = 'none' | 'fade' | 'wipeL' | 'wipeR' | 'iris' | 'flash' | 'zoom' | 'dip';
+const TRANS_POOL: TransName[] = ['fade', 'wipeL', 'wipeR', 'iris', 'flash', 'zoom', 'dip'];
+const T_LEN = 12;
+
+const SceneView: React.FC<{ scene: Scene; seed: number; dur: number; trans?: TransName }> = ({ scene, seed, dur, trans = 'fade' }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const a = scene.actors[scene.focus ?? 0] ?? scene.actors[0];
   const sc = a?.scale ?? 1;
   const focus = a ? { x: a.x, y: (a.y ?? 1280) - 560 * sc } : { x: 540, y: 900 };
   const cam = scene.camera!;
-  const fadeIn = Math.min(1, frame / 6);
   const auraPulse = scene.beat === 'reveal' ? 1 + Math.sin(frame * 0.15) * 0.12 : 1;
 
+  // who is speaking right now (mouth + gestures); talk scenes alternate between the actors
+  const win = Math.max(1, Math.round((scene.voiceSec ?? 0) * fps));
+  const local = frame - (6 + (scene.voiceLead ?? 0));
+  const speaking = !!scene.voice && local >= 0 && local <= win;
+  let speaker = scene.focus ?? 0;
+  if (scene.actors.length > 1 && scene.beat === 'talk') {
+    speaker = Math.min(scene.actors.length - 1, Math.floor((local / win) * scene.actors.length));
+  }
+
+  // scene-start transition (different every scene)
+  const tp = Math.min(1, frame / T_LEN);
+  const te = Easing.out(Easing.cubic)(tp);
+  let wrap: React.CSSProperties = {};
+  let flashOpacity = 0;
+  switch (trans) {
+    case 'fade': wrap = { opacity: tp }; break;
+    case 'wipeL': wrap = { clipPath: `inset(0 ${(1 - te) * 100}% 0 0)` }; break;
+    case 'wipeR': wrap = { clipPath: `inset(0 0 0 ${(1 - te) * 100}%)` }; break;
+    case 'iris': wrap = { clipPath: `circle(${te * 85}% at 50% 55%)` }; break;
+    case 'flash': wrap = { opacity: Math.min(1, tp * 3) }; flashOpacity = (1 - tp) * 0.85; break;
+    case 'zoom': wrap = { opacity: Math.min(1, tp * 2.5), transform: `scale(${1.12 - 0.12 * te})` }; break;
+    case 'dip': wrap = { opacity: tp * tp }; break;
+    default: break;
+  }
+
   return (
-    <AbsoluteFill style={{ opacity: fadeIn }}>
+    <AbsoluteFill style={wrap}>
       <Camera shot={cam.shot} move={cam.move} dur={dur} focus={focus}>
         <World kind={scene.bg} seed={seed} frame={frame} />
 
@@ -586,8 +661,8 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number }> = ({ scen
           </Layer>
         )}
 
-        {/* Characters with dynamic walk kinematics and combat lunges */}
-        {scene.actors.map((ac, i) => (<Character key={i} a={ac} frame={frame} />))}
+        {/* Characters: walk-in entrances, blinking, lip-sync, gestures, combat lunges */}
+        {scene.actors.map((ac, i) => (<Character key={i} a={ac} frame={frame} idx={i} talking={speaking && i === speaker} />))}
 
         {/* Action Combat VFX (Sparks, Weapon Slash, Flying Arrows) */}
         {scene.beat === 'fight' && (
@@ -637,8 +712,78 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number }> = ({ scen
       </Camera>
       <DivineParticles frame={frame} seed={seed} />
       <Caption title={scene.caption.title} text={scene.caption.text} />
+      {flashOpacity > 0.01 && <AbsoluteFill style={{ background: '#fff7dc', opacity: flashOpacity }} />}
     </AbsoluteFill>
   );
+};
+
+/* ───────────────── OPENING / CLOSING effects (6 kinds each, picked per video) ───────────────── */
+export const FX_COUNT = 6;
+const OPEN_LEN = 40;
+const CLOSE_LEN = 46;
+
+// p = how much of the screen is covered (1 = fully covered, 0 = nothing)
+const Cover: React.FC<{ kind: number; p: number; ox?: number; oy?: number }> = ({ kind, p, ox = 50, oy = 55 }) => {
+  if (p <= 0.002) return null;
+  const k = ((kind % FX_COUNT) + FX_COUNT) % FX_COUNT;
+  const full: React.CSSProperties = { position: 'absolute', inset: 0 };
+  let inner: React.ReactNode = null;
+  switch (k) {
+    case 0: // fade through black
+      inner = <div style={{ ...full, background: '#000', opacity: p }} />;
+      break;
+    case 1: { // iris: circle opens / closes around a point
+      const r = (1 - p) * 1500;
+      inner = p >= 0.995
+        ? <div style={{ ...full, background: '#050202' }} />
+        : <div style={{ ...full, background: `radial-gradient(circle at ${ox}% ${oy}%, transparent ${r}px, #050202 ${r + 3}px)` }} />;
+      break;
+    }
+    case 2: // temple curtains with gold edges
+      inner = (
+        <>
+          <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: `${p * 50}%`, background: 'linear-gradient(90deg,#3d0a10,#7a1c1c)', borderRight: '6px solid #f2b632' }} />
+          <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: `${p * 50}%`, background: 'linear-gradient(270deg,#3d0a10,#7a1c1c)', borderLeft: '6px solid #f2b632' }} />
+        </>
+      );
+      break;
+    case 3: // divine light burst
+      inner = (
+        <div style={{ ...full, opacity: p, background: 'radial-gradient(circle at 50% 50%, #fff6d6 0%, #ffd166 35%, #f2a93b 70%, #7a3b10 100%)' }}>
+          <div style={{ ...full, opacity: 0.5, background: 'repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,.6) 0 5deg, transparent 5deg 10deg)', transform: `rotate(${p * 40}deg) scale(1.7)` }} />
+        </div>
+      );
+      break;
+    case 4: { // shutters
+      const n = 8;
+      inner = (
+        <>
+          {Array.from({ length: n }).map((_, i) => {
+            const local = Math.min(1, Math.max(0, p * 1.6 - (i / n) * 0.6));
+            return (
+              <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: `${(i / n) * 100}%`, height: `${100 / n + 0.4}%`, background: '#0b0604', transform: `scaleY(${local})`, transformOrigin: i % 2 ? 'top' : 'bottom' }} />
+            );
+          })}
+        </>
+      );
+      break;
+    }
+    default: // slide panel
+      inner = <div style={{ ...full, background: '#0b0604', transform: `translateY(${(1 - p) * -100}%)` }} />;
+  }
+  return <AbsoluteFill style={{ pointerEvents: 'none', overflow: 'hidden' }}>{inner}</AbsoluteFill>;
+};
+
+const OpeningFX: React.FC<{ kind: number; ox: number; oy: number }> = ({ kind, ox, oy }) => {
+  const f = useCurrentFrame();
+  const p = 1 - Easing.inOut(Easing.cubic)(Math.min(1, f / (OPEN_LEN - 4)));
+  return <Cover kind={kind} p={p} ox={ox} oy={oy} />;
+};
+
+const ClosingFX: React.FC<{ kind: number; ox: number; oy: number }> = ({ kind, ox, oy }) => {
+  const f = useCurrentFrame();
+  const p = Easing.inOut(Easing.cubic)(Math.min(1, f / (CLOSE_LEN - 8)));
+  return <Cover kind={kind} p={p} ox={ox} oy={oy} />;
 };
 
 /* ───────────────────────── AUDIO ───────────────────────── */
@@ -650,7 +795,7 @@ const MythAudio: React.FC<{
 }> = ({ scenes, starts, durs, fps, total, music = true, sfx = true, musicVol = 0.5, duckedVol = 0.2, voiceVol = 1 }) => {
   // windows (in frames) where a voiceover is speaking -> music gets quieter there
   const voiceWins = scenes
-    .map((s, i) => (s.voice ? [starts[i] + 6, starts[i] + 6 + Math.round((s.voiceSec ?? 3) * fps)] : null))
+    .map((s, i) => (s.voice ? [starts[i] + 6 + (s.voiceLead ?? 0), starts[i] + 6 + (s.voiceLead ?? 0) + Math.round((s.voiceSec ?? 3) * fps)] : null))
     .filter(Boolean) as number[][];
   const musicVolume = (f: number) => {
     const speaking = voiceWins.some(([a, b]) => f >= a - 6 && f <= b + 6);
@@ -683,7 +828,7 @@ const MythAudio: React.FC<{
     }
     if (s.voice) {
       items.push(
-        <Sequence key={`voice${i}`} from={st + 6} durationInFrames={Math.round((s.voiceSec ?? 8) * fps) + 6}>
+        <Sequence key={`voice${i}`} from={st + 6 + (s.voiceLead ?? 0)} durationInFrames={Math.round((s.voiceSec ?? 8) * fps) + 6}>
           <Audio src={staticFile(s.voice)} volume={voiceVol} />
         </Sequence>,
       );
@@ -698,26 +843,51 @@ const MythAudio: React.FC<{
 };
 
 /* Total frames of a video (use this for durationInFrames; honours voice lengths) */
-export const sceneFrames = (s: Scene, fps = 30) => Math.max(1, Math.round(Math.max(s.sec, s.voiceSec ? s.voiceSec + 0.4 : 0) * fps));
-export const totalFrames = (scenes: Scene[], fps = 30) => scenes.reduce((a, s) => a + sceneFrames(s, fps), 0);
+export const sceneFrames = (s: Scene, fps = 30) => Math.max(1, Math.round(Math.max(s.sec, s.voiceSec ? s.voiceSec + 0.4 + (s.voiceLead ?? 0) / fps : 0) * fps));
+export const totalFrames = (scenes: Scene[], fps = 30) => withLead(scenes).reduce((a, s) => a + sceneFrames(s, fps), 0);
 
 export const MythShort: React.FC<{
   scenes: Scene[]; seed: number; fps?: number;
   music?: boolean; sfx?: boolean; musicVol?: number; duckedVol?: number; voiceVol?: number;
-}> = ({ scenes, seed, fps = 30, ...audio }) => {
+  openingFx?: number; closingFx?: number;   // 0..5 ; omitted = chosen from the seed
+}> = ({ scenes, seed, fps = 30, openingFx, closingFx, ...audio }) => {
   const planned = useMemo(() => directCameras(scenes, seed), [scenes, seed]);
   const durs = planned.map((s) => sceneFrames(s, fps));
   const starts = durs.map((_, i) => durs.slice(0, i).reduce((a, b) => a + b, 0));
   const total = durs.reduce((a, b) => a + b, 0);
+
+  // seeded look: opening effect, closing effect and a different transition into every scene
+  const look = useMemo(() => {
+    const r = rng(seed * 104729 + 31);
+    const open = openingFx ?? Math.floor(r() * FX_COUNT);
+    const close = closingFx ?? ((open + 1 + Math.floor(r() * (FX_COUNT - 1))) % FX_COUNT);
+    const ox = 25 + r() * 50;
+    const oy = 35 + r() * 40;
+    const trans: TransName[] = [];
+    planned.forEach((_, i) => {
+      if (i === 0) { trans.push('none'); return; }
+      const prev = trans[i - 1];
+      const pool = TRANS_POOL.filter((t) => t !== prev);
+      trans.push(pool[Math.floor(r() * pool.length)]);
+    });
+    return { open, close, ox, oy, trans };
+  }, [seed, planned, openingFx, closingFx]);
+
   return (
     <AbsoluteFill style={{ background: '#0b0604' }}>
       <Series>
         {planned.map((s, i) => (
           <Series.Sequence key={i} durationInFrames={durs[i]}>
-            <SceneView scene={s} seed={seed + i * 31} dur={durs[i]} />
+            <SceneView scene={s} seed={seed + i * 31} dur={durs[i]} trans={look.trans[i]} />
           </Series.Sequence>
         ))}
       </Series>
+      <Sequence from={0} durationInFrames={OPEN_LEN}>
+        <OpeningFX kind={look.open} ox={look.ox} oy={look.oy} />
+      </Sequence>
+      <Sequence from={Math.max(0, total - CLOSE_LEN)} durationInFrames={CLOSE_LEN}>
+        <ClosingFX kind={look.close} ox={100 - look.ox} oy={look.oy} />
+      </Sequence>
       <MythAudio scenes={planned} starts={starts} durs={durs} fps={fps} total={total} {...audio} />
     </AbsoluteFill>
   );

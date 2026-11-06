@@ -1,17 +1,18 @@
 {
   "providers": [
-    "edge-tts",
-    "raju_clone"
+    "xtts_local",
+    "edge-tts"
   ],
-  "provider": "edge-tts",
-  "selected_voice_id": "sanatan_cool_master",
-  "selected_voice_name": "Sanatan Cool Master (Setting 4C / Pitch +8Hz, Rate +4%)",
+  "provider": "xtts_local",
+  "selected_voice_id": "xtts_clone_ref",
+  "selected_voice_name": "XTTS-v2 local clone (reference: real voice sample)",
   "voice": "hi-IN-MadhurNeural",
   "voices": {
     "edge-tts": "hi-IN-MadhurNeural",
     "raju_clone": "hi-IN-MadhurNeural",
     "gemini_tts": "Charon",
-    "google_chirp": "hi-IN-Chirp3-HD-Charon"
+    "google_chirp": "hi-IN-Chirp3-HD-Charon",
+    "xtts_local": "xtts_v2_hf_viraj_ref_v1"
   },
   "gemini_models": [
     "gemini-3.8-flash-tts",
@@ -41,5 +42,9 @@
     "enabled": true,
     "volume": 0.18
   },
-  "description": "Sanatan Cool Master (Setting 4C): hi-IN-MadhurNeural with Pitch (+8Hz), Rate (+4%), 130Hz Highpass, 280Hz chest mud cut (-3.8dB), 3.6kHz clarity boost (+2.4dB), smooth studio compressor, and -14 LUFS mobile punch."
+  "description": "Local XTTS-v2 (Hugging Face coqui/XTTS-v2) cloned from data/voice_references/xtts_ref_*.wav, then the 4C filter chain. Falls back to edge-tts Madhur if XTTS cannot run.",
+  "xtts_speed": 1.0,
+  "xtts_gap": 0.18,
+  "xtts_temperature": 0.65,
+  "xtts_repetition_penalty": 5.0
 }

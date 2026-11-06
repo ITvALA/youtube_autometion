@@ -116,7 +116,16 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
     seed = int(datetime.datetime.now().timestamp() * 1000) % 1000000
     print(f"🎲 Seed per video: {seed}")
 
-    plan = llm.make_myth_plan(topic, custom_script=custom_script)
+    plan = llm.make_myth_plan(topic, custom_script=custom_script, seed=seed)
+
+    # opening / closing effect: 6 kinds each, never the same as the previous video
+    hist_fx = jload(ROOT / "data" / "myth_history.json", [])
+    last_open = next((h.get("opening_fx") for h in reversed(hist_fx) if isinstance(h, dict) and h.get("opening_fx") is not None), None)
+    last_close = next((h.get("closing_fx") for h in reversed(hist_fx) if isinstance(h, dict) and h.get("closing_fx") is not None), None)
+    fx_rng = random.Random(seed)
+    opening_fx = fx_rng.choice([i for i in range(6) if i != last_open])
+    closing_fx = fx_rng.choice([i for i in range(6) if i != last_close and i != opening_fx])
+    print(f"🎞️ Opening FX #{opening_fx} | Closing FX #{closing_fx}")
 
     unique_ts = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     topic_slug = topic.get("topic") or slug(topic.get("title", "")) or f"story_{seed}"
@@ -166,11 +175,15 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
 
         sc["voice"] = voice_rel
         sc["voiceSec"] = v_sec
+        if i == len(plan["scenes"]) - 1:
+            sc["sec"] = max(float(sc.get("sec", 5)), v_sec + 1.8)
         print(f"  [Scene {i}] {v_sec}s | {sc.get('beat')} | delivery: {sc.get('delivery')} | voice: {voice_rel}")
 
     myth_props = {
         "scenes": plan["scenes"],
         "seed": seed,
+        "openingFx": opening_fx,
+        "closingFx": closing_fx,
         "music": True,
         "sfx": True,
         "musicVol": 0.16,
@@ -237,6 +250,8 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
         "topic_title": topic["title"],
         "date": str(datetime.date.today()),
         "seed": seed,
+        "opening_fx": opening_fx,
+        "closing_fx": closing_fx,
         "video_key": key
     })
     jsave(ROOT / "data" / "myth_history.json", myth_hist)

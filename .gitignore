@@ -30,3 +30,6 @@ data/dataset_sanatan/
 etc/
 models/
 
+
+# keep the voice reference clips (used by local XTTS-v2)
+!data/voice_references/*.wav

@@ -1,7 +1,7 @@
 """Asks Claude (claude-sonnet-5 via your relay) for a VIDEO PLAN as JSON.
 Supports 22 templates with recipe matching, deep normalization, and 9:16 vertical enforcement.
 """
-import os, sys, json, requests, re
+import os, sys, json, requests, re, random
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -220,13 +220,14 @@ NEED = {
     "gradientFlow": ["text", "sub"],
 }
 
-def _call_gemini(prompt):
+def _call_gemini(prompt, max_tokens=3500):
     raw_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY_2", "")
     key = str(raw_key).strip().strip('"').strip("'")
     if not key:
         raise ValueError("GEMINI_API_KEY is not set.")
     
     models = [
+        "gemini-2.5-flash",
         "gemini-2.0-flash",
         "gemini-1.5-flash",
         "gemini-1.5-pro",
@@ -247,7 +248,7 @@ def _call_gemini(prompt):
                 ],
                 "generationConfig": {
                     "temperature": 0.7,
-                    "maxOutputTokens": 3500,
+                    "maxOutputTokens": max_tokens,
                     "responseMimeType": "application/json"
                 }
             }
@@ -271,7 +272,7 @@ def _call_gemini(prompt):
     raise RuntimeError(f"Gemini API failed: {last_err}")
 
 
-def _call_groq(prompt):
+def _call_groq(prompt, max_tokens=2000):
     key = os.environ.get("GROQ_API_KEY", "").strip()
     if not key:
         raise RuntimeError("GROQ_API_KEY not configured in environment")
@@ -288,7 +289,7 @@ def _call_groq(prompt):
                     {"role": "user", "content": prompt}
                 ],
                 "temperature": 0.7,
-                "max_tokens": 2000,
+                "max_tokens": max_tokens,
                 "response_format": {"type": "json_object"}
             }
             r = requests.post(url, headers=headers, json=body, timeout=45)
@@ -304,7 +305,7 @@ def _call_groq(prompt):
     raise RuntimeError(f"All Groq models failed: {last_err}")
 
 
-def _call_openai_relay(prompt):
+def _call_openai_relay(prompt, max_tokens=2000):
     key = os.environ.get("LLM_API_KEY") or os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not key:
         raise ValueError("LLM_API_KEY is not set.")
@@ -319,7 +320,7 @@ def _call_openai_relay(prompt):
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
-        "max_tokens": 2000
+        "max_tokens": max_tokens
     }
     r = requests.post(url, headers=headers, json=body, timeout=60)
     if r.status_code == 200:
@@ -329,26 +330,27 @@ def _call_openai_relay(prompt):
     raise RuntimeError(f"LLM relay HTTP {r.status_code}: {r.text[:150]}")
 
 
-def _call(prompt):
+def _call(prompt, max_tokens=None):
     """Multi-tier LLM engine: Gemini -> Groq -> OpenAI/Relay."""
     errors = []
+    kw = {"max_tokens": max_tokens} if max_tokens else {}
     # 1. Google Gemini (if key configured)
     if os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY_2"):
         try:
-            return _call_gemini(prompt)
+            return _call_gemini(prompt, **kw)
         except Exception as e:
             errors.append(f"Gemini: {e}")
 
     # 2. Groq (Always available with high speed)
     try:
-        return _call_groq(prompt)
+        return _call_groq(prompt, **kw)
     except Exception as e:
         errors.append(f"Groq: {e}")
 
     # 3. LLM Relay / OpenAI (Backup)
     if os.environ.get("LLM_API_KEY") or os.environ.get("ANTHROPIC_API_KEY"):
         try:
-            return _call_openai_relay(prompt)
+            return _call_openai_relay(prompt, **kw)
         except Exception as e:
             errors.append(f"Relay: {e}")
 
@@ -997,7 +999,138 @@ def _detect_myth_actors_for_topic(title, summary=""):
     ]
 
 
-def generate_fallback_myth_plan(topic=None):
+# ==============================================================================
+# Choreography: gives every scene its own entrances, poses and facing.
+# (The camera is NOT set here any more -> the Remotion camera director picks it per video.)
+# ==============================================================================
+def choreograph_myth_plan(plan, seed=None):
+    rnd = random.Random(seed)
+    prev_who, prev_pose = set(), {}
+    talk_poses = ["talk", "point", "stand", "pray"]
+    for i, sc in enumerate(plan.get("scenes", [])):
+        # an LLM / fallback camera used to freeze every video on the same angle -> keep it only as a hint
+        cam = sc.pop("camera", None)
+        if isinstance(cam, dict):
+            sc["camera_hint"] = cam
+        acts = sc.get("actors", [])
+        if not acts:
+            continue
+        beat = sc.get("beat")
+        focus = sc.get("focus", 0)
+        if not isinstance(focus, int) or focus < 0 or focus >= len(acts):
+            focus = 0
+        sc["focus"] = focus
+
+        # pose variety (do not repeat the exact same pose for the same character in consecutive scenes)
+        for k, a in enumerate(acts):
+            pose = a.get("pose", "stand")
+            if pose in talk_poses and prev_pose.get(a["who"]) == pose:
+                pose = rnd.choice([p for p in talk_poses if p != pose])
+            if beat == "talk" and pose == "stand" and k == focus:
+                pose = "talk"
+            a["pose"] = pose
+
+        # positions
+        if len(acts) == 1:
+            a = acts[0]
+            a["x"] = max(260, min(820, int(a.get("x", 540)) + rnd.randint(-70, 70)))
+            a.setdefault("scale", round(rnd.uniform(0.95, 1.08), 2))
+        else:
+            xs = sorted(a["x"] for a in acts)
+            if xs[-1] - xs[0] < 240:
+                acts[0]["x"], acts[-1]["x"] = 380, 700
+                if acts[0]["x"] > acts[-1]["x"]:
+                    acts[0]["x"], acts[-1]["x"] = acts[-1]["x"], acts[0]["x"]
+
+        # facing: look at the nearest other actor; solo actors look towards the centre
+        for a in acts:
+            others = [o for o in acts if o is not a]
+            if others:
+                near = min(others, key=lambda o: abs(o["x"] - a["x"]))
+                a["flip"] = near["x"] < a["x"]
+            else:
+                a["flip"] = (a["x"] > 540) if a["x"] != 540 else (rnd.random() < 0.5)
+
+        # entrances: new characters walk in from the edge they are standing near
+        for a in acts:
+            new_here = a["who"] not in prev_who
+            wants = new_here or (i == 0 and rnd.random() < 0.8) or rnd.random() < 0.2
+            if wants and a["pose"] not in ("fly", "sit"):
+                a["enter"] = "right" if a["flip"] else "left"
+
+        prev_who = {a["who"] for a in acts}
+        prev_pose = {a["who"]: a["pose"] for a in acts}
+    return plan
+
+
+# ==============================================================================
+# Fallback (only used when the live LLM fails) - now randomised so videos differ.
+# ==============================================================================
+_FB_STRUCTURES = [
+    [("intro", 0), ("talk", 1), ("reveal", 2), ("fight", 3), ("victory", 4), ("victory", 5)],
+    [("intro", 2), ("talk", 1), ("talk", 0), ("fight", 3), ("reveal", 2), ("victory", 5)],
+    [("reveal", 2), ("talk", 1), ("talk", 0), ("fight", 3), ("victory", 4), ("victory", 5)],
+    [("intro", 0), ("talk", 1), ("talk", 4), ("reveal", 2), ("fight", 3), ("victory", 4), ("victory", 5)],
+    [("intro", 0), ("reveal", 2), ("talk", 1), ("talk", 4), ("victory", 5)],
+]
+_FB_BG = {
+    "intro": ["temple", "forest", "sky"],
+    "talk": ["forest", "pond", "temple"],
+    "reveal": ["pond", "sky", "temple"],
+    "fight": ["battlefield", "sky", "forest"],
+    "victory": ["sky", "temple", "pond"],
+}
+_FB_HOOKS = [
+    "बात उस दिन की है, जब {short} की कथा ने अपना असली मोड़ लिया।",
+    "{short}। नाम सुना होगा, पर पूरी कहानी शायद नहीं।",
+    "सब कुछ शांत था। फिर {short} की कथा में वह घड़ी आई।",
+    "एक छोटा सा पल, और {short} की पूरी कहानी बदल गई।",
+    "{short}। इसके पीछे की बात बहुत कम लोग जानते हैं।",
+    "कहते हैं, {short} की यह घटना आज भी लोगों को राह दिखाती है।",
+]
+_FB_TALK_LEAD = ["बात बहुत पुरानी है।", "कहानी यहीं से शुरू होती है।", "सब कुछ एक छोटी सी घटना से शुरू हुआ।",
+                 "ज़रा ध्यान से सुनिए।", "उस दिन कुछ अलग ही था।"]
+_FB_NARR = {
+    "talk": [
+        "यहाँ से कहानी ने करवट ली। हर कोई सोच रहा था कि अब आगे क्या होगा।",
+        "किसी ने नहीं सोचा था कि बात इतनी आगे बढ़ जाएगी। पर यही नियति थी।",
+        "मन में सवाल थे और आँखों में इंतज़ार। फिर वह पल आया।",
+        "सब चुप थे। हवा भी जैसे रुक गई थी।",
+    ],
+    "reveal": [
+        "और तभी वह हुआ, जिसकी किसी को उम्मीद नहीं थी। {short} का सबसे बड़ा पल सामने था।",
+        "ठीक उसी क्षण सब कुछ थम गया। अब फ़ैसला होना था।",
+        "यहीं आती है असली परीक्षा। हार मान लेना आसान था, पर उन्होंने हार नहीं मानी।",
+        "तभी एक रोशनी फैली, और सबको समझ आ गया कि यह कोई साधारण घड़ी नहीं है।",
+    ],
+    "fight": [
+        "फिर शुरू हुआ संघर्ष। हर कदम पर मुश्किल थी, पर पीछे हटना मंज़ूर नहीं था।",
+        "टकराव भयंकर था। पर जिसके साथ धर्म हो, उसे कौन रोक सकता है?",
+        "अब बात हिम्मत की थी। एक तरफ़ ताक़त, दूसरी तरफ़ सच्चाई।",
+        "रण में हर पल भारी था। मगर इरादा अटल था।",
+    ],
+    "victory": [
+        "और अंत में वही हुआ, जो सच था। सच्ची निष्ठा कभी खाली नहीं जाती।",
+        "आख़िर में जीत उसी की हुई, जिसका इरादा साफ़ था।",
+        "सब देखते रह गए। जो नामुमकिन लगता था, वह सच हो चुका था।",
+    ],
+}
+_FB_CLOSINGS = [
+    "{short} की यह कथा सिखाती है कि सही राह पर चलने वाला कभी अकेला नहीं होता। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
+    "यही है {short} की सीख: भरोसा और धर्म साथ हों, तो हर मुश्किल छोटी पड़ जाती है। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
+    "बस यही थी {short} की अमर कहानी। इसे अपनों के साथ ज़रूर बाँटिए। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
+]
+_FB_CAPTIONS = {
+    "intro": [("अनसुना रहस्य", "एक अनकही बात"), ("एक पुरानी कथा", "जो आज भी ज़िंदा है"), ("सुनिए ज़रा", "कहानी यहीं से शुरू होती है")],
+    "talk": [("कथा का मोड़", "बात आगे बढ़ती है"), ("आमने-सामने", "सवाल और जवाब"), ("उस दिन की बात", "सब कुछ बदलने वाला था")],
+    "reveal": [("निर्णायक पल", "अब फ़ैसले की घड़ी"), ("कठिन परीक्षा", "संकल्प की घड़ी"), ("और तभी...", "सब कुछ थम गया")],
+    "fight": [("संघर्ष", "हिम्मत की असली परीक्षा"), ("महासंग्राम", "धर्म की प्रतिष्ठा"), ("टकराव", "पीछे हटना मंज़ूर नहीं")],
+    "victory": [("सत्य की जीत", "अटल संकल्प की शक्ति"), ("कथा का अंत", "सीख जो रह जाती है"), ("अमर गाथा", "यादों में बस गई")],
+}
+
+
+def generate_fallback_myth_plan(topic=None, seed=None):
+    rnd = random.Random(seed)
     if isinstance(topic, dict):
         title = topic.get("title", "सनातन का अनसुना रहस्य").strip()
         summary = topic.get("summary", "").strip()
@@ -1008,98 +1141,75 @@ def generate_fallback_myth_plan(topic=None):
         title = "श्रीकृष्ण और अर्जुन: कुरुक्षेत्र का रहस्य"
         summary = "कुरुक्षेत्र के रणभूमि में भगवान श्रीकृष्ण द्वारा अर्जुन को दिया गया दिव्य कर्मयोग का उपदेश।"
 
-    actors_seq = _detect_myth_actors_for_topic(title, summary)
+    short = title.split(":")[0].strip() or title
     clean_summary = summary if summary else f"{title} भारतीय इतिहास और सनातन दर्शन का एक अमर अध्याय है।"
-    
+    actors_seq = _detect_myth_actors_for_topic(title, summary)
+    structure = rnd.choice(_FB_STRUCTURES)
+
+    pools = {k: rnd.sample(v, len(v)) for k, v in _FB_NARR.items()}
+    used = {k: 0 for k in pools}
+    cap_pools = {k: rnd.sample(v, len(v)) for k, v in _FB_CAPTIONS.items()}
+    cap_used = {k: 0 for k in cap_pools}
+
+    def take(pool_dict, used_dict, beat):
+        pool = pool_dict[beat]
+        item = pool[used_dict[beat] % len(pool)]
+        used_dict[beat] += 1
+        return item
+
+    scenes, prev_bg, summary_used = [], None, False
+    for idx, (beat, role) in enumerate(structure):
+        last = idx == len(structure) - 1
+        bgs = [b for b in _FB_BG[beat] if b != prev_bg] or _FB_BG[beat]
+        bg = rnd.choice(bgs)
+        prev_bg = bg
+        if idx == 0:
+            narration = rnd.choice(_FB_HOOKS).format(short=short)
+        elif last:
+            narration = rnd.choice(_FB_CLOSINGS).format(short=short)
+        elif beat == "talk" and not summary_used:
+            narration = f"{rnd.choice(_FB_TALK_LEAD)} {clean_summary}"
+            summary_used = True
+        else:
+            narration = take(pools, used, "victory" if beat == "intro" else beat).format(short=short)
+        cap_title, cap_text = take(cap_pools, cap_used, beat)
+        if last:
+            cap_title, cap_text = "सनातन ज्ञान", "MindSpark को सब्सक्राइब करें"
+        actors = [dict(a) for a in actors_seq[min(role, len(actors_seq) - 1)]]
+        scenes.append({
+            "sec": rnd.choice([4, 5, 5, 6]),
+            "beat": beat,
+            "bg": bg,
+            "scene_description": f"{short}: {cap_title}",
+            "actors": actors,
+            "caption": {"title": cap_title, "text": cap_text},
+            "narration": narration,
+            "focus": 1 if (beat == "talk" and len(actors) > 1 and rnd.random() < 0.5) else 0,
+        })
+
     return {
         "youtube": {
             "title": f"{title} ⚔️ | MindSpark Mythology",
             "description": f"{title} - सनातन धर्म और भारतीय पौराणिक कथाओं का अनसुना रहस्य। #Mythology #Shorts #MindSpark #Sanatan",
-            "tags": ["MindSpark", "Mythology", "Shorts", "Sanatan", "Hindi", "Vedas", "Mahabharat"]
+            "tags": ["MindSpark", "Mythology", "Shorts", "Sanatan", "Hindi", "Vedas", "Mahabharat"],
         },
-        "scenes": [
-            {
-                "sec": 5,
-                "beat": "intro",
-                "bg": "temple",
-                "scene_description": f"प्राचीन दिव्य मंदिर में {title} का रहस्यमयी उद्घाटन",
-                "camera": {"shot": "wide", "move": "pushIn"},
-                "actors": actors_seq[0],
-                "caption": {"title": "अनसुना रहस्य", "text": "क्या आपको पता है?"},
-                "narration": f"क्या आपको पता है {title} के पीछे कौन सा गहरा रहस्य छिपा है?",
-                "focus": 0
-            },
-            {
-                "sec": 6,
-                "beat": "talk",
-                "bg": "forest",
-                "scene_description": f"शांत तपोवन में संवाद और कथा का गूढ़ रहस्य",
-                "camera": {"shot": "medium", "move": "panR"},
-                "actors": actors_seq[1],
-                "caption": {"title": "घटना का मोड़", "text": "इतिहास का अनकहा सच"},
-                "narration": f"{clean_summary}",
-                "focus": 1 if len(actors_seq[1]) > 1 else 0
-            },
-            {
-                "sec": 5,
-                "beat": "reveal",
-                "bg": "pond",
-                "scene_description": f"सरोवर तट पर परीक्षा की घड़ी और संकल्प",
-                "camera": {"shot": "closeup", "move": "tiltUp"},
-                "actors": actors_seq[2],
-                "caption": {"title": "कठिन परीक्षा", "text": "संकल्प की घड़ी"},
-                "narration": f"{title} की इस कथा में जब परीक्षा की घड़ी आई, तब एक ऐसा अद्भुत निर्णय लिया गया जिसने सबको हतप्रभ कर दिया।",
-                "focus": 0
-            },
-            {
-                "sec": 6,
-                "beat": "fight",
-                "bg": "battlefield",
-                "scene_description": f"महासंग्राम के रणक्षेत्र में भीषण अस्त्र-शस्त्रों का द्वंद्व",
-                "camera": {"shot": "dutch", "move": "shake"},
-                "actors": actors_seq[3],
-                "caption": {"title": "महासंग्राम", "text": "धर्म की प्रतिष्ठा"},
-                "narration": "धार्मिक मर्यादा और सत्य की रक्षा के लिए वह अद्भुत पराक्रम दिखाया गया जो इतिहास के पन्नों में सदा के लिए अमर हो गया।",
-                "focus": 0
-            },
-            {
-                "sec": 5,
-                "beat": "victory",
-                "bg": "sky",
-                "scene_description": f"आकाश में दिव्य ऊर्जा का संचार और सत्य की विजय",
-                "camera": {"shot": "wide", "move": "craneDown"},
-                "actors": actors_seq[4],
-                "caption": {"title": "सत्य की विजय", "text": "अटल संकल्प की शक्ति"},
-                "narration": "इस महान गाथा ने सिद्ध कर दिया कि संकट कितना भी विकट हो, अंत में विजय सदा सत्य और धर्म की ही होती है।",
-                "focus": 0
-            },
-            {
-                "sec": 6,
-                "beat": "victory",
-                "bg": "temple",
-                "scene_description": f"पवित्र मंदिर में सनातन धर्म और कर्तव्य पथ की अमर प्रतिष्ठा",
-                "camera": {"shot": "medium", "move": "pullOut"},
-                "actors": actors_seq[5],
-                "caption": {"title": "सनातन ज्ञान", "text": "MindSpark को सब्सक्राइब करें"},
-                "narration": f"{title} की यह पावन गाथा हमें अपने कर्तव्य पथ पर अडिग रहना सिखाती है। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
-                "focus": 0
-            }
-        ]
+        "scenes": scenes,
     }
 
 
-def make_myth_plan(topic, custom_script=None):
-    """Generates a strict JSON plan for MINDSPARK Mythology Shorts (MythShort)
-    written with a natural, professional human Hindi storyteller persona.
-    """
-    topic_str = topic.get("title", str(topic)) if isinstance(topic, dict) else str(topic)
-    topic_summary = topic.get("summary", "") if isinstance(topic, dict) else ""
-    if custom_script:
-        story_context = f"Topic: {topic_str}\nCustom Script/Details: {custom_script}"
-    else:
-        story_context = f"Story Topic: {topic_str}\nSummary: {topic_summary}"
+# ==============================================================================
+# Live story generation
+# ==============================================================================
+_MYTH_STYLES = [
+    "Seedha kahani ke sabse romanchak pal se shuru karo, phir 'ye sab kaise hua' batate hue peeche jao, ant me wahi pal poora karo.",
+    "Kahani ek insaan (kisi ek pAatra) ki nazar se sunao, jaise woh khud apni aankhon se sab dekh raha ho.",
+    "Sanvaad-pradhan kahani: kam se kam 3 scene me pAatron ke bole hue chhote sanvaad (double quotes me) daalo.",
+    "Teen hisse: pehle mushkil, phir pareeksha, phir natija. Beech me ek chhoti si ulti (twist) zaroor ho.",
+    "Ek chhoti si ghatna se shuru karo jo bilkul saadharan lage, phir dheere-dheere uska bada matlab kholo.",
+]
+_MYTH_TONES = ["bhaavuk aur dil ko chhoone wala", "veer-ras, josh se bhara", "rahasyamayi aur ruka-ruka sa", "shaant, bhakti-bhav wala"]
 
-    prompt = f"""Tum ek anubhavi Hindi kahani-kaar ho, jo YouTube Shorts aur voiceover ke liye kahaniyan likhte ho.
+_MYTH_PROMPT = """Tum ek anubhavi Hindi kahani-kaar ho, jo YouTube Shorts aur voiceover ke liye kahaniyan likhte ho.
 Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekha haal ya dil ki baat, sunaa raha hai. AI ki likhi hui nahi.
 
 ## Bhaasha Niyam:
@@ -1108,79 +1218,112 @@ Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekh
 - Chhote vaakya rakho. Ek vaakya me ek hi baat. Beech-beech me bahut chhote vaakya bhi daalo. Jaise: "Wo ruk gaya. Kuch bola nahi."
 - Vaakyon ki lambai badalte raho.
 - In cheezon se bacho: "Aaj ke is video me", "toh doston", "chaliye shuru karte hain", "ek anokha safar", "zindagi ka sabak", "yaad rakhiye".
-- Scene 1 (THE VIRAL HOOK): Opening line MUST strictly start with 'क्या आपको पता है...?' (NEVER 'क्या आप जानते हैं').
-- Scene 6/Last scene: Conclude naturally, and the very last sentence MUST end with: 'ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!'
+- Scene 1: koi fixed opening line NAHI. 'क्या आपको पता है', 'क्या आप जानते हैं' ya koi bhi sawaal-wala saancha bilkul mat use karo. Seedha kahani ke beech se, ek khaas ghatna, sanvaad ya drishya se shuru karo, aur har video ki shuruaat alag ho.
+- Last scene: conclude naturally, and the very last sentence MUST end with: 'ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!'
+
+## Kahani ki bunaavat (SABSE ZAROORI):
+- Ye ek poori KAHANI hai, summary nahi: shuruaat -> mushkil/takraav -> mod -> ant -> seekh.
+- Har scene me kahani AAGE badhni chahiye. Pichla scene dohrao mat. Har scene me koi nayi ghatna, nayi baat ya kisi pAatra ka sanvaad ho.
+- Asli naam, jagah aur ghatnaayein daalo. Kam se kam 2 chhote sanvaad (pAatra ke bole hue shabd, double quotes me) daalo.
+- Aisi line bilkul mat likho jo kisi bhi kahani pe fit ho jaaye (jaise "sach ki jeet hoti hai", "ek anokha mod", "dharm ki raksha", "kathin pareeksha"). Har line sirf IS kahani ki ho.
+- Is video ki shaili: __STYLE__
+- Is video ka tone: __TONE__
 
 STORY CONTEXT:
-{story_context}
+__CONTEXT__
 
 Return ONE valid JSON object only (no markdown, no extra commentary):
-{{
-  "youtube": {{
+{
+  "youtube": {
     "title": "[रहस्यमयी प्रश्न]? सनातन के अनसुने रहस्य | MindSpark",
     "description": "सनातन धर्म और भारतीय इतिहास के अनसुने रहस्य। Watch till the end! #Shorts #Sanatan #MindSpark #Mythology",
     "tags": ["MindSpark", "Mythology", "Shorts", "Sanatan", "Hindi", "Mahabharat"]
-  }},
+  },
   "scenes": [
-    {{
+    {
       "sec": 5,
       "beat": "intro" | "talk" | "reveal" | "fight" | "victory",
       "bg": "forest" | "pond" | "temple" | "battlefield" | "sky",
-      "scene_description": "Silent visual scene direction in Devanagari Hindi describing the visual action, characters, and mood (NOT SPOKEN BY TTS)",
-      "camera": {{
-        "shot": "wide" | "medium" | "closeup" | "low" | "high" | "dutch",
-        "move": "pushIn" | "pullOut" | "panL" | "panR" | "shake" | "orbit"
-      }},
+      "scene_description": "Silent visual direction in Devanagari Hindi: who is doing what, mood (NOT SPOKEN BY TTS)",
       "actors": [
-        {{
-          "who": "one of: {', '.join(sorted(list(ROSTER_GODS)))}",
-          "pose": "stand" | "sit" | "fly" | "fight" | "walk" | "pray",
+        {
+          "who": "one of: __ROSTER__",
+          "pose": "stand" | "sit" | "fly" | "fight" | "walk" | "pray" | "point" | "talk",
           "x": 350,
           "weapon": "none" | "gada" | "bow" | "trishul" | "chakra" | "sword",
           "flip": false
-        }}
+        }
       ],
       "focus": 0,
-      "caption": {{
+      "caption": {
         "title": "Short title in Devanagari Hindi (max 4 words)",
         "text": "One line text in Devanagari Hindi"
-      }},
-      "narration": "12-18 words in 100% natural conversational Devanagari Hindi."
-    }}
+      },
+      "narration": "14-20 words in 100% natural conversational Devanagari Hindi."
+    }
   ]
-}}
+}
 
 STRICT RULES:
-1. Total scenes: 6 to 8 scenes. Duration 'sec': 4 to 6 seconds per scene (Total 35-42s).
-2. Allowed characters: {', '.join(sorted(list(ROSTER_GODS)))}. Pick characters matching this legend.
-3. Allowed backgrounds: forest, pond, temple, battlefield, sky. Vary backgrounds.
-4. Narration and Caption text MUST be 100% Devanagari Hindi.
+1. Total scenes: __N__ scenes. 'sec': 4 to 6 per scene.
+2. Allowed characters: __ROSTER__. Pick the characters of THIS legend (1 to 3 per scene), not random gods.
+3. Allowed backgrounds: forest, pond, temple, battlefield, sky. Use at least 4 different backgrounds and never the same one in two scenes in a row.
+4. Beats are NOT a fixed order. First beat 'intro' or 'reveal', last beat 'victory'. Use 'fight' only if the story has a real clash; peaceful stories use talk / reveal / victory.
+5. Poses: vary them. Use 'walk' when someone arrives or leaves, 'sit' for meditation or serious talk, 'point'/'talk' while speaking, 'fly' only for characters who really fly.
+6. Two characters in a scene: x between 250 and 850, at least 250 apart, and the one on the right has flip true (they face each other).
+7. Do NOT add any camera field. Narration and Caption text MUST be 100% Devanagari Hindi (only the word MindSpark may be Latin).
 """
 
+
+def _salvage_json(raw):
+    """Parse JSON; if the model's output was cut off, keep every complete scene."""
+    try:
+        return json.loads(raw)
+    except Exception as first_err:
+        ends = [m.start() for m in re.finditer(r"\}", raw)]
+        for pos in reversed(ends[-300:]):
+            try:
+                plan = json.loads(raw[: pos + 1] + "]}")
+                if isinstance(plan, dict) and len(plan.get("scenes", [])) >= 5:
+                    print(f"[LLM] Output was truncated - salvaged {len(plan['scenes'])} complete scenes.")
+                    return plan
+            except Exception:
+                continue
+        raise first_err
+
+
+def make_myth_plan(topic, custom_script=None, seed=None):
+    """Generates a strict JSON plan for MINDSPARK Mythology Shorts (MythShort)."""
+    rnd = random.Random(seed)
+    topic_str = topic.get("title", str(topic)) if isinstance(topic, dict) else str(topic)
+    topic_summary = topic.get("summary", "") if isinstance(topic, dict) else ""
+    if custom_script:
+        story_context = f"Topic: {topic_str}\nCustom Script/Details: {custom_script}"
+    else:
+        story_context = f"Story Topic: {topic_str}\nSummary: {topic_summary}"
+
+    prompt = (_MYTH_PROMPT
+              .replace("__STYLE__", rnd.choice(_MYTH_STYLES))
+              .replace("__TONE__", rnd.choice(_MYTH_TONES))
+              .replace("__CONTEXT__", story_context)
+              .replace("__N__", rnd.choice(["7", "8", "8", "9"]))
+              .replace("__ROSTER__", ", ".join(sorted(list(ROSTER_GODS)))))
+
     err = None
-    for attempt in range(2):
+    for attempt in range(3):
         try:
             curr_prompt = prompt
             if err:
-                curr_prompt += f"\n\nCRITICAL: Your previous output had this error: {err}. Please fix it strictly."
-            txt = _call(curr_prompt)
+                curr_prompt += f"\n\nCRITICAL: Your previous output had this error: {err}. Please fix it strictly. Keep the JSON compact."
+            # Devanagari is token-hungry: 8 scenes need far more than 2000 tokens or the JSON gets cut off
+            txt = _call(curr_prompt, max_tokens=8000)
             raw = txt.strip()
             if "{" in raw and "}" in raw:
                 raw = raw[raw.index("{"): raw.rindex("}") + 1]
-            plan = json.loads(raw)
-
-            # Auto-replace "क्या आप जानते" with "क्या आपको पता है" per user directive
-            for sc in plan.get("scenes", []):
-                for k in ["narration", "tts_text"]:
-                    if sc.get(k):
-                        sc[k] = sc[k].replace("क्या आप जानते हैं", "क्या आपको पता है").replace("क्या आप जानते हो", "क्या आपको पता है")
-                if sc.get("caption") and isinstance(sc["caption"], dict):
-                    for ck in ["title", "text"]:
-                        if sc["caption"].get(ck):
-                            sc["caption"][ck] = sc["caption"][ck].replace("क्या आप जानते हैं", "क्या आपको पता है").replace("क्या आप जानते हो", "क्या आपको पता है")
+            plan = _salvage_json(raw)
 
             # Enforce MindSpark brand at the end
-            if plan.get("scenes") and len(plan["scenes"]) > 0:
+            if plan.get("scenes"):
                 last_s = plan["scenes"][-1]
                 l_narr = last_s.get("narration", "")
                 if "mindspark" not in l_narr.lower() and "माइंडस्पार्क" not in l_narr:
@@ -1189,11 +1332,13 @@ STRICT RULES:
             err = validate_myth_plan(plan)
             if not err:
                 print(f"[LLM] Myth plan generated successfully with {len(plan['scenes'])} scenes!")
-                return plan
+                return choreograph_myth_plan(plan, seed)
             print(f"[LLM] Myth plan validation failed on attempt {attempt + 1}: {err}")
         except Exception as e:
             err = str(e)
             print(f"[LLM] Myth plan generation attempt {attempt + 1} exception: {err}")
 
-    print(f"[LLM] Live myth plan failed ({err}). Using curated fallback myth plan...")
-    return generate_fallback_myth_plan(topic)
+    # make this loud in the GitHub Actions summary: a fallback story is the reason videos look repeated
+    print(f"::warning::Live myth story FAILED ({err}). Using randomised fallback plan - check your LLM keys / limits.")
+    print(f"[LLM] Live myth plan failed ({err}). Using randomised fallback myth plan...")
+    return choreograph_myth_plan(generate_fallback_myth_plan(topic, seed), seed)

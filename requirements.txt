@@ -17,3 +17,5 @@ pyotp>=2.9.0
 
 gradio_client>=2.7.0
 moviepy
+scipy>=1.11
+huggingface_hub>=0.23

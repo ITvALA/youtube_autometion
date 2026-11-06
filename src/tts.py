@@ -530,8 +530,179 @@ def _synth_raju_clone(text, cfg, out):
     return []
 
 
+
+# ======================================================================
+# LOCAL XTTS-v2 (weights from Hugging Face: coqui/XTTS-v2) - voice cloned from
+# data/voice_references/xtts_ref_*.wav. Runs on the machine itself (CPU is fine).
+# ======================================================================
+_XTTS = {"model": None, "latents": None, "refs_sig": None}
+_XTTS_REPO = "coqui/XTTS-v2"
+_XTTS_FILES = ["config.json", "model.pth", "vocab.json", "speakers_xtts.pth", "dvae.pth", "mel_stats.pth"]
+_LATIN_TO_DEVANAGARI = {
+    "MindSpark": "माइंडस्पार्क", "Mindspark": "माइंडस्पार्क", "MINDSPARK": "माइंडस्पार्क",
+    "YouTube": "यूट्यूब", "Shorts": "शॉर्ट्स",
+}
+
+
+def _xtts_ref_files(cfg):
+    d = ROOT / "data" / "voice_references"
+    refs = sorted(d.glob("xtts_ref_*.wav"))
+    if cfg.get("xtts_reference"):
+        extra = ROOT / str(cfg["xtts_reference"])
+        if extra.exists():
+            refs = [extra]
+    if not refs:
+        for name in ("slice_5s.wav", "real_raju_whatsapp.wav"):
+            if (d / name).exists():
+                refs = [d / name]
+                break
+    if not refs:
+        raise RuntimeError("XTTS: no reference voice found in data/voice_references/")
+    return refs
+
+
+def _xtts_patch_runtime():
+    """Make coqui-TTS 0.22 work with new torch / torchaudio / transformers."""
+    import torch
+    try:
+        import transformers
+        if not hasattr(transformers, "BeamSearchScorer"):
+            class _Dummy:
+                def __init__(self, *a, **k):
+                    pass
+            transformers.BeamSearchScorer = _Dummy
+    except Exception:
+        pass
+    if not getattr(torch.load, "_ms_patched", False):
+        _orig = torch.load
+
+        def _load(*a, **k):                      # torch>=2.6 defaults to weights_only=True -> XTTS ckpt fails
+            k.setdefault("weights_only", False)
+            return _orig(*a, **k)
+        _load._ms_patched = True
+        torch.load = _load
+    # torchaudio>=2.9 needs torchcodec for load(): read the reference clips with soundfile instead
+    import numpy as np
+    import soundfile as sf
+    from scipy.signal import resample_poly
+    from math import gcd
+    import TTS.tts.models.xtts as xtts_mod
+
+    def _load_audio(path, sampling_rate):
+        data, sr = sf.read(str(path), dtype="float32", always_2d=True)
+        data = data.mean(axis=1)
+        if sr != sampling_rate:
+            g = gcd(int(sr), int(sampling_rate))
+            data = resample_poly(data, int(sampling_rate) // g, int(sr) // g).astype("float32")
+        return torch.from_numpy(np.clip(data, -1.0, 1.0)).unsqueeze(0)
+    xtts_mod.load_audio = _load_audio
+
+
+def _xtts_download():
+    from huggingface_hub import snapshot_download
+    tok = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HUGGINGFACE_API_KEY")
+    tok = str(tok).strip() if tok else None
+    try:                                           # public repo: a bad/expired token must not break it
+        return snapshot_download(_XTTS_REPO, allow_patterns=_XTTS_FILES)
+    except Exception as e:
+        if not tok:
+            raise
+        print(f"[XTTS-local] download without token failed ({e}), retrying with HF token...")
+        return snapshot_download(_XTTS_REPO, allow_patterns=_XTTS_FILES, token=tok)
+
+
+def _xtts_get(cfg):
+    refs = _xtts_ref_files(cfg)
+    sig = "|".join(f"{r.name}:{r.stat().st_size}" for r in refs)
+    if _XTTS["model"] is not None and _XTTS["refs_sig"] == sig:
+        return _XTTS["model"], _XTTS["latents"]
+    _xtts_patch_runtime()
+    import torch
+    from TTS.tts.configs.xtts_config import XttsConfig
+    from TTS.tts.models.xtts import Xtts
+    if _XTTS["model"] is None:
+        os.environ["COQUI_TOS_AGREED"] = "1"
+        print(f"[XTTS-local] Loading {_XTTS_REPO} from Hugging Face cache (first run downloads ~1.8 GB)...")
+        mdir = _xtts_download()
+        config = XttsConfig()
+        config.load_json(str(Path(mdir) / "config.json"))
+        model = Xtts.init_from_config(config)
+        model.load_checkpoint(config, checkpoint_dir=str(mdir), eval=True, use_deepspeed=False)
+        torch.set_num_threads(max(1, os.cpu_count() or 2))
+        dev = "cuda" if torch.cuda.is_available() else "cpu"
+        model.to(dev)
+        _XTTS["model"] = model
+    model = _XTTS["model"]
+    print(f"[XTTS-local] Cloning voice from {len(refs)} reference clip(s): {[r.name for r in refs]}")
+    latents = model.get_conditioning_latents(audio_path=[str(r) for r in refs])
+    _XTTS["latents"], _XTTS["refs_sig"] = latents, sig
+    return model, latents
+
+
+def _xtts_chunks(text, limit=200):
+    """Split Hindi text into sentence-sized pieces (XTTS is best below ~250 chars per call)."""
+    text = re.sub(r"\s+", " ", text.replace("।", ". ").replace("॥", ". ")).strip()
+    parts = [x.strip() for x in re.split(r"(?<=[.!?])\s+", text) if x.strip()]
+    out, cur = [], ""
+    for part in parts:
+        if cur and len(cur) + len(part) + 1 > limit:
+            out.append(cur); cur = part
+        else:
+            cur = f"{cur} {part}".strip()
+    if cur:
+        out.append(cur)
+    final = []
+    for c in out:                                   # very long sentence: cut at commas/spaces
+        while len(c) > limit + 60:
+            cut = max(c.rfind(",", 0, limit), c.rfind(" ", 0, limit))
+            cut = cut if cut > 40 else limit
+            final.append(c[:cut].strip()); c = c[cut:].strip(" ,")
+        final.append(c)
+    return [c for c in final if c]
+
+
+def _synth_xtts_local(text, cfg, out):
+    import numpy as np
+    import soundfile as sf
+    clean = strip_tags(text)
+    for k, v in _LATIN_TO_DEVANAGARI.items():
+        clean = clean.replace(k, v)
+    clean = _ensure_devanagari_hindi(clean)
+    if re.search(r"[A-Za-z]", clean):               # leftover Latin letters make XTTS speak with a foreign accent
+        clean = re.sub(r"[A-Za-z]+", " ", clean)
+    model, (gpt_cond, spk_emb) = _xtts_get(cfg)
+    pieces = []
+    gap = np.zeros(int(24000 * float(cfg.get("xtts_gap", 0.18))), dtype="float32")
+    for chunk in _xtts_chunks(clean):
+        res = model.inference(
+            chunk, "hi", gpt_cond, spk_emb,
+            temperature=float(cfg.get("xtts_temperature", 0.65)),
+            length_penalty=1.0,
+            repetition_penalty=float(cfg.get("xtts_repetition_penalty", 5.0)),
+            top_k=50, top_p=0.85,
+            speed=float(cfg.get("xtts_speed", 1.0)),
+            enable_text_splitting=False,
+        )
+        wav = np.asarray(res["wav"], dtype="float32")
+        pieces += [wav, gap]
+    if not pieces:
+        raise RuntimeError("XTTS: empty text")
+    audio = np.concatenate(pieces[:-1])
+    tmp = Path(out).with_suffix(".xtts.wav")
+    sf.write(str(tmp), audio, 24000)
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(tmp),
+                    "-af", "loudnorm=I=-16:TP=-1.5:LRA=10", "-ar", "44100", "-ac", "2", "-b:a", "192k", str(out)], check=True)
+    try:
+        tmp.unlink()
+    except Exception:
+        pass
+    print(f"[XTTS-local] OK ({len(clean)} chars)")
+    return []
+
+
 PROVIDERS = {
-    "raju_clone": _synth_edge, "xtts_clone": _synth_edge, "voice_clone": _synth_edge, "raju": _synth_edge,
+    "xtts_local": _synth_xtts_local, "xtts_clone": _synth_xtts_local, "voice_clone": _synth_xtts_local,
+    "raju_clone": _synth_xtts_local, "raju": _synth_xtts_local,   # these used to point at edge-tts -> the voice never changed
     "gemini_tts": _synth_gemini, "gemini": _synth_gemini,
     "google_chirp": _synth_google_chirp, "google": _synth_google_chirp, "chirp3": _synth_google_chirp,
     "edge-tts": _synth_edge, "edge": _synth_edge,
