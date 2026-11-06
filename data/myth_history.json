@@ -614,5 +614,14 @@
     "opening_fx": 0,
     "closing_fx": 5,
     "video_key": "2026-11-06_214638_myth_karna_parashurama"
+  },
+  {
+    "topic_id": "narasimha_avatar",
+    "topic_title": "भगवान नृसिंह अवतार: भक्त प्रह्लाद की रक्षा",
+    "date": "2026-11-06",
+    "seed": 50824,
+    "opening_fx": 2,
+    "closing_fx": 0,
+    "video_key": "2026-11-06_231804_myth_narasimha_avatar"
   }
 ]
