@@ -722,5 +722,14 @@
     "opening_fx": 5,
     "closing_fx": 3,
     "video_key": "2026-11-07_104730_myth_shiva_kali_tandav"
+  },
+  {
+    "topic_id": "bhishma_sharashaiya_uttarayan",
+    "topic_title": "गंगा पुत्र भीष्म की शरशैया: सूर्य के उत्तरायण की प्रतीक्षा",
+    "date": "2026-11-07",
+    "seed": 44335,
+    "opening_fx": 1,
+    "closing_fx": 0,
+    "video_key": "2026-11-07_114746_myth_bhishma_sharashaiya_uttarayan"
   }
 ]
