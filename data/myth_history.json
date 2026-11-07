@@ -641,5 +641,14 @@
     "opening_fx": 0,
     "closing_fx": 1,
     "video_key": "2026-11-07_004707_myth_jatayu_sacrifice"
+  },
+  {
+    "topic_id": "prahlada_holika",
+    "topic_title": "भक्त प्रह्लाद और होलिका: अग्नि में सत्य की विजय",
+    "date": "2026-11-07",
+    "seed": 581515,
+    "opening_fx": 2,
+    "closing_fx": 0,
+    "video_key": "2026-11-07_024649_myth_prahlada_holika"
   }
 ]
