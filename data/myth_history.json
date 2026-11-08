@@ -866,5 +866,14 @@
     "opening_fx": 5,
     "closing_fx": 4,
     "video_key": "2026-11-08_034900_myth_karna_parashurama"
+  },
+  {
+    "topic_id": "angad_ravana_sabha",
+    "topic_title": "रावण की सभा में अंगद का अडिग पैर",
+    "date": "2026-11-08",
+    "seed": 289493,
+    "opening_fx": 4,
+    "closing_fx": 0,
+    "video_key": "2026-11-08_044813_myth_angad_ravana_sabha"
   }
 ]
