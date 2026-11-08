@@ -839,5 +839,14 @@
     "opening_fx": 2,
     "closing_fx": 0,
     "video_key": "2026-11-08_010356_myth_adi_shankara_chandala"
+  },
+  {
+    "topic_id": "karna_kavach_kundal",
+    "topic_title": "दानवीर कर्ण: इंद्र को कुंडल और कवच का दान",
+    "date": "2026-11-08",
+    "seed": 475110,
+    "opening_fx": 5,
+    "closing_fx": 4,
+    "video_key": "2026-11-08_014831_myth_karna_kavach_kundal"
   }
 ]
