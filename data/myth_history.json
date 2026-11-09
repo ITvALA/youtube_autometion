@@ -1190,5 +1190,14 @@
     "opening_fx": 2,
     "closing_fx": 5,
     "video_key": "2026-11-09_191236_myth_ashwatthama_gem"
+  },
+  {
+    "topic_id": "garuda_amrit_kalash",
+    "topic_title": "गरुड़ और अमृत कलश: नागों की दासता से मुक्ति",
+    "date": "2026-11-09",
+    "seed": 895894,
+    "opening_fx": 0,
+    "closing_fx": 2,
+    "video_key": "2026-11-09_195209_myth_garuda_amrit_kalash"
   }
 ]
