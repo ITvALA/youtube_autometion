@@ -1064,5 +1064,14 @@
     "opening_fx": 4,
     "closing_fx": 0,
     "video_key": "2026-11-09_045042_myth_krishna_sudama_chawal"
+  },
+  {
+    "topic_id": "durga_mahishasura",
+    "topic_title": "माँ दुर्गा और महिषासुर मर्दन",
+    "date": "2026-11-09",
+    "seed": 398921,
+    "opening_fx": 0,
+    "closing_fx": 4,
+    "video_key": "2026-11-09_055017_myth_durga_mahishasura"
   }
 ]
