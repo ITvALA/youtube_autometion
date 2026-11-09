@@ -1028,5 +1028,14 @@
     "opening_fx": 0,
     "closing_fx": 1,
     "video_key": "2026-11-08_225019_myth_shabari_ram"
+  },
+  {
+    "topic_id": "karna_parashurama",
+    "topic_title": "कर्ण और परशुराम: गुरु का भयंकर श्राप",
+    "date": "2026-11-09",
+    "seed": 779281,
+    "opening_fx": 5,
+    "closing_fx": 2,
+    "video_key": "2026-11-08_235000_myth_karna_parashurama"
   }
 ]
