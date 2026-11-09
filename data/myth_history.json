@@ -1181,5 +1181,14 @@
     "opening_fx": 5,
     "closing_fx": 3,
     "video_key": "2026-11-09_175107_myth_shiva_tandav"
+  },
+  {
+    "topic_id": "durga_mahishasura",
+    "topic_title": "माँ दुर्गा और महिषासुर मर्दन",
+    "date": "2026-11-09",
+    "seed": 381886,
+    "opening_fx": 2,
+    "closing_fx": 5,
+    "video_key": "2026-11-09_185322_myth_durga_mahishasura"
   }
 ]
