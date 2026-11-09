@@ -1037,5 +1037,14 @@
     "opening_fx": 5,
     "closing_fx": 2,
     "video_key": "2026-11-08_235000_myth_karna_parashurama"
+  },
+  {
+    "topic_id": "krishna_arjuna_gita",
+    "topic_title": "श्रीकृष्ण और अर्जुन: कुरुक्षेत्र का अमर गीता ज्ञान",
+    "date": "2026-11-09",
+    "seed": 385350,
+    "opening_fx": 2,
+    "closing_fx": 1,
+    "video_key": "2026-11-09_005010_myth_krishna_arjuna_gita"
   }
 ]
