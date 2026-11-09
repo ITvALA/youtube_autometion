@@ -1172,5 +1172,14 @@
     "opening_fx": 2,
     "closing_fx": 1,
     "video_key": "2026-11-09_165101_myth_ashwatthama_gem"
+  },
+  {
+    "topic_id": "shiva_tandav",
+    "topic_title": "भगवान शिव का तांडव: जब खुली तीसरी आंख",
+    "date": "2026-11-09",
+    "seed": 645245,
+    "opening_fx": 5,
+    "closing_fx": 3,
+    "video_key": "2026-11-09_175107_myth_shiva_tandav"
   }
 ]
