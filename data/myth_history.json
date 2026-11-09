@@ -1136,5 +1136,14 @@
     "opening_fx": 0,
     "closing_fx": 1,
     "video_key": "2026-11-09_125106_myth_karna_parashurama"
+  },
+  {
+    "topic_id": "draupadi_cheerharan_krishna",
+    "topic_title": "द्रौपदी का चीरहरण और श्रीकृष्ण का अक्षय वस्त्र",
+    "date": "2026-11-09",
+    "seed": 282834,
+    "opening_fx": 5,
+    "closing_fx": 4,
+    "video_key": "2026-11-09_135307_myth_draupadi_cheerharan_krishna"
   }
 ]
