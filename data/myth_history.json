@@ -1046,5 +1046,14 @@
     "opening_fx": 0,
     "closing_fx": 4,
     "video_key": "2026-11-09_010913_myth_garuda_amrit_kalash"
+  },
+  {
+    "topic_id": "shiva_tandav",
+    "topic_title": "भगवान शिव का तांडव: जब खुली तीसरी आंख",
+    "date": "2026-11-09",
+    "seed": 580131,
+    "opening_fx": 2,
+    "closing_fx": 3,
+    "video_key": "2026-11-09_024959_myth_shiva_tandav"
   }
 ]
