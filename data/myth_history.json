@@ -1361,5 +1361,14 @@
     "opening_fx": 1,
     "closing_fx": 3,
     "video_key": "2026-11-10_210211_myth_krishna_sudama_chawal"
+  },
+  {
+    "topic_id": "krishna_sudama_chawal",
+    "topic_title": "श्रीकृष्ण और सुदामा: दो मुट्ठी सूखे चावल का मोल",
+    "date": "2026-11-10",
+    "seed": 96001,
+    "opening_fx": 5,
+    "closing_fx": 2,
+    "video_key": "2026-11-10_220159_myth_krishna_sudama_chawal"
   }
 ]
