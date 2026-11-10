@@ -1316,5 +1316,14 @@
     "opening_fx": 1,
     "closing_fx": 4,
     "video_key": "2026-11-10_125242_myth_bhasmasura_mohini"
+  },
+  {
+    "topic_id": "durga_mahishasura",
+    "topic_title": "माँ दुर्गा और महिषासुर मर्दन",
+    "date": "2026-11-10",
+    "seed": 61122,
+    "opening_fx": 0,
+    "closing_fx": 2,
+    "video_key": "2026-11-10_170125_myth_durga_mahishasura"
   }
 ]
