@@ -1271,5 +1271,14 @@
     "opening_fx": 1,
     "closing_fx": 4,
     "video_key": "2026-11-10_065234_myth_bhagirath_ganga"
+  },
+  {
+    "topic_id": "barbarika_sheesh_daan",
+    "topic_title": "बर्बरीक (खाटू श्याम): महाभारत में शीश का महादान",
+    "date": "2026-11-10",
+    "seed": 99240,
+    "opening_fx": 5,
+    "closing_fx": 1,
+    "video_key": "2026-11-10_075208_myth_barbarika_sheesh_daan"
   }
 ]
