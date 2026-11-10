@@ -1370,5 +1370,14 @@
     "opening_fx": 5,
     "closing_fx": 2,
     "video_key": "2026-11-10_220159_myth_krishna_sudama_chawal"
+  },
+  {
+    "topic_id": "narasimha_avatar",
+    "topic_title": "भगवान नृसिंह अवतार: भक्त प्रह्लाद की रक्षा",
+    "date": "2026-11-10",
+    "seed": 733896,
+    "opening_fx": 3,
+    "closing_fx": 0,
+    "video_key": "2026-11-10_230246_myth_narasimha_avatar"
   }
 ]
