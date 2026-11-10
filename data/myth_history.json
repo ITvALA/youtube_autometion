@@ -1307,5 +1307,14 @@
     "opening_fx": 0,
     "closing_fx": 5,
     "video_key": "2026-11-10_105332_myth_barbarika_sheesh_daan"
+  },
+  {
+    "topic_id": "bhasmasura_mohini",
+    "topic_title": "भस्मासुर का घमंड और मोहिनी नृत्य",
+    "date": "2026-11-10",
+    "seed": 137606,
+    "opening_fx": 1,
+    "closing_fx": 4,
+    "video_key": "2026-11-10_125242_myth_bhasmasura_mohini"
   }
 ]
