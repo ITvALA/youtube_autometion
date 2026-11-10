@@ -1226,5 +1226,14 @@
     "opening_fx": 3,
     "closing_fx": 5,
     "video_key": "2026-11-10_005201_myth_ashwatthama_gem"
+  },
+  {
+    "topic_id": "narasimha_avatar",
+    "topic_title": "भगवान नृसिंह अवतार: भक्त प्रह्लाद की रक्षा",
+    "date": "2026-11-10",
+    "seed": 485042,
+    "opening_fx": 0,
+    "closing_fx": 2,
+    "video_key": "2026-11-10_015146_myth_narasimha_avatar"
   }
 ]
