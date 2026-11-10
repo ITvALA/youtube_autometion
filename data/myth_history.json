@@ -1343,5 +1343,14 @@
     "opening_fx": 5,
     "closing_fx": 0,
     "video_key": "2026-11-10_190121_myth_shabari_ke_ber"
+  },
+  {
+    "topic_id": "bhasmasura_mohini",
+    "topic_title": "भस्मासुर का घमंड और मोहिनी नृत्य",
+    "date": "2026-11-10",
+    "seed": 882162,
+    "opening_fx": 0,
+    "closing_fx": 4,
+    "video_key": "2026-11-10_200157_myth_bhasmasura_mohini"
   }
 ]
