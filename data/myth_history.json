@@ -1244,5 +1244,14 @@
     "opening_fx": 1,
     "closing_fx": 4,
     "video_key": "2026-11-10_025200_myth_krishna_sudama_chawal"
+  },
+  {
+    "topic_id": "jatayu_sacrifice",
+    "topic_title": "वीर जटायु का बलिदान: धर्म की रक्षा में प्राण",
+    "date": "2026-11-10",
+    "seed": 715082,
+    "opening_fx": 4,
+    "closing_fx": 3,
+    "video_key": "2026-11-10_035215_myth_jatayu_sacrifice"
   }
 ]
