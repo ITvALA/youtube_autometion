@@ -1388,5 +1388,14 @@
     "opening_fx": 2,
     "closing_fx": 3,
     "video_key": "2026-11-11_000156_myth_krishna_arjuna_gita"
+  },
+  {
+    "topic_id": "angad_ravana_sabha",
+    "topic_title": "रावण की सभा में अंगद का अडिग पैर",
+    "date": "2026-11-11",
+    "seed": 933709,
+    "opening_fx": 3,
+    "closing_fx": 0,
+    "video_key": "2026-11-11_010258_myth_angad_ravana_sabha"
   }
 ]
