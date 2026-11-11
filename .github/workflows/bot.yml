@@ -52,6 +52,8 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           IG_USERNAME: ${{ secrets.IG_USERNAME }}
           IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
+          IG_APP_VERSION: ${{ secrets.IG_APP_VERSION }}
+          IG_VERSION_CODE: ${{ secrets.IG_VERSION_CODE }}
           IG_TOTP_SECRET: ${{ secrets.IG_TOTP_SECRET }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
