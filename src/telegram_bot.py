@@ -26,6 +26,7 @@ import youtube_upload
 import instagram_upload
 
 load_env()
+instagram_upload.BOT_LOOP_ACTIVE = True
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip().strip('"').strip("'")
 ALLOWED_CHAT = str(os.environ.get("TELEGRAM_CHAT_ID", "")).strip().strip('"').strip("'")
 BASE_URL = f"https://api.telegram.org/bot{TOKEN}"
