@@ -147,17 +147,18 @@ def _apply_app_version(cl):
 
 
 def get_ig_client():
-    global LAST_ERROR
+    """Order: 1) IG_SESSIONID  2) saved session file  3) password (+Telegram code).
+    Har stage ka error jama hota hai, taaki Telegram pe asli wajah dikhe."""
     from instagrapi import Client
     from instagrapi.exceptions import TwoFactorRequired
 
     username = os.environ.get("IG_USERNAME", "").strip()
     password = os.environ.get("IG_PASSWORD", "").strip()
-    if not username or not password:
-        raise RuntimeError("IG_USERNAME / IG_PASSWORD set nahi hai")
+    sid = os.environ.get("IG_SESSIONID", "").strip()
+    if not sid and not (username and password):
+        raise RuntimeError("IG_SESSIONID ya IG_USERNAME+IG_PASSWORD set karo")
 
-    cl = Client()
-    cl.delay_range = [1, 3]
+    errors = []
 
     def challenge_code_handler(uname, choice):
         code = _wait_for_code(f"challenge: {choice}")
@@ -165,60 +166,74 @@ def get_ig_client():
             raise RuntimeError("Instagram code time pe nahi mila")
         return code
 
-    cl.challenge_code_handler = challenge_code_handler
+    def new_client():
+        c = Client()
+        c.delay_range = [1, 3]
+        c.challenge_code_handler = challenge_code_handler
+        _apply_app_version(c)
+        return c
 
-    _restore_session_from_env()
+    def save(c):
+        SESSION_PATH.parent.mkdir(parents=True, exist_ok=True)
+        c.dump_settings(SESSION_PATH)
 
-    if SESSION_PATH.exists():
-        try:
-            cl.load_settings(SESSION_PATH)
-            _apply_app_version(cl)
-            cl.login(username, password)
-            cl.get_timeline_feed()  # session valid hai ya nahi check
-            cl.dump_settings(SESSION_PATH)
-            print("[IG] Purane session se login OK")
-            return cl
-        except Exception as e:
-            print(f"[IG] Session invalid ({e}). Fresh login karte hain...")
-            old = cl.get_settings()
-            cl = Client()
-            cl.delay_range = [1, 3]
-            cl.challenge_code_handler = challenge_code_handler
-            cl.set_uuids(old.get("uuids", {}))  # same device rakho
-            _apply_app_version(cl)
-
-    _apply_app_version(cl)
-
-    # Browser (Inspect > Cookies) se liya sessionid: password/OTP ke bina login
-    sid = os.environ.get("IG_SESSIONID", "").strip()
+    # 1) sessionid (password login nahi hota, rate-limit/OTP se bachta hai)
     if sid:
         try:
+            cl = new_client()
             cl.login_by_sessionid(sid)
             cl.get_timeline_feed()
-            SESSION_PATH.parent.mkdir(parents=True, exist_ok=True)
-            cl.dump_settings(SESSION_PATH)
+            save(cl)
             print("[IG] sessionid se login OK")
             return cl
         except Exception as e:
-            print(f"[IG] sessionid se login fail ({type(e).__name__}). Password se try karte hain...")
-            cl = Client()
-            cl.delay_range = [1, 3]
-            cl.challenge_code_handler = challenge_code_handler
+            msg = f"sessionid: {type(e).__name__}: {str(e)[:150]}"
+            errors.append(msg)
+            print(f"[IG] {msg}")
+            _tg_send(
+                "⚠️ Instagram SESSION ID fail ho gayi.\n"
+                f"Wajah: {type(e).__name__}: {str(e)[:150]}\n\n"
+                "Browser se naya sessionid lekar GitHub Secret IG_SESSIONID badal do. "
+                "Tab tak password/saved session se try kar raha hoon."
+            )
+
+    if not (username and password):
+        raise RuntimeError(" | ".join(errors))
+
+    # 2) saved session file
+    _restore_session_from_env()
+    if SESSION_PATH.exists():
+        try:
+            cl = new_client()
+            cl.load_settings(SESSION_PATH)
             _apply_app_version(cl)
+            cl.login(username, password)
+            cl.get_timeline_feed()
+            save(cl)
+            print("[IG] Saved session se login OK")
+            return cl
+        except Exception as e:
+            msg = f"session file: {type(e).__name__}: {str(e)[:150]}"
+            errors.append(msg)
+            print(f"[IG] {msg}")
 
+    # 3) fresh password login (Telegram pe code maang sakta hai)
     try:
-        cl.login(username, password)
-    except TwoFactorRequired:
-        code = _wait_for_code("2FA")
-        if not code:
-            raise RuntimeError("2FA code time pe nahi mila")
-        cl.login(username, password, verification_code=code)
-
-    SESSION_PATH.parent.mkdir(parents=True, exist_ok=True)
-    cl.dump_settings(SESSION_PATH)
-    print(f"[IG] Naya session save hua: {SESSION_PATH}")
-    _tg_send("✅ Instagram login ho gaya, session save ho gaya.")
-    return cl
+        cl = new_client()
+        try:
+            cl.login(username, password)
+        except TwoFactorRequired:
+            code = _wait_for_code("2FA")
+            if not code:
+                raise RuntimeError("2FA code time pe nahi mila")
+            cl.login(username, password, verification_code=code)
+        save(cl)
+        print(f"[IG] Naya session save hua: {SESSION_PATH}")
+        _tg_send("✅ Instagram login ho gaya, session save ho gaya.")
+        return cl
+    except Exception as e:
+        errors.append(f"password: {type(e).__name__}: {str(e)[:150]}")
+        raise RuntimeError(" | ".join(errors))
 
 
 def upload_reel(video_path, meta=None, book_title=""):
