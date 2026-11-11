@@ -188,6 +188,24 @@ def get_ig_client():
             _apply_app_version(cl)
 
     _apply_app_version(cl)
+
+    # Browser (Inspect > Cookies) se liya sessionid: password/OTP ke bina login
+    sid = os.environ.get("IG_SESSIONID", "").strip()
+    if sid:
+        try:
+            cl.login_by_sessionid(sid)
+            cl.get_timeline_feed()
+            SESSION_PATH.parent.mkdir(parents=True, exist_ok=True)
+            cl.dump_settings(SESSION_PATH)
+            print("[IG] sessionid se login OK")
+            return cl
+        except Exception as e:
+            print(f"[IG] sessionid se login fail ({type(e).__name__}). Password se try karte hain...")
+            cl = Client()
+            cl.delay_range = [1, 3]
+            cl.challenge_code_handler = challenge_code_handler
+            _apply_app_version(cl)
+
     try:
         cl.login(username, password)
     except TwoFactorRequired:
@@ -219,3 +237,27 @@ def upload_reel(video_path, meta=None, book_title=""):
         LAST_ERROR = str(e)
         print(f"[IG] Upload error: {e}")
         return None
+
+
+if __name__ == "__main__":
+    # Workflow se: python src/instagram_upload.py data/output/<dir>/ [...]
+    import json
+
+    for d in sys.argv[1:]:
+        dp = Path(d)
+        video = dp / "final.mp4"
+        if not video.exists():
+            continue
+        meta = {}
+        try:
+            meta = json.loads((dp / "meta.json").read_text(encoding="utf-8"))
+        except Exception:
+            pass
+        url = upload_reel(video, meta=meta, book_title=meta.get("book", dp.name))
+        if url:
+            print(f"✅ Instagram Reel: {url}")
+            _tg_send(f"✅ Instagram Reel: {url}")
+        else:
+            print(f"❌ Instagram upload failed: {LAST_ERROR}")
+            _tg_send(f"❌ Instagram upload failed: {str(LAST_ERROR)[:200]}")
+            sys.exit(1)
