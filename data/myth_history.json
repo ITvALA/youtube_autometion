@@ -1469,5 +1469,14 @@
     "opening_fx": 2,
     "closing_fx": 3,
     "video_key": "2026-11-11_090221_myth_prahlada_holika"
+  },
+  {
+    "topic_id": "yaksha_prashna_yudhisthira",
+    "topic_title": "यक्ष प्रश्न: युधिष्ठिर के धर्म और विवेक की परीक्षा",
+    "date": "2026-11-11",
+    "seed": 336752,
+    "opening_fx": 3,
+    "closing_fx": 4,
+    "video_key": "2026-11-11_100259_myth_yaksha_prashna_yudhisthira"
   }
 ]
