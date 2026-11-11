@@ -1,0 +1,31 @@
+name: Instagram login (one-time)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  login:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -U instagrapi requests pyotp python-dotenv
+      - name: Restore Instagram session
+        uses: actions/cache@v4
+        with:
+          path: config/ig_session.json
+          key: ig-session-${{ github.run_id }}
+          restore-keys: ig-session-
+      - name: Instagram login
+        env:
+          IG_USERNAME: ${{ secrets.IG_USERNAME }}
+          IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
+          IG_APP_VERSION: ${{ secrets.IG_APP_VERSION }}
+          IG_VERSION_CODE: ${{ secrets.IG_VERSION_CODE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/ig_login.py
