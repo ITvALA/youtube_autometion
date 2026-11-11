@@ -1505,5 +1505,14 @@
     "opening_fx": 0,
     "closing_fx": 5,
     "video_key": "2026-11-11_130319_myth_hanuman_lanka_dahan"
+  },
+  {
+    "topic_id": "shiva_tandav",
+    "topic_title": "भगवान शिव का तांडव: जब खुली तीसरी आंख",
+    "date": "2026-11-11",
+    "seed": 612677,
+    "opening_fx": 5,
+    "closing_fx": 4,
+    "video_key": "2026-11-11_170341_myth_shiva_tandav"
   }
 ]
