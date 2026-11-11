@@ -1550,5 +1550,14 @@
     "opening_fx": 1,
     "closing_fx": 3,
     "video_key": "2026-11-11_220517_myth_ashwatthama_gem"
+  },
+  {
+    "topic_id": "sudarshan_shishupala",
+    "topic_title": "सुदर्शन चक्र और शिशुपाल: सौ अपराधों का अंत",
+    "date": "2026-11-11",
+    "seed": 206229,
+    "opening_fx": 0,
+    "closing_fx": 4,
+    "video_key": "2026-11-11_230428_myth_sudarshan_shishupala"
   }
 ]
