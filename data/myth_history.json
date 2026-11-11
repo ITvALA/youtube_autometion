@@ -1433,5 +1433,14 @@
     "opening_fx": 1,
     "closing_fx": 0,
     "video_key": "2026-11-11_050256_myth_ashwatthama_gem"
+  },
+  {
+    "topic_id": "yaksha_prashna_yudhisthira",
+    "topic_title": "यक्ष प्रश्न: युधिष्ठिर के धर्म और विवेक की परीक्षा",
+    "date": "2026-11-11",
+    "seed": 959036,
+    "opening_fx": 2,
+    "closing_fx": 3,
+    "video_key": "2026-11-11_060304_myth_yaksha_prashna_yudhisthira"
   }
 ]
