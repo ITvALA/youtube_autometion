@@ -1622,5 +1622,14 @@
     "opening_fx": 3,
     "closing_fx": 0,
     "video_key": "2026-11-12_060441_myth_maharshi_dadhichi_asthi_daan"
+  },
+  {
+    "topic_id": "narasimha_avatar",
+    "topic_title": "भगवान नृसिंह अवतार: भक्त प्रह्लाद की रक्षा",
+    "date": "2026-11-12",
+    "seed": 39792,
+    "opening_fx": 5,
+    "closing_fx": 3,
+    "video_key": "2026-11-12_070423_myth_narasimha_avatar"
   }
 ]
