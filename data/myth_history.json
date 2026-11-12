@@ -1730,5 +1730,14 @@
     "opening_fx": 5,
     "closing_fx": 3,
     "video_key": "2026-11-12_190601_myth_shiva_tandav"
+  },
+  {
+    "topic_id": "jatayu_sacrifice",
+    "topic_title": "वीर जटायु का बलिदान: धर्म की रक्षा में प्राण",
+    "date": "2026-11-12",
+    "seed": 905864,
+    "opening_fx": 1,
+    "closing_fx": 4,
+    "video_key": "2026-11-12_200625_myth_jatayu_sacrifice"
   }
 ]
