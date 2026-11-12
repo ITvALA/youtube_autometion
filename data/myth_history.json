@@ -1739,5 +1739,14 @@
     "opening_fx": 1,
     "closing_fx": 4,
     "video_key": "2026-11-12_200625_myth_jatayu_sacrifice"
+  },
+  {
+    "topic_id": "bali_vamana",
+    "topic_title": "राजा बलि और वामन अवतार: तीन पग भूमि",
+    "date": "2026-11-12",
+    "seed": 507481,
+    "opening_fx": 3,
+    "closing_fx": 0,
+    "video_key": "2026-11-12_210527_myth_bali_vamana"
   }
 ]
