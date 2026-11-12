@@ -1631,5 +1631,14 @@
     "opening_fx": 5,
     "closing_fx": 3,
     "video_key": "2026-11-12_070423_myth_narasimha_avatar"
+  },
+  {
+    "topic_id": "bal_hanuman_sun",
+    "topic_title": "बाल हनुमान और सूर्य देव: ब्रह्मांड की सबसे ऊंची छलांग",
+    "date": "2026-11-12",
+    "seed": 669905,
+    "opening_fx": 2,
+    "closing_fx": 5,
+    "video_key": "2026-11-12_080528_myth_bal_hanuman_sun"
   }
 ]
