@@ -1721,5 +1721,14 @@
     "opening_fx": 3,
     "closing_fx": 2,
     "video_key": "2026-11-12_180552_myth_shiva_neelkanth"
+  },
+  {
+    "topic_id": "shiva_tandav",
+    "topic_title": "भगवान शिव का तांडव: जब खुली तीसरी आंख",
+    "date": "2026-11-12",
+    "seed": 309506,
+    "opening_fx": 5,
+    "closing_fx": 3,
+    "video_key": "2026-11-12_190601_myth_shiva_tandav"
   }
 ]
