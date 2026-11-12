@@ -1577,5 +1577,14 @@
     "opening_fx": 5,
     "closing_fx": 4,
     "video_key": "2026-11-12_010413_myth_garuda_amrit_kalash"
+  },
+  {
+    "topic_id": "bhagirath_ganga",
+    "topic_title": "राजा भगीरथ की घोर तपस्या: धरती पर गंगा अवतरण",
+    "date": "2026-11-12",
+    "seed": 22833,
+    "opening_fx": 1,
+    "closing_fx": 3,
+    "video_key": "2026-11-12_020402_myth_bhagirath_ganga"
   }
 ]
