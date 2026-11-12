@@ -1568,5 +1568,14 @@
     "opening_fx": 1,
     "closing_fx": 5,
     "video_key": "2026-11-12_000349_myth_karna_kavach_kundal"
+  },
+  {
+    "topic_id": "garuda_amrit_kalash",
+    "topic_title": "गरुड़ और अमृत कलश: नागों की दासता से मुक्ति",
+    "date": "2026-11-12",
+    "seed": 417571,
+    "opening_fx": 5,
+    "closing_fx": 4,
+    "video_key": "2026-11-12_010413_myth_garuda_amrit_kalash"
   }
 ]
