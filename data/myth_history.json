@@ -1586,5 +1586,14 @@
     "opening_fx": 1,
     "closing_fx": 3,
     "video_key": "2026-11-12_020402_myth_bhagirath_ganga"
+  },
+  {
+    "topic_id": "narasimha_avatar",
+    "topic_title": "भगवान नृसिंह अवतार: भक्त प्रह्लाद की रक्षा",
+    "date": "2026-11-12",
+    "seed": 627001,
+    "opening_fx": 4,
+    "closing_fx": 0,
+    "video_key": "2026-11-12_030420_myth_narasimha_avatar"
   }
 ]
