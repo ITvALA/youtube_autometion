@@ -1865,5 +1865,14 @@
     "opening_fx": 0,
     "closing_fx": 2,
     "video_key": "2026-11-13_110622_myth_ram_setu_floating_stones"
+  },
+  {
+    "topic_id": "yaksha_prashna_yudhisthira",
+    "topic_title": "यक्ष प्रश्न: युधिष्ठिर के धर्म और विवेक की परीक्षा",
+    "date": "2026-11-13",
+    "seed": 573183,
+    "opening_fx": 1,
+    "closing_fx": 3,
+    "video_key": "2026-11-13_120717_myth_yaksha_prashna_yudhisthira"
   }
 ]
