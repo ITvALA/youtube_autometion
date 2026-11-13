@@ -20,7 +20,6 @@ SESSION_PATH = ROOT / "config" / "ig_session.json"
 LAST_ERROR = None
 _CLIENT = None          # ek process me sirf ek login, baar-baar nahi
 _COOLDOWN_UNTIL = 0.0  # login fail ke baad kuch der dobara try nahi karega
-_SID_FAILED = False    # sessionid ek baar fail ho to dobara try/alert nahi
 BOT_LOOP_ACTIVE = False  # bot.py isko True kar deta hai
 _code_queue = queue.Queue()
 OTP_TIMEOUT = 300  # seconds
@@ -87,7 +86,7 @@ def _poll_telegram_for_code(deadline):
     return None
 
 
-def _wait_for_code(reason):
+def _wait_for_code_inner(reason):
     """Telegram pe code maange aur wait kare. Terminal available ho to wahan se bhi."""
     while not _code_queue.empty():  # purana code hatao
         try:
@@ -127,6 +126,28 @@ def _wait_for_code(reason):
     return _poll_telegram_for_code(deadline)
 
 
+_WAITING = False
+
+
+def is_waiting_for_code():
+    """bot.py check karta hai ki login abhi code ka intezaar kar raha hai ya nahi."""
+    return _WAITING
+
+
+def provide_code(code):
+    """bot.py ka naam: code waiting login ko do."""
+    submit_code(code)
+
+
+def _wait_for_code(reason):
+    global _WAITING
+    _WAITING = True
+    try:
+        return _wait_for_code_inner(reason)
+    finally:
+        _WAITING = False
+
+
 # ───────────── Instagram client ─────────────
 def _restore_session_from_env():
     b64 = os.environ.get("IG_SESSION_B64", "").strip()
@@ -150,9 +171,9 @@ def _apply_app_version(cl):
 
 
 def get_ig_client():
-    """Order: 1) IG_SESSIONID  2) saved session file  3) password (+Telegram code).
+    """Order: 1) saved session file  2) password (+Telegram code).
     Har stage ka error jama hota hai, taaki Telegram pe asli wajah dikhe."""
-    global _CLIENT, _COOLDOWN_UNTIL, _SID_FAILED
+    global _CLIENT, _COOLDOWN_UNTIL
     from instagrapi import Client
     from instagrapi.exceptions import TwoFactorRequired
 
@@ -164,9 +185,8 @@ def get_ig_client():
 
     username = os.environ.get("IG_USERNAME", "").strip()
     password = os.environ.get("IG_PASSWORD", "").strip()
-    sid = "" if _SID_FAILED else os.environ.get("IG_SESSIONID", "").strip()
-    if not sid and not (username and password):
-        raise RuntimeError("IG_SESSIONID ya IG_USERNAME+IG_PASSWORD set karo")
+    if not (username and password):
+        raise RuntimeError("IG_USERNAME / IG_PASSWORD set nahi hai")
 
     errors = []
 
@@ -174,6 +194,7 @@ def get_ig_client():
         code = _wait_for_code(f"challenge: {choice}")
         if not code:
             raise RuntimeError("Instagram code time pe nahi mila")
+        _tg_send("📨 Code mil gaya, Instagram ko de raha hoon...")
         return code
 
     def new_client():
@@ -187,32 +208,7 @@ def get_ig_client():
         SESSION_PATH.parent.mkdir(parents=True, exist_ok=True)
         c.dump_settings(SESSION_PATH)
 
-    # 1) sessionid (password login nahi hota, rate-limit/OTP se bachta hai)
-    if sid:
-        try:
-            cl = new_client()
-            cl.login_by_sessionid(sid)
-            cl.get_timeline_feed()
-            save(cl)
-            print("[IG] sessionid se login OK")
-            _CLIENT = cl
-            return cl
-        except Exception as e:
-            _SID_FAILED = True
-            msg = f"sessionid: {type(e).__name__}: {str(e)[:150]}"
-            errors.append(msg)
-            print(f"[IG] {msg}")
-            _tg_send(
-                "⚠️ Instagram SESSION ID fail ho gayi.\n"
-                f"Wajah: {type(e).__name__}: {str(e)[:150]}\n\n"
-                "Browser se naya sessionid lekar GitHub Secret IG_SESSIONID badal do. "
-                "Tab tak password/saved session se try kar raha hoon."
-            )
-
-    if not (username and password):
-        raise RuntimeError(" | ".join(errors))
-
-    # 2) saved session file
+    # 1) saved session file
     _restore_session_from_env()
     if SESSION_PATH.exists():
         try:
@@ -230,7 +226,7 @@ def get_ig_client():
             errors.append(msg)
             print(f"[IG] {msg}")
 
-    # 3) fresh password login (Telegram pe code maang sakta hai)
+    # 2) fresh password login (Telegram pe code maang sakta hai)
     try:
         cl = new_client()
         try:
