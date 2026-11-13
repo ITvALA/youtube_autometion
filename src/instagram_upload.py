@@ -18,6 +18,9 @@ ROOT = Path(__file__).resolve().parent.parent
 SESSION_PATH = ROOT / "config" / "ig_session.json"
 
 LAST_ERROR = None
+_CLIENT = None          # ek process me sirf ek login, baar-baar nahi
+_COOLDOWN_UNTIL = 0.0  # login fail ke baad kuch der dobara try nahi karega
+_SID_FAILED = False    # sessionid ek baar fail ho to dobara try/alert nahi
 BOT_LOOP_ACTIVE = False  # bot.py isko True kar deta hai
 _code_queue = queue.Queue()
 OTP_TIMEOUT = 300  # seconds
@@ -149,12 +152,19 @@ def _apply_app_version(cl):
 def get_ig_client():
     """Order: 1) IG_SESSIONID  2) saved session file  3) password (+Telegram code).
     Har stage ka error jama hota hai, taaki Telegram pe asli wajah dikhe."""
+    global _CLIENT, _COOLDOWN_UNTIL, _SID_FAILED
     from instagrapi import Client
     from instagrapi.exceptions import TwoFactorRequired
 
+    if _CLIENT is not None:
+        return _CLIENT
+    if time.time() < _COOLDOWN_UNTIL:
+        mins = int((_COOLDOWN_UNTIL - time.time()) / 60) + 1
+        raise RuntimeError(f"Instagram login cooldown chal raha hai, {mins} min baad try hoga")
+
     username = os.environ.get("IG_USERNAME", "").strip()
     password = os.environ.get("IG_PASSWORD", "").strip()
-    sid = os.environ.get("IG_SESSIONID", "").strip()
+    sid = "" if _SID_FAILED else os.environ.get("IG_SESSIONID", "").strip()
     if not sid and not (username and password):
         raise RuntimeError("IG_SESSIONID ya IG_USERNAME+IG_PASSWORD set karo")
 
@@ -185,8 +195,10 @@ def get_ig_client():
             cl.get_timeline_feed()
             save(cl)
             print("[IG] sessionid se login OK")
+            _CLIENT = cl
             return cl
         except Exception as e:
+            _SID_FAILED = True
             msg = f"sessionid: {type(e).__name__}: {str(e)[:150]}"
             errors.append(msg)
             print(f"[IG] {msg}")
@@ -211,6 +223,7 @@ def get_ig_client():
             cl.get_timeline_feed()
             save(cl)
             print("[IG] Saved session se login OK")
+            _CLIENT = cl
             return cl
         except Exception as e:
             msg = f"session file: {type(e).__name__}: {str(e)[:150]}"
@@ -230,9 +243,19 @@ def get_ig_client():
         save(cl)
         print(f"[IG] Naya session save hua: {SESSION_PATH}")
         _tg_send("✅ Instagram login ho gaya, session save ho gaya.")
+        _CLIENT = cl
         return cl
     except Exception as e:
         errors.append(f"password: {type(e).__name__}: {str(e)[:150]}")
+        low = str(e).lower()
+        limited = any(k in low for k in ("wait a few minutes", "please wait", "429", "feedback_required", "too many"))
+        wait = 3 * 3600 if limited else 20 * 60
+        _COOLDOWN_UNTIL = time.time() + wait
+        _tg_send(
+            "❌ Instagram login fail.\n"
+            f"{str(e)[:200]}\n\n"
+            f"Spam se bachne ke liye {wait // 60} min tak dobara login try nahi karunga."
+        )
         raise RuntimeError(" | ".join(errors))
 
 
