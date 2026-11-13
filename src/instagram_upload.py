@@ -255,6 +255,25 @@ def get_ig_client():
         raise RuntimeError(" | ".join(errors))
 
 
+def _make_thumbnail(video_path):
+    """ffmpeg se thumbnail banao, taaki instagrapi ko moviepy ki zarurat na pade."""
+    import subprocess
+
+    thumb = Path(str(video_path) + ".jpg")
+    for ss in ("1", "0"):
+        try:
+            subprocess.run(
+                ["ffmpeg", "-y", "-loglevel", "error", "-ss", ss, "-i", str(video_path),
+                 "-frames:v", "1", "-q:v", "2", str(thumb)],
+                check=True, timeout=60,
+            )
+            if thumb.exists() and thumb.stat().st_size > 0:
+                return thumb
+        except Exception as e:
+            print(f"[IG] ffmpeg thumbnail fail (ss={ss}): {e}")
+    return None
+
+
 def upload_reel(video_path, meta=None, book_title=""):
     global LAST_ERROR
     LAST_ERROR = None
@@ -265,7 +284,8 @@ def upload_reel(video_path, meta=None, book_title=""):
         tags = meta.get("tags", [])
         hashtags = " ".join(f"#{t.replace(' ', '')}" for t in tags)
         caption = f"{title}\n\n{hashtags}".strip()
-        media = cl.clip_upload(Path(video_path), caption)
+        thumb = _make_thumbnail(Path(video_path))
+        media = cl.clip_upload(Path(video_path), caption, thumbnail=thumb)
         return f"https://www.instagram.com/reel/{media.code}/"
     except Exception as e:
         LAST_ERROR = str(e)
