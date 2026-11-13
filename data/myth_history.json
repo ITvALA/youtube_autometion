@@ -1919,5 +1919,14 @@
     "opening_fx": 5,
     "closing_fx": 3,
     "video_key": "2026-11-13_170725_myth_krishna_sudama_sandipani"
+  },
+  {
+    "topic_id": "ganesha_pratham_pujya",
+    "topic_title": "भगवान गणेश का प्रथम पूज्य बनने का रहस्य",
+    "date": "2026-11-13",
+    "seed": 203535,
+    "opening_fx": 3,
+    "closing_fx": 5,
+    "video_key": "2026-11-13_180709_myth_ganesha_pratham_pujya"
   }
 ]
