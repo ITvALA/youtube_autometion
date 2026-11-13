@@ -1856,5 +1856,14 @@
     "opening_fx": 2,
     "closing_fx": 4,
     "video_key": "2026-11-13_100636_myth_prahlada_holika"
+  },
+  {
+    "topic_id": "ram_setu_floating_stones",
+    "topic_title": "समुद्र पर रामसेतु: पानी पर तैरते विशाल पत्थर",
+    "date": "2026-11-13",
+    "seed": 960728,
+    "opening_fx": 0,
+    "closing_fx": 2,
+    "video_key": "2026-11-13_110622_myth_ram_setu_floating_stones"
   }
 ]
