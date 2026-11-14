@@ -2009,5 +2009,14 @@
     "opening_fx": 3,
     "closing_fx": 0,
     "video_key": "2026-11-14_022002_myth_jyotirlinga_kashi_vishwanath"
+  },
+  {
+    "topic_id": "vaishno_devi_trikuta",
+    "topic_title": "वैष्णो देवी: त्रिकूट पर्वत की कथा",
+    "date": "2026-11-14",
+    "seed": 344580,
+    "opening_fx": 4,
+    "closing_fx": 2,
+    "video_key": "2026-11-14_024550_myth_vaishno_devi_trikuta"
   }
 ]
