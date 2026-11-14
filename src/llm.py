@@ -810,19 +810,19 @@ MYTH_MOVES = {"still", "pushIn", "pullOut", "panL", "panR", "tiltUp", "craneDown
 
 
 def validate_myth_plan(plan):
-    """Validator: reject unknown character ids, missing fields, or scenes under 3s."""
+    """Validator: reject unknown character ids, missing fields, or scenes under 2.5s."""
     if not isinstance(plan, dict):
         return "Plan must be a JSON object"
     scenes = plan.get("scenes")
-    if not isinstance(scenes, list) or len(scenes) < 5 or len(scenes) > 10:
-        return f"scenes must be a list of 5 to 10 scenes, got {len(scenes) if isinstance(scenes, list) else type(scenes)}"
+    if not isinstance(scenes, list) or len(scenes) < 5 or len(scenes) > 14:
+        return f"scenes must be a list of 5 to 14 scenes, got {len(scenes) if isinstance(scenes, list) else type(scenes)}"
 
     for idx, sc in enumerate(scenes):
         if not isinstance(sc, dict):
             return f"scene {idx} must be an object"
         sec = sc.get("sec")
-        if not isinstance(sec, (int, float)) or sec < 3:
-            return f"scene {idx}: sec must be >= 3 seconds, got {sec}"
+        if not isinstance(sec, (int, float)) or sec < 2.5:
+            return f"scene {idx}: sec must be >= 2.5 seconds, got {sec}"
 
         beat = sc.get("beat")
         if beat not in MYTH_BEATS:
@@ -1089,11 +1089,9 @@ def choreograph_myth_plan(plan, seed=None):
 # Fallback (only used when the live LLM fails) - now randomised so videos differ.
 # ==============================================================================
 _FB_STRUCTURES = [
-    [("intro", 0), ("talk", 1), ("reveal", 2), ("fight", 3), ("victory", 4), ("victory", 5)],
-    [("intro", 2), ("talk", 1), ("talk", 0), ("fight", 3), ("reveal", 2), ("victory", 5)],
-    [("reveal", 2), ("talk", 1), ("talk", 0), ("fight", 3), ("victory", 4), ("victory", 5)],
-    [("intro", 0), ("talk", 1), ("talk", 4), ("reveal", 2), ("fight", 3), ("victory", 4), ("victory", 5)],
-    [("intro", 0), ("reveal", 2), ("talk", 1), ("talk", 4), ("victory", 5)],
+    [("intro", 0), ("talk", 1), ("talk", 0), ("reveal", 2), ("fight", 3), ("fight", 3), ("talk", 1), ("reveal", 2), ("victory", 4), ("victory", 5)],
+    [("reveal", 2), ("talk", 1), ("talk", 0), ("talk", 1), ("fight", 3), ("reveal", 2), ("fight", 3), ("reveal", 2), ("victory", 4), ("victory", 5)],
+    [("intro", 0), ("talk", 1), ("reveal", 2), ("talk", 0), ("fight", 3), ("talk", 1), ("fight", 3), ("reveal", 2), ("victory", 4), ("victory", 5)],
 ]
 _FB_BG = {
     "intro": ["palace", "temple", "forest", "sky"],
@@ -1198,8 +1196,9 @@ def generate_fallback_myth_plan(topic=None, seed=None):
         if last:
             cap_title, cap_text = "सनातन ज्ञान", "MindSpark को सब्सक्राइब करें"
         actors = [dict(a) for a in actors_seq[min(role, len(actors_seq) - 1)]]
+        sec = 3 if idx == 0 else (5 if (last or idx >= len(structure) - 2) else rnd.choice([4, 5, 5]))
         scenes.append({
-            "sec": rnd.choice([4, 5, 5, 6]),
+            "sec": sec,
             "beat": beat,
             "bg": bg,
             "scene_description": f"{short}: {cap_title}",
@@ -1248,8 +1247,31 @@ Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekh
 - Scene 1 Hook (MIRCH-MASALA): koi fixed generic opening line NAHI. 'क्या आपको पता है', 'क्या आप जानते हैं' ya koi bhi boring saancha bilkul mat use karo. Seedha kahani ke sabse bade sankat, lalkaar, sanvaad ya drishya se shuru karo!
 - Last scene: conclude naturally with heroic pride, and the very last sentence MUST end with: 'ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!'
 
+## 3-ACT PACING & TIMING BLUEPRINT (STRICT 50-55 SECONDS TOTAL):
+1. ACT 1: 0–3 Sec (THE HOOK) - Scene 1:
+   - 'sec': 3 (STRICTLY 3 seconds).
+   - Beat: 'intro' or 'reveal'.
+   - Narration: Exactly 8-12 words in Hindi. Ek aisa sawal ya shock jo viewer ko scroll karne se turant rok le (thumb-stopper)!
+   - Examples:
+     "एक ऐसा योद्धा, जिसने साक्षात मृत्यु को रणभूमि में ललकार दिया!"
+     "क्या आप जानते हैं इस मंदिर का वह रहस्य, जिसने मुगलों की पूरी फ़ौज को भगा दिया?"
+
+2. ACT 2: 3–45 Sec (THE STORY) - Scenes 2 to N-2:
+   - 'sec': 4 to 5 per scene (total ~40-42 seconds, fast-paced).
+   - Seedhi, tej aur visual kahani (heavy dramatic background music ke saath)!
+   - Chhote sentences (short punchy sentences, 5-8 words per sentence).
+   - Kam se kam 2-3 scenes me pAatron ke teekhe, aamne-saamne ke sanvaad (double quotes \"...\" me) daalo.
+   - Poses: 'walk' for walking gait, 'talk' / 'point' for dialogue lip-sync, 'fight' for weapon clashes.
+
+3. ACT 3: 45–55 Sec (THE CLIMAX / TWIST) - Final 2 Scenes:
+   - 'sec': 4 to 5 per scene (total ~8-10 seconds, ending at 50-55s total).
+   - Beat: 'reveal' -> 'victory'.
+   - Scene N-1: Kahani ka sabse bada chamatkar ya hairan kar dene wala mod (Twist)!
+   - Scene N: Kahani ki amar seekh, aur last sentence MUST end with:
+     'ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!'
+
 ## Kahani ki bunaavat aur Masaledaar Sanvaad (SABSE ZAROORI):
-- Ye ek poori KAHANI hai: shuruaat me bada dhamaka/sankat -> takraav aur sankalp -> asambhav pareeksha -> hairan kar dene wala mod -> antim vijay.
+- Ye ek poori KAHANI hai: 0-3s Hook -> 3-45s Tez takraav aur sankalp -> 45-55s Chamatkar/Twist aur Antim Vijay.
 - Har scene me kahani AAGE badhni chahiye. Pichla scene dohrao mat.
 - Kam se kam 2-3 scenes me pAatron ke damdaar sanvaad (double quotes \"...\" me) daalo. Jaise: "रुक जाओ! यदि आज शस्त्र नहीं उठाए, तो इतिहास हमें कायर कहेगा!"
 - Voiceover me emotion aur thehraav laane ke liye viram-chinh (`!`, `,`, `...`, `।`) ka behtareen prayog karo taaki TTS bolte waqt asli insaan jaisa dumdaar aur bhavuk lage.
@@ -1270,7 +1292,7 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
   },
   "scenes": [
     {
-      "sec": 5,
+      "sec": 3,
       "beat": "intro" | "talk" | "reveal" | "fight" | "victory",
       "bg": "palace" | "forest" | "pond" | "temple" | "battlefield" | "sky",
       "scene_description": "Silent visual direction in Devanagari Hindi: who is doing what, mood (NOT SPOKEN BY TTS)",
@@ -1288,17 +1310,20 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
         "title": "Short title in Devanagari Hindi (max 4 words)",
         "text": "One line text in Devanagari Hindi"
       },
-      "narration": "14-20 words in natural, dramatic, conversational Devanagari Hindi with powerful dialogues in quotes."
+      "narration": "8-12 words for Scene 1 hook, 14-20 words for story scenes with powerful dialogues in quotes."
     }
   ]
 }
 
 STRICT RULES:
-1. Total scenes: __N__ scenes. 'sec': 4 to 6 per scene.
+1. Total scenes: __N__ scenes (Total video duration MUST be 50 to 55 seconds).
+   - Scene 1 MUST have 'sec': 3 (The Hook, 8-12 words).
+   - Middle scenes 'sec': 4 to 5 (The Story, 3-45 sec).
+   - Final 2 scenes 'sec': 4 to 5 (The Climax & Twist, 45-55 sec).
 2. Allowed characters: __ROSTER__. Pick the characters of THIS story (1 to 3 per scene):
    - For kings/warriors use 'raja' or 'soldier', for wise sages use 'rishi' or 'guru', for outlaws use 'chor', or specific epic heroes/gods.
 3. Allowed backgrounds: palace, forest, pond, temple, battlefield, sky. Use at least 4 different backgrounds.
-4. Beats: First beat 'intro' or 'reveal', last beat 'victory'. Use 'talk' with dialogue quotes so character mouth flap animates.
+4. Beats: Scene 1 'intro' or 'reveal', middle 'talk'/'fight'/'reveal', last scene 'victory'. Use 'talk' with dialogue quotes so character mouth flap animates.
 5. Poses: vary them. Use 'walk' for natural walking animation, 'talk' or 'point' when speaking dialogue, 'fight' in action.
 6. Two characters in a scene: x between 250 and 850, at least 250 apart, and the one on the right has flip true (they face each other).
 7. Do NOT add any camera field. Narration and Caption text MUST be 100% Devanagari Hindi (only the word MindSpark may be Latin).
@@ -1349,7 +1374,7 @@ CRITICAL ADAPTATION RULES FOR THIS CUSTOM STORY:
               .replace("__STYLE__", rnd.choice(_MYTH_STYLES))
               .replace("__TONE__", rnd.choice(_MYTH_TONES))
               .replace("__CONTEXT__", story_context)
-              .replace("__N__", rnd.choice(["7", "8", "8", "9"]))
+              .replace("__N__", rnd.choice(["10", "11", "10", "11"]))
               .replace("__ROSTER__", ", ".join(sorted(list(ROSTER_GODS)))))
 
     err = None
@@ -1358,15 +1383,30 @@ CRITICAL ADAPTATION RULES FOR THIS CUSTOM STORY:
             curr_prompt = prompt
             if err:
                 curr_prompt += f"\n\nCRITICAL: Your previous output had this error: {err}. Please fix it strictly. Keep the JSON compact."
-            # Devanagari is token-hungry: 8 scenes need far more than 2000 tokens or the JSON gets cut off
+            # Devanagari is token-hungry: 10 scenes need far more than 2000 tokens or the JSON gets cut off
             txt = _call(curr_prompt, max_tokens=8000)
             raw = txt.strip()
             if "{" in raw and "}" in raw:
                 raw = raw[raw.index("{"): raw.rindex("}") + 1]
             plan = _salvage_json(raw)
 
-            # Enforce MindSpark brand at the end
+            # Enforce 3-Act Timing & MindSpark branding (0-3s Hook, 3-45s Story, 45-55s Climax & Twist)
             if plan.get("scenes"):
+                # Act 1: 0-3 Sec Hook
+                plan["scenes"][0]["sec"] = 3
+                # Act 2: 3-45 Sec Story (middle scenes 4 to 5s)
+                for sc in plan["scenes"][1:-2]:
+                    if sc.get("sec", 5) > 5:
+                        sc["sec"] = 5
+                    elif sc.get("sec", 5) < 4:
+                        sc["sec"] = 4
+                # Act 3: 45-55 Sec Climax & Twist (last 2 scenes 4 to 5s)
+                for sc in plan["scenes"][-2:]:
+                    if sc.get("sec", 5) > 5:
+                        sc["sec"] = 5
+                    elif sc.get("sec", 5) < 4:
+                        sc["sec"] = 4
+
                 last_s = plan["scenes"][-1]
                 l_narr = last_s.get("narration", "")
                 if "mindspark" not in l_narr.lower() and "माइंडस्पार्क" not in l_narr:

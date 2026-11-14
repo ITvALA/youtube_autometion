@@ -1297,7 +1297,7 @@ const A = (f: string) => staticFile(`myth-audio/${f}.wav`);
 const MythAudio: React.FC<{
   scenes: Scene[]; starts: number[]; durs: number[]; fps: number; total: number;
   music?: boolean; sfx?: boolean; musicVol?: number; duckedVol?: number; voiceVol?: number;
-}> = ({ scenes, starts, durs, fps, total, music = true, sfx = true, musicVol = 0.5, duckedVol = 0.2, voiceVol = 1 }) => {
+}> = ({ scenes, starts, durs, fps, total, music = true, sfx = true, musicVol = 0.65, duckedVol = 0.32, voiceVol = 1 }) => {
   // windows (in frames) where a voiceover is speaking -> music gets quieter there
   const voiceWins = scenes
     .map((s, i) => (s.voice ? [starts[i] + 6 + (s.voiceLead ?? 0), starts[i] + 6 + (s.voiceLead ?? 0) + Math.round((s.voiceSec ?? 3) * fps)] : null))
