@@ -118,16 +118,16 @@ const CamCtx = createContext<Cam>({ x: 0, y: 0, z: 1, rx: 0, ry: 0, rz: 0 });
 
 // focusW = how strongly the camera centres on the focused actor (0 = fixed frame, 1 = locked on face)
 export const SHOTS: Record<ShotName, Cam & { focusW: number }> = {
-  wide:    { x: 0,    y: -20, z: 0.82, rx: 0,   ry: 0,   rz: 0,  focusW: 0 },
+  wide:    { x: 0,    y: -18, z: 0.80, rx: 0,   ry: 0,   rz: 0,  focusW: 0 },
   medium:  { x: 0,    y: -10, z: 0.94, rx: 0,   ry: 0,   rz: 0,  focusW: 0.15 },
-  closeup: { x: 0,    y: 0,   z: 1.06, rx: 0,   ry: 0,   rz: 0,  focusW: 0.2 },
-  extreme: { x: 0,    y: 10,  z: 1.15, rx: 0,   ry: 0,   rz: 0,  focusW: 0.25 },
-  low:     { x: 0,    y: 30,  z: 0.98, rx: -8,  ry: 0,   rz: 0,  focusW: 0.15 },
-  high:    { x: 0,    y: -35, z: 0.90, rx: 10,  ry: 0,   rz: 0,  focusW: 0.1 },
-  dutch:   { x: 0,    y: 0,   z: 0.98, rx: -4,  ry: 6,   rz: -8, focusW: 0.15 },
-  side:    { x: -30,  y: -10, z: 0.94, rx: -2,  ry: 16,  rz: 0,  focusW: 0.15 },
-  sideR:   { x: 30,   y: -10, z: 0.94, rx: -2,  ry: -16, rz: 0,  focusW: 0.15 },
-  over:    { x: -50,  y: -10, z: 1.02, rx: 0,   ry: 10,  rz: 0,  focusW: 0.2 },
+  closeup: { x: 0,    y: -6,  z: 1.08, rx: 0,   ry: 0,   rz: 0,  focusW: 0.20 },
+  extreme: { x: 0,    y: 8,   z: 1.18, rx: 0,   ry: 0,   rz: 0,  focusW: 0.24 },
+  low:     { x: 0,    y: 35,  z: 1.02, rx: -10, ry: 0,   rz: 0,  focusW: 0.15 },
+  high:    { x: 0,    y: -36, z: 0.88, rx: 12,  ry: 0,   rz: 0,  focusW: 0.1 },
+  dutch:   { x: 0,    y: 0,   z: 0.98, rx: -5,  ry: 7,   rz: -9, focusW: 0.15 },
+  side:    { x: -32,  y: -10, z: 0.94, rx: -2,  ry: 15,  rz: 0,  focusW: 0.15 },
+  sideR:   { x: 32,   y: -10, z: 0.94, rx: -2,  ry: -15, rz: 0,  focusW: 0.15 },
+  over:    { x: -45,  y: -12, z: 1.04, rx: 2,   ry: 12,  rz: 0,  focusW: 0.18 },
 };
 
 const MOVES: Record<MoveName, (t: number, f: number) => Partial<Cam>> = {
@@ -259,109 +259,342 @@ const Arm: React.FC<{ sx: number; a: number; b: number; skin: string; weapon?: W
   ({ sx, a, b, skin, weapon = 'none', frame }) => (
     <g transform={`translate(${sx},-205) rotate(${a})`}>
       <rect x={-19} y={0} width={38} height={112} rx={19} fill={skin} stroke={INK} strokeWidth={4} />
+      {/* Baju-band (royal jeweled armlet) */}
+      <rect x={-22} y={32} width={44} height={14} rx={6} fill={GOLD} stroke={INK} strokeWidth={2.5} />
+      <circle cx={0} cy={39} r={4.5} fill="#c92a2a" />
       <g transform={`translate(0,106) rotate(${b})`}>
         <rect x={-17} y={0} width={34} height={104} rx={17} fill={skin} stroke={INK} strokeWidth={4} />
-        <rect x={-20} y={60} width={40} height={14} rx={7} fill={GOLD} />
-        <circle cx={0} cy={108} r={21} fill={skin} stroke={INK} strokeWidth={4} />
-        <g transform="translate(0,108)"><WeaponSvg w={weapon} frame={frame} /></g>
+        {/* Royal Kada / Golden Bracelet */}
+        <rect x={-21} y={62} width={42} height={16} rx={7} fill={GOLD} stroke={INK} strokeWidth={2.5} />
+        <line x1={-18} y1={70} x2={18} y2={70} stroke="#c92a2a" strokeWidth={3} />
+        {/* Sculpted natural hand with fingers & thumb */}
+        <path d="M-15,102 Q-20,116 -12,128 Q-2,134 10,128 Q18,120 15,104 Q12,96 2,96 Z" fill={skin} stroke={INK} strokeWidth={3.5} />
+        <path d="M-6,110 Q-10,118 -6,124" stroke={INK} strokeWidth={2} />
+        <path d="M2,110 Q-2,118 2,124" stroke={INK} strokeWidth={2} />
+        <g transform="translate(0,112)"><WeaponSvg w={weapon} frame={frame} /></g>
       </g>
     </g>
   );
 
-const Head: React.FC<{ g: God; angry: boolean; blink?: boolean; mouth?: number; tilt?: number }> = ({ g, angry, blink = false, mouth = 0, tilt = 0 }) => (
-  <g transform={`translate(0,-300) rotate(${tilt})`}>
-    {/* halo */}
-    <g>
-      {Array.from({ length: 20 }).map((_, i) => (
-        <polygon key={i} points="-14,-96 14,-96 0,-136" fill={g.halo} transform={`rotate(${i * 18})`} />))}
-      <circle r={100} fill={g.halo} />
-      <circle r={86} fill="#14080a" />
+const Head: React.FC<{ g: God; angry: boolean; blink?: boolean; mouth?: number; tilt?: number; talking?: boolean; frame?: number }> = ({
+  g, angry, blink = false, mouth = 0, tilt = 0, talking = false, frame = 0
+}) => {
+  const browShift = talking ? Math.sin(frame / 3.8) * 3 : 0;
+  const kundalSway = Math.sin(frame / 16) * 3.5;
+  return (
+    <g transform={`translate(0,-300) rotate(${tilt})`}>
+      {/* halo */}
+      <g>
+        {Array.from({ length: 20 }).map((_, i) => (
+          <polygon key={i} points="-14,-96 14,-96 0,-136" fill={g.halo} transform={`rotate(${i * 18})`} />))}
+        <circle r={100} fill={g.halo} />
+        <circle r={86} fill="#14080a" />
+      </g>
+      {g.crown === 'ganesha' && (<path d="M-14,30 Q-10,120 40,110 Q70,100 56,70" fill="none" stroke={g.skin} strokeWidth={34} strokeLinecap="round" />)}
+
+      {/* Head base */}
+      <circle r={68} fill={g.skin} stroke={INK} strokeWidth={5} />
+
+      {/* Royal Kundal (Golden Drop Earrings with Ruby Stud) on both ears */}
+      {[-68, 68].map((ex, i) => (
+        <g key={i} transform={`translate(${ex}, 12) rotate(${i === 0 ? kundalSway : -kundalSway})`}>
+          <circle cx={0} cy={0} r={8} fill={GOLD} stroke={INK} strokeWidth={2.5} />
+          <circle cx={0} cy={0} r={3.5} fill="#c92a2a" />
+          <path d="M0,8 L-5,24 L0,29 L5,24 Z" fill={GOLD} stroke={INK} strokeWidth={2} />
+          <circle cx={0} cy={32} r={4.5} fill="#ffd700" />
+        </g>
+      ))}
+
+      {/* Crowns & Headgears */}
+      {g.crown === 'monkey' && <ellipse cx={0} cy={22} rx={42} ry={34} fill="#f6d9a0" stroke={INK} strokeWidth={3} />}
+      {g.crown === 'lion' && Array.from({ length: 14 }).map((_, i) => (
+        <polygon key={i} points="-12,-62 12,-62 0,-100" fill="#c2761a" transform={`rotate(${i * 25.7})`} />))}
+      {(g.crown === 'mukut' || g.crown === 'monkey' || g.crown === 'ganesha' || g.crown === 'ravan') && (
+        <g>
+          <polygon points="-44,-52 0,-170 44,-52" fill={GOLD} stroke={INK} strokeWidth={4} />
+          <polygon points="-28,-52 0,-140 28,-52" fill="#ffd700" opacity={0.8} />
+          <circle cx={0} cy={-100} r={9} fill="#d6336c" stroke={INK} strokeWidth={2} />
+          <circle cx={0} cy={-140} r={6} fill="#2f9e44" />
+        </g>
+      )}
+      {g.crown === 'royal_mukut' && (
+        <g>
+          <polygon points="-56,-52 -28,-180 0,-130 28,-180 56,-52" fill={GOLD} stroke={INK} strokeWidth={4} />
+          <circle cx={-28} cy={-120} r={8} fill="#2f9e44" stroke={INK} strokeWidth={2} />
+          <circle cx={28} cy={-120} r={8} fill="#2f9e44" stroke={INK} strokeWidth={2} />
+          <circle cx={0} cy={-85} r={12} fill="#c92a2a" stroke={INK} strokeWidth={2.5} />
+        </g>
+      )}
+      {g.crown === 'pagdi' && (
+        <g>
+          <ellipse cx={0} cy={-50} rx={66} ry={36} fill={g.cloth} stroke={INK} strokeWidth={4} />
+          <circle cx={0} cy={-55} r={11} fill={GOLD} stroke={INK} strokeWidth={2} />
+          <path d="M40,-50 Q60,-20 54,20" stroke={g.cloth} strokeWidth={16} fill="none" strokeLinecap="round" />
+        </g>
+      )}
+      {g.crown === 'bandana' && (
+        <g>
+          <path d="M-64,-30 Q0,-75 64,-30 L60,-55 Q0,-95 -60,-55 Z" fill="#2b3a1a" stroke={INK} strokeWidth={4} />
+        </g>
+      )}
+      {g.crown === 'guru' && (
+        <g>
+          <ellipse cx={0} cy={-60} rx={58} ry={38} fill="#231812" stroke={INK} strokeWidth={4} />
+          <circle cx={0} cy={-86} r={26} fill="#231812" stroke={INK} strokeWidth={4} />
+          {[-20, -10, 0, 10, 20].map((x, i) => (
+            <circle key={i} cx={x} cy={-70 + Math.abs(x) * 0.3} r={4.5} fill="#b05820" stroke={INK} strokeWidth={1.5} />
+          ))}
+        </g>
+      )}
+      {g.crown === 'ravan' && [-60, 60].map((x, i) => (
+        <polygon key={i} points={`${x - 26},-40 ${x},-130 ${x + 26},-40`} fill={GOLD} stroke={INK} strokeWidth={3} />))}
+      {g.crown === 'jata' && (<path d="M-60,-20 Q-70,-120 0,-130 Q70,-120 60,-20 Q30,-60 -60,-20" fill="#3a2a22" stroke={INK} strokeWidth={4} />)}
+      {g.crown === 'horns' && (<g><polygon points="-52,-40 -86,-130 -20,-62" fill="#e9ecef" stroke={INK} strokeWidth={3} />
+        <polygon points="52,-40 86,-130 20,-62" fill="#e9ecef" stroke={INK} strokeWidth={3} /></g>)}
+
+      {/* Realistic Almond-shaped Eyes with Iris and Specular Highlights */}
+      {blink ? (
+        <path d="M-38,-4 Q-24,6 -10,-4 M10,-4 Q24,6 38,-4" fill="none" stroke={INK} strokeWidth={5} strokeLinecap="round" />
+      ) : (
+        <g>
+          {[-24, 24].map((ex, i) => (
+            <g key={i}>
+              <path d={`M${ex - 15},-6 Q${ex},-17 ${ex + 15},-6 Q${ex},5 ${ex - 15},-6 Z`} fill="#ffffff" stroke={INK} strokeWidth={2.5} />
+              <ellipse cx={ex} cy={-6} rx={7} ry={6.5} fill={angry ? '#b91c1c' : '#1e293b'} />
+              <circle cx={ex} cy={-6} r={3.2} fill="#0f172a" />
+              <circle cx={ex + 2.2} cy={-8.5} r={2.2} fill="#ffffff" />
+            </g>
+          ))}
+        </g>
+      )}
+
+      {/* Expressive Eyebrows that Emote Dynamically */}
+      <path
+        d={angry
+          ? 'M-42,-24 L-8,-14 M42,-24 L8,-14'
+          : `M-40,${-22 + browShift} L-10,${-24 + browShift} M40,${-22 + browShift} L10,${-24 + browShift}`}
+        stroke={INK}
+        strokeWidth={5.5}
+        strokeLinecap="round"
+      />
+
+      {/* Realistic Speech Mouth with Lip Contours */}
+      {mouth > 0.12 ? (
+        <g transform="translate(0, 36)">
+          <path
+            d={`M${-12 - mouth * 5},0 Q0,${-6 - mouth * 4} ${12 + mouth * 5},0 Q0,${14 + mouth * 16} ${-12 - mouth * 5},0 Z`}
+            fill="#3b0a0a"
+            stroke={INK}
+            strokeWidth={2.5}
+          />
+          <path d={`M${-8 - mouth * 2},-1 Q0,${-3} ${8 + mouth * 2},-1`} stroke="#ffffff" strokeWidth={2.5} strokeLinecap="round" />
+          <ellipse cx={0} cy={6 + mouth * 6} rx={6 + mouth * 3} ry={3 + mouth * 3} fill="#d6336c" />
+          <path d={`M${-14 - mouth * 5},-2 Q0,${-7} ${14 + mouth * 5},-2`} fill="none" stroke="#a3182d" strokeWidth={2} />
+        </g>
+      ) : (
+        <g transform="translate(0, 34)">
+          <path d={angry ? 'M-18,6 Q0,-4 18,6' : 'M-18,-2 Q0,10 18,-2'} fill="none" stroke={INK} strokeWidth={4.5} strokeLinecap="round" />
+          <path d="M-10,-4 Q0,-2 10,-4" fill="none" stroke="#a3182d" strokeWidth={2} />
+        </g>
+      )}
+
+      {/* Tilak / Tripund */}
+      {g.crown === 'guru' ? (
+        <g>
+          <line x1={-18} y1={-32} x2={18} y2={-32} stroke="#ffffff" strokeWidth={3} />
+          <line x1={-18} y1={-26} x2={18} y2={-26} stroke="#ffffff" strokeWidth={3} />
+          <circle cx={0} cy={-29} r={4} fill="#e03131" />
+        </g>
+      ) : (
+        <path d="M-8,-30 L8,-30 L0,-44 Z" fill="#e03131" opacity={0.85} />
+      )}
+
+      {/* Mustache */}
+      {(g.mustache || g.beard) && (
+        <path d="M-34,22 Q-14,32 0,22 Q14,32 34,22 Q24,13 0,16 Q-24,13 -34,22 Z" fill="#231812" stroke={INK} strokeWidth={2.5} />
+      )}
+
+      {/* Long Pointed Guru/Rishi Beard */}
+      {g.beard && (
+        <path d="M-44,22 Q-32,150 0,185 Q32,150 44,22 Q28,50 0,55 Q-28,50 -44,22 Z" fill="#231812" stroke={INK} strokeWidth={4} />
+      )}
     </g>
-    {g.crown === 'ganesha' && (<path d="M-14,30 Q-10,120 40,110 Q70,100 56,70" fill="none" stroke={g.skin} strokeWidth={34} strokeLinecap="round" />)}
-    <circle r={68} fill={g.skin} stroke={INK} strokeWidth={5} />
-    {g.crown === 'monkey' && <ellipse cx={0} cy={22} rx={42} ry={34} fill="#f6d9a0" stroke={INK} strokeWidth={3} />}
-    {g.crown === 'lion' && Array.from({ length: 14 }).map((_, i) => (
-      <polygon key={i} points="-12,-62 12,-62 0,-100" fill="#c2761a" transform={`rotate(${i * 25.7})`} />))}
-    {/* crowns & headgears */}
-    {(g.crown === 'mukut' || g.crown === 'monkey' || g.crown === 'ganesha' || g.crown === 'ravan') && (
-      <g><polygon points="-44,-52 0,-170 44,-52" fill={GOLD} stroke={INK} strokeWidth={4} />
-        <circle cx={0} cy={-100} r={9} fill="#d6336c" /></g>)}
-    {g.crown === 'royal_mukut' && (
-      <g>
-        <polygon points="-56,-52 -28,-180 0,-130 28,-180 56,-52" fill={GOLD} stroke={INK} strokeWidth={4} />
-        <circle cx={0} cy={-85} r={12} fill="#c92a2a" />
-      </g>
-    )}
-    {g.crown === 'pagdi' && (
-      <g>
-        <ellipse cx={0} cy={-50} rx={66} ry={36} fill={g.cloth} stroke={INK} strokeWidth={4} />
-        <circle cx={0} cy={-55} r={11} fill={GOLD} />
-        <path d="M40,-50 Q60,-20 54,20" stroke={g.cloth} strokeWidth={16} fill="none" strokeLinecap="round" />
-      </g>
-    )}
-    {g.crown === 'bandana' && (
-      <g>
-        <path d="M-64,-30 Q0,-75 64,-30 L60,-55 Q0,-95 -60,-55 Z" fill="#2b3a1a" stroke={INK} strokeWidth={4} />
-      </g>
-    )}
-    {g.crown === 'guru' && (
-      <g>
-        <ellipse cx={0} cy={-60} rx={58} ry={38} fill="#231812" stroke={INK} strokeWidth={4} />
-        <circle cx={0} cy={-86} r={26} fill="#231812" stroke={INK} strokeWidth={4} />
-        {/* Rudraksha mala on bun */}
-        {[-20, -10, 0, 10, 20].map((x, i) => (
-          <circle key={i} cx={x} cy={-70 + Math.abs(x) * 0.3} r={4.5} fill="#b05820" stroke={INK} strokeWidth={1.5} />
+  );
+};
+
+/* ───────────────────────── ROYAL DHWAJA (सaffron / Royal Banners) ───────────────────────── */
+const FlutteringDhwaja: React.FC<{ x: number; y: number; h?: number; color?: string; frame: number }> = ({
+  x, y, h = 320, color = '#ff6b1a', frame
+}) => {
+  const wave1 = Math.sin(frame / 6.5) * 14;
+  const wave2 = Math.sin(frame / 7.8 + 1.2) * 10;
+  return (
+    <g transform={`translate(${x}, ${y})`}>
+      <line x1={0} y1={-h} x2={0} y2={0} stroke="#4a2e18" strokeWidth={7} strokeLinecap="round" />
+      <polygon points={`0,${-h - 26} -10,${-h} 10,${-h}`} fill={GOLD} stroke={INK} strokeWidth={2} />
+      <circle cx={0} cy={-h} r={6.5} fill="#ffd700" />
+      <path
+        d={`M0,${-h + 6} Q${60 + wave1},${-h + 12 + wave2} 160,${-h + 20 + wave1} L120,${-h + 58} L170,${-h + 88 + wave2} Q${60 + wave2},${-h + 78 + wave1} 0,${-h + 98} Z`}
+        fill={color}
+        stroke="#9a2a0a"
+        strokeWidth={3}
+      />
+      <circle cx={44} cy={-h + 48} r={13} fill="#ffd700" opacity={0.88} />
+      <circle cx={44} cy={-h + 48} r={6} fill="#c92a2a" />
+    </g>
+  );
+};
+
+/* ───────────────────────── ROYAL ELEPHANT (शाही ऐरावत / हाथी) ───────────────────────── */
+const RoyalElephant: React.FC<{ x: number; y: number; scale?: number; flip?: boolean; frame: number }> = ({
+  x, y, scale = 1, flip = false, frame
+}) => {
+  const trunkLift = Math.sin(frame / 14) * 12;
+  const earFlap = Math.sin(frame / 12) * 7;
+  const tailSway = Math.sin(frame / 10) * 8;
+  return (
+    <g transform={`translate(${x}, ${y}) scale(${flip ? -scale : scale}, ${scale})`}>
+      {/* Silky tail */}
+      <path d={`M-160,-120 Q-190,${-40 + tailSway} -180,20`} stroke="#3b3e45" strokeWidth={8} fill="none" strokeLinecap="round" />
+      {/* Back legs */}
+      <rect x={-140} y={-40} width={48} height={180} rx={18} fill="#464a52" stroke={INK} strokeWidth={4} />
+      <rect x={-80} y={-40} width={48} height={180} rx={18} fill="#3b3e45" stroke={INK} strokeWidth={4} />
+      {/* Massive elephant torso */}
+      <ellipse cx={-20} cy={-90} rx={160} ry={120} fill="#545861" stroke={INK} strokeWidth={5} />
+      {/* Front legs */}
+      <rect x={40} y={-40} width={52} height={180} rx={18} fill="#464a52" stroke={INK} strokeWidth={4} />
+      <rect x={100} y={-40} width={52} height={180} rx={18} fill="#545861" stroke={INK} strokeWidth={4} />
+      {[-130, -112, 110, 130].map((nx, i) => (
+        <circle key={i} cx={nx} cy={135} r={6} fill="#f1f3f5" />
+      ))}
+      {/* Royal Jhul (Embroidered saddle blanket with gold tassels) */}
+      <path d="M-110,-140 Q-20,-155 70,-140 L85,-10 Q-20,15 -115,-10 Z" fill="#801020" stroke={GOLD} strokeWidth={5} />
+      <path d="M-95,-120 Q-20,-130 55,-120 L65,-20 Q-20,0 -95,-20 Z" fill="#9e182a" />
+      {[-60, -20, 20].map((dx, i) => (
+        <polygon key={i} points={`${dx},-70 ${dx + 16},-50 ${dx},-30 ${dx - 16},-50`} fill={GOLD} stroke={INK} strokeWidth={2} />
+      ))}
+      {[-100, -70, -40, -10, 20, 50, 75].map((bx, i) => (
+        <circle key={i} cx={bx} cy={0} r={5} fill={GOLD} stroke={INK} strokeWidth={1.5} />
+      ))}
+      {/* Golden Howdah (शाही अंबारी) on back */}
+      <g transform="translate(-20, -170)">
+        <rect x={-65} y={-40} width={130} height={45} rx={8} fill={GOLD} stroke={INK} strokeWidth={4} />
+        {[-45, -20, 5, 30].map((rx, i) => (
+          <line key={i} x1={rx} y1={-40} x2={rx} y2={-10} stroke="#9e7c10" strokeWidth={3} />
         ))}
+        <rect x={-55} y={-35} width={110} height={20} fill="#701222" rx={4} />
+        <line x1={-60} y1={-90} x2={-60} y2={-40} stroke="#5c4018" strokeWidth={4} />
+        <path d={`M-60,-90 Q-30,${-95 + Math.sin(frame / 7) * 8} 0,${-90 + Math.sin(frame / 7) * 6} L-20,-70 Q-40,-72 -60,-65 Z`} fill="#ff7a00" />
       </g>
-    )}
-    {g.crown === 'ravan' && [-60, 60].map((x, i) => (
-      <polygon key={i} points={`${x - 26},-40 ${x},-130 ${x + 26},-40`} fill={GOLD} stroke={INK} strokeWidth={3} />))}
-    {g.crown === 'jata' && (<path d="M-60,-20 Q-70,-120 0,-130 Q70,-120 60,-20 Q30,-60 -60,-20" fill="#3a2a22" stroke={INK} strokeWidth={4} />)}
-    {g.crown === 'horns' && (<g><polygon points="-52,-40 -86,-130 -20,-62" fill="#e9ecef" stroke={INK} strokeWidth={3} />
-      <polygon points="52,-40 86,-130 20,-62" fill="#e9ecef" stroke={INK} strokeWidth={3} /></g>)}
-    {/* face */}
-    {blink ? (
-      <path d="M-38,-5 Q-24,3 -10,-5 M10,-5 Q24,3 38,-5" fill="none" stroke={INK} strokeWidth={5} strokeLinecap="round" />
-    ) : (
-      <g>
-        <circle cx={-24} cy={-6} r={13} fill="#fff" /><circle cx={24} cy={-6} r={13} fill="#fff" />
-        <circle cx={-24} cy={-4} r={6} fill={angry ? '#e03131' : '#222'} /><circle cx={24} cy={-4} r={6} fill={angry ? '#e03131' : '#222'} />
+      {/* Elephant Head & Tusks */}
+      <g transform="translate(140, -110)">
+        <circle cx={0} cy={0} r={70} fill="#545861" stroke={INK} strokeWidth={5} />
+        <polygon points="-30,-40 30,-40 20,10 -20,10" fill={GOLD} stroke={INK} strokeWidth={3} />
+        <circle cx={0} cy={-15} r={9} fill="#c92a2a" stroke={INK} strokeWidth={2} />
+        <path d="M20,20 Q60,40 85,0 Q65,-10 30,10 Z" fill="#fffdf0" stroke={INK} strokeWidth={3} />
+        <rect x={42} y={14} width={8} height={14} rx={2} fill={GOLD} transform="rotate(25 42 14)" />
+        <path
+          d={`M15,30 Q${40 + trunkLift},80 ${30 + trunkLift},140 Q${65 + trunkLift},160 ${80 + trunkLift},130 Q${55 + trunkLift},100 ${35 + trunkLift},30 Z`}
+          fill="#545861"
+          stroke={INK}
+          strokeWidth={4.5}
+        />
+        <circle cx={10} cy={-20} r={6} fill="#ffffff" stroke={INK} strokeWidth={2} />
+        <circle cx={11} cy={-20} r={3} fill="#212529" />
+        <path
+          d={`M-30,-30 Q${-90 + earFlap},-40 ${-75 + earFlap},30 Q${-40 + earFlap},60 -15,20 Z`}
+          fill="#464a52"
+          stroke={INK}
+          strokeWidth={4}
+        />
       </g>
-    )}
-    <path d={angry ? 'M-42,-26 L-8,-14 M42,-26 L8,-14' : 'M-40,-22 L-10,-24 M40,-22 L10,-24'} stroke={INK} strokeWidth={6} strokeLinecap="round" />
-    {mouth > 0.12 ? (
-      <ellipse cx={0} cy={36} rx={13 + mouth * 5} ry={3 + mouth * 14} fill="#4a0d0d" stroke={INK} strokeWidth={3} />
-    ) : (
-      <path d={angry ? 'M-18,38 Q0,28 18,38' : 'M-18,32 Q0,44 18,32'} fill="none" stroke={INK} strokeWidth={5} strokeLinecap="round" />
-    )}
+    </g>
+  );
+};
 
-    {/* Tilak / Tripund */}
-    {g.crown === 'guru' ? (
-      <g>
-        <line x1={-18} y1={-32} x2={18} y2={-32} stroke="#ffffff" strokeWidth={3} />
-        <line x1={-18} y1={-26} x2={18} y2={-26} stroke="#ffffff" strokeWidth={3} />
-        <circle cx={0} cy={-29} r={4} fill="#e03131" />
+/* ───────────────────────── ROYAL WAR HORSE (शाही युद्ध अश्व / घोड़ा) ───────────────────────── */
+const RoyalHorse: React.FC<{ x: number; y: number; scale?: number; flip?: boolean; frame: number }> = ({
+  x, y, scale = 1, flip = false, frame
+}) => {
+  const tailWave = Math.sin(frame / 8) * 10;
+  const headBob = Math.sin(frame / 14) * 4;
+  return (
+    <g transform={`translate(${x}, ${y}) scale(${flip ? -scale : scale}, ${scale})`}>
+      <path d={`M-130,-50 Q-170,${0 + tailWave} -150,60`} stroke="#1a110b" strokeWidth={14} fill="none" strokeLinecap="round" />
+      <path d="M-105,-40 L-120,40 L-100,140" stroke="#8a4b24" strokeWidth={22} fill="none" strokeLinecap="round" />
+      <path d="M-60,-40 L-75,40 L-60,140" stroke="#6d3918" strokeWidth={20} fill="none" strokeLinecap="round" />
+      <rect x={-112} y={130} width={24} height={14} rx={4} fill="#1a110b" />
+      <rect x={-72} y={130} width={24} height={14} rx={4} fill="#1a110b" />
+      <ellipse cx={-10} cy={-30} rx={115} ry={60} fill="#8a4b24" stroke={INK} strokeWidth={4.5} />
+      <path d="M40,-30 L55,40 L50,140" stroke="#6d3918" strokeWidth={20} fill="none" strokeLinecap="round" />
+      <path d="M85,-30 L95,40 L90,140" stroke="#8a4b24" strokeWidth={22} fill="none" strokeLinecap="round" />
+      <rect x={38} y={130} width={24} height={14} rx={4} fill="#1a110b" />
+      <rect x={78} y={130} width={24} height={14} rx={4} fill="#1a110b" />
+      <rect x={-45} y={-72} width={70} height={24} rx={8} fill="#701222" stroke={GOLD} strokeWidth={3} />
+      <path d="M-30,-48 L-15,10" stroke={GOLD} strokeWidth={4} />
+      <circle cx={-15} cy={14} r={6} fill={GOLD} />
+      <g transform={`translate(0, ${headBob})`}>
+        <path d="M50,-40 Q90,-100 115,-130 L155,-90 Q120,-30 80,-10 Z" fill="#8a4b24" stroke={INK} strokeWidth={4} />
+        <path d="M60,-55 Q95,-105 110,-130" stroke="#1a110b" strokeWidth={16} fill="none" strokeLinecap="round" />
+        <polygon points="110,-140 155,-160 175,-120 135,-95" fill="#8a4b24" stroke={INK} strokeWidth={4} />
+        <polygon points="120,-145 130,-175 140,-150" fill="#6d3918" stroke={INK} strokeWidth={2.5} />
+        <line x1={130} y1={-150} x2={165} y2={-115} stroke={GOLD} strokeWidth={3.5} />
+        <line x1={140} y1={-130} x2={175} y2={-125} stroke={GOLD} strokeWidth={3.5} />
+        <circle cx={155} cy={-120} r={5} fill="#ffd700" />
+        <circle cx={145} cy={-135} r={5} fill="#ffffff" />
+        <circle cx={146} cy={-135} r={2.8} fill="#1a110b" />
       </g>
-    ) : (
-      <path d="M-8,-30 L8,-30 L0,-44 Z" fill="#e03131" opacity={0.85} />
-    )}
+    </g>
+  );
+};
 
-    {/* Mustache */}
-    {(g.mustache || g.beard) && (
-      <path d="M-34,22 Q-14,32 0,22 Q14,32 34,22 Q24,13 0,16 Q-24,13 -34,22 Z" fill="#231812" stroke={INK} strokeWidth={2.5} />
-    )}
-
-    {/* Long Pointed Guru/Rishi Beard (Sanatan Unfold Style) */}
-    {g.beard && (
-      <path d="M-44,22 Q-32,150 0,185 Q32,150 44,22 Q28,50 0,55 Q-28,50 -44,22 Z" fill="#231812" stroke={INK} strokeWidth={4} />
-    )}
+/* ───────────────────────── TEMPLE VIMANA & ARCHITECTURE (भव्य पाषाण मंदिर) ───────────────────────── */
+const TempleVimana: React.FC<{ x: number; y: number; frame: number }> = ({ x, y, frame }) => (
+  <g transform={`translate(${x}, ${y})`}>
+    <path d="M-220,1200 L-220,950 L220,950 L220,1200 Z" fill="#442a1d" stroke="#25140b" strokeWidth={6} />
+    <path d="M-180,950 L-180,780 L180,780 L180,950 Z" fill="#523424" stroke="#25140b" strokeWidth={5} />
+    <path d="M-140,780 L-140,620 L140,620 L140,780 Z" fill="#5f3d2b" stroke="#25140b" strokeWidth={5} />
+    <path d="M-100,620 L-100,480 L100,480 L100,620 Z" fill="#6d4733" stroke="#25140b" strokeWidth={5} />
+    <path d="M-70,480 Q-50,320 0,260 Q50,320 70,480 Z" fill="#7d523c" stroke="#25140b" strokeWidth={5} />
+    <ellipse cx={0} cy={260} rx={42} ry={16} fill="#b8860b" stroke={INK} strokeWidth={3} />
+    <path d="M-16,260 L-8,210 L8,210 L16,260 Z" fill={GOLD} stroke={INK} strokeWidth={2.5} />
+    <circle cx={0} cy={200} r={12} fill="#ffd700" stroke={INK} strokeWidth={2} />
+    <polygon points="0,175 -6,200 6,200" fill={GOLD} />
+    <FlutteringDhwaja x={0} y={175} h={140} color="#ff6b1a" frame={frame} />
+    {[-120, 0, 120].map((gx, i) => (
+      <path key={i} d={`M${gx - 20},930 Q${gx},880 ${gx + 20},930 Z`} fill="#2a160c" />
+    ))}
+    {[-80, 0, 80].map((gx, i) => (
+      <path key={i} d={`M${gx - 16},760 Q${gx},720 ${gx + 16},760 Z`} fill="#2a160c" />
+    ))}
+    {[-40, 40].map((gx, i) => (
+      <path key={i} d={`M${gx - 12},600 Q${gx},570 ${gx + 12},600 Z`} fill="#2a160c" />
+    ))}
+    {[-200, -100, 100, 200].map((px, i) => {
+      const bellSway = Math.sin(frame / 16 + i) * 6;
+      return (
+        <g key={i}>
+          <rect x={px - 14} y={950} width={28} height={250} fill="#5a3826" stroke="#25140b" strokeWidth={3.5} />
+          <rect x={px - 22} y={950} width={44} height={16} fill={GOLD} opacity={0.6} />
+          <g transform={`translate(${px}, 980) rotate(${bellSway})`}>
+            <line x1={0} y1={0} x2={0} y2={35} stroke={GOLD} strokeWidth={3} />
+            <path d="M-14,35 Q-16,65 -22,70 L22,70 Q16,65 14,35 Z" fill="#d49b13" stroke={INK} strokeWidth={2.5} />
+            <circle cx={0} cy={74} r={5} fill={GOLD} />
+          </g>
+          <g transform={`translate(${px}, 1130)`}>
+            <ellipse cx={0} cy={0} rx={14} ry={5} fill="#8b5a2b" stroke={INK} strokeWidth={2} />
+            <ellipse cx={0} cy={-12 + Math.sin(frame / 4 + i) * 2} rx={6} ry={14} fill="#ff922b" />
+            <circle cx={0} cy={-10} r={4} fill="#ffe066" />
+          </g>
+        </g>
+      );
+    })}
   </g>
 );
 
 /* ───────────────────────── ROYAL THRONE (सिंहासन) ───────────────────────── */
 const RoyalThrone: React.FC<{ isPalace?: boolean }> = () => (
   <g transform="translate(0, 10)">
-    {/* Grand Golden Throne Backrest (High arch with sun-burst & ruby crest) */}
     <path
       d="M-135,20 L-135,-250 Q-135,-370 0,-425 Q135,-370 135,-250 L135,20 Z"
       fill="#b8860b"
@@ -374,7 +607,6 @@ const RoyalThrone: React.FC<{ isPalace?: boolean }> = () => (
       stroke={INK}
       strokeWidth={3}
     />
-    {/* Sun-burst / Peacock crest rays */}
     {Array.from({ length: 11 }).map((_, i) => {
       const ang = -60 + i * 12;
       return (
@@ -391,35 +623,27 @@ const RoyalThrone: React.FC<{ isPalace?: boolean }> = () => (
       );
     })}
     <circle cx={0} cy={-400} r={16} fill="#c92a2a" stroke={INK} strokeWidth={3} />
-    {/* Luxurious crimson velvet back cushion */}
     <path
       d="M-88,15 L-88,-200 Q-88,-295 0,-340 Q88,-295 88,-200 L88,15 Z"
       fill="#7a1222"
       stroke={INK}
       strokeWidth={3}
     />
-    {/* Quilted diamond tufting lines on crimson velvet */}
     {[-50, -25, 0, 25, 50].map((x, i) => (
       <line key={i} x1={x} y1={-250 + Math.abs(x) * 1.2} x2={x} y2={10} stroke="#a3182d" strokeWidth={2} />
     ))}
-    {/* Carved Lion / Elephant Armrests */}
     <g>
-      {/* Left armrest */}
       <rect x={-152} y={-85} width={34} height={100} rx={12} fill={GOLD} stroke={INK} strokeWidth={4} />
       <circle cx={-135} cy={-90} r={18} fill="#ffd700" stroke={INK} strokeWidth={3} />
       <circle cx={-135} cy={-90} r={7} fill="#c92a2a" />
-      {/* Right armrest */}
       <rect x={118} y={-85} width={34} height={100} rx={12} fill={GOLD} stroke={INK} strokeWidth={4} />
       <circle cx={135} cy={-90} r={18} fill="#ffd700" stroke={INK} strokeWidth={3} />
       <circle cx={135} cy={-90} r={7} fill="#c92a2a" />
     </g>
-    {/* Ornate throne seat cushion */}
     <rect x={-135} y={-12} width={270} height={46} rx={14} fill="#8b1525" stroke={INK} strokeWidth={4} />
     <rect x={-128} y={-6} width={256} height={10} fill={GOLD} opacity={0.85} />
-    {/* Multi-tiered golden lion pedestal / foot base */}
     <path d="M-150,34 L150,34 L170,110 L-170,110 Z" fill="#b8860b" stroke={INK} strokeWidth={5} />
     <path d="M-140,42 L140,42 L155,102 L-155,102 Z" fill="#ffd700" stroke={INK} strokeWidth={2} />
-    {/* Lotus petal carvings on pedestal base */}
     {[-110, -55, 0, 55, 110].map((px, i) => (
       <path key={i} d={`M${px - 22},102 Q${px},70 ${px + 22},102 Z`} fill="#d49b13" stroke={INK} strokeWidth={2} />
     ))}
@@ -431,14 +655,12 @@ const ENTER_FRAMES = 50;
 const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: number }> = ({ a, frame, talking = false, idx = 0 }) => {
   const g = ROSTER[a.who as string] ?? ROSTER.krishna;
   const dir = a.enter === 'left' ? -1 : a.enter === 'right' ? 1 : 0;
-  // Entrance: actor WALKS in from screen edge slowly with majestic gait
   const entering = dir !== 0 && frame < ENTER_FRAMES && a.pose !== 'fly' && a.pose !== 'sit';
   const pose: Pose = entering ? 'walk' : a.pose;
   const P = POSES[pose] ?? POSES.stand;
-  const sc = (a.scale ?? 1) * 0.70; // Character scaled down so entire grand background & scene are visible
+  const sc = (a.scale ?? 1) * 0.70;
   const ground = a.y ?? 1360;
 
-  // in fight scenes, warrior MUST hold a weapon (gada, sword, bow, chakra, trishul)
   const weapon: Weapon = (a.weapon && a.weapon !== 'none')
     ? a.weapon
     : (g.weapon && g.weapon !== 'none')
@@ -448,24 +670,36 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
   const angry = a.angry ?? pose === 'fight';
   const idle = Math.sin(frame / 9 + idx);
 
-  // Slow, regal walking animation (frame / 7.5 instead of fast frame / 3)
+  // Natural human-like walking animation
   const explicitTravel = a.pose === 'walk' && !entering ? Math.min(frame * 0.9, 240) : 0;
   const walkingNow = pose === 'walk' && (entering || frame * 0.9 < 240);
-  const walkPhase = walkingNow ? Math.sin(frame / 7.5) * 16 : 0;
 
-  // In fight scenes: body stays firmly grounded (no sliding), only striking arms swing dynamically!
-  const swing = pose === 'fight' ? Math.sin(frame / 4.2) * 65 : walkingNow ? -walkPhase : idle * 4;
-  const bob = pose === 'fly' ? Math.sin(frame / 7) * 22 : pose === 'sit' ? Math.sin(frame / 14) * 3 : walkingNow ? Math.abs(Math.sin(frame / 7.5)) * 6 : idle * 2.5;
+  const walkSpeed = 5.2;
+  const walkStep = frame / walkSpeed;
+  const humanLegL = walkingNow ? Math.sin(walkStep) * 26 : 0;
+  const humanLegR = walkingNow ? -Math.sin(walkStep) * 26 : 0;
+  const humanKneeL = walkingNow && humanLegL < 0 ? Math.abs(humanLegL) * 0.65 : 0;
+  const humanKneeR = walkingNow && humanLegR < 0 ? Math.abs(humanLegR) * 0.65 : 0;
+  const humanFootL = walkingNow ? (humanLegL > 0 ? -10 : 12) : 0;
+  const humanFootR = walkingNow ? (humanLegR > 0 ? -10 : 12) : 0;
+
+  // Opposite arm swing during human walking
+  const humanArmSwingL = walkingNow ? -Math.sin(walkStep) * 28 : (pose === 'fight' ? 25 : idle * 4);
+  const humanArmSwingR = walkingNow ? Math.sin(walkStep) * 28 : (pose === 'fight' ? Math.sin(frame / 4.2) * 65 : idle * 4);
+
+  // Human vertical bounce (bobbing twice per step cycle)
+  const humanBob = walkingNow ? Math.abs(Math.sin(walkStep)) * 8 : pose === 'fly' ? Math.sin(frame / 7) * 22 : pose === 'sit' ? Math.sin(frame / 14) * 3 : idle * 2.5;
+  const humanTorsoSway = walkingNow ? Math.sin(walkStep) * 2.2 : pose === 'fight' || pose === 'fly' ? 0 : Math.sin(frame / 27 + idx) * 1.4;
+
   const sitDrop = pose === 'sit' ? 120 : 0;
   const flyRot = pose === 'fly' ? 72 : 0;
   const lift = pose === 'fly' ? -260 : 0;
 
-  // life: natural gestures while speaking, subtle body sway, blinking, mouth flaps, head tilt
-  const gest = talking || pose === 'talk' || pose === 'point' ? Math.sin(frame / 5 + idx * 2) * 9 : 0;
-  const sway = pose === 'fight' || pose === 'fly' ? 0 : Math.sin(frame / 27 + idx) * 1.4;
+  // Emotional gestures while speaking
+  const gest = talking || pose === 'talk' || pose === 'point' ? Math.sin(frame / 4.5 + idx * 2) * 10 : 0;
   const blink = (frame + idx * 17) % 96 < 4;
-  const mouth = talking ? Math.abs(Math.sin(frame / 2.3 + idx)) * (0.55 + 0.45 * Math.sin(frame / 6.1)) : 0;
-  const tilt = Math.sin(frame / 23 + idx * 1.3) * 2.2 + (talking ? Math.sin(frame / 4) * 1.6 : 0);
+  const mouth = talking ? Math.abs(Math.sin(frame / 2.2 + idx)) * (0.6 + 0.4 * Math.sin(frame / 5.8)) : 0;
+  const tilt = Math.sin(frame / 23 + idx * 1.3) * 2.2 + (talking ? Math.sin(frame / 4) * 2 : 0);
 
   const faceLeft = entering ? dir > 0 : !!a.flip;
   const dirFace = faceLeft ? -1 : 1;
@@ -473,38 +707,47 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
   let enterX = 0;
   if (entering) {
     const p = Math.min(1, frame / ENTER_FRAMES);
-    enterX = Math.pow(1 - p, 2.5) * dir * 380; // majestic slow ease-in
+    enterX = Math.pow(1 - p, 2.5) * dir * 380;
   }
-  // In fight scenes, feet are planted firmly: lungeX is 0!
-  const lungeX = 0;
-  const posX = a.x + walkDelta + lungeX + enterX;
+  const posX = a.x + walkDelta + enterX;
 
   const body = (
-    <g transform={`translate(0,${sitDrop + bob}) rotate(${flyRot + sway} 0 0)`}>
-      {/* Royal Throne (सिंहासन) rendered behind character when seated */}
+    <g transform={`translate(0,${sitDrop + humanBob}) rotate(${flyRot + humanTorsoSway} 0 0)`}>
       {pose === 'sit' && <RoyalThrone />}
 
-      {/* aura for flying */}
       {pose === 'fly' && [0, 1, 2, 3].map((i) => (
         <line key={i} x1={-60 - ((frame * 22 + i * 90) % 360)} y1={-180 + i * 110} x2={-160 - ((frame * 22 + i * 90) % 360)} y2={-180 + i * 110}
           stroke="#fff" strokeOpacity={0.5} strokeWidth={6} strokeLinecap="round" />))}
 
-      {/* legs / sitting base */}
+      {/* Legs with natural human knee & ankle articulation */}
       {pose === 'sit' ? (
         <g>
-          {/* Folded legs sitting majestically on the golden throne */}
           <ellipse cx={0} cy={22} rx={160} ry={42} fill={g.cloth} stroke={INK} strokeWidth={4} />
           <ellipse cx={0} cy={50} rx={110} ry={20} fill={g.skin} stroke={INK} strokeWidth={4} />
           <rect x={-75} y={40} width={24} height={8} rx={4} fill={GOLD} stroke={INK} strokeWidth={2} />
           <rect x={51} y={40} width={24} height={8} rx={4} fill={GOLD} stroke={INK} strokeWidth={2} />
         </g>
       ) : (
-        [-1, 1].map((s) => (
-          <g key={s} transform={`translate(${s * 38},-6) rotate(${s < 0 ? P.lL + (pose === 'fight' ? 12 : swing * 0.2) + (walkingNow ? walkPhase : 0) : P.lR - (pose === 'fight' ? 12 : swing * 0.2) - (walkingNow ? walkPhase : 0)})`}>
-            <rect x={-22} y={0} width={44} height={226} rx={22} fill={g.skin} stroke={INK} strokeWidth={4} />
-            <rect x={-26} y={176} width={52} height={14} rx={7} fill={GOLD} />
-            <ellipse cx={s * 6} cy={228} rx={34} ry={14} fill="#3a2418" />
-          </g>))
+        [-1, 1].map((s) => {
+          const legSwing = s < 0 ? humanLegL : humanLegR;
+          const kneeBend = s < 0 ? humanKneeL : humanKneeR;
+          const footAngle = s < 0 ? humanFootL : humanFootR;
+          const baseRot = s < 0 ? P.lL : P.lR;
+          const totalHip = baseRot + legSwing;
+          return (
+            <g key={s} transform={`translate(${s * 36},-6) rotate(${totalHip})`}>
+              <rect x={-20} y={0} width={40} height={118} rx={20} fill={g.skin} stroke={INK} strokeWidth={4} />
+              <g transform={`translate(0, 108) rotate(${kneeBend})`}>
+                <rect x={-18} y={0} width={36} height={116} rx={18} fill={g.skin} stroke={INK} strokeWidth={4} />
+                <rect x={-22} y={92} width={44} height={14} rx={7} fill={GOLD} stroke={INK} strokeWidth={2} />
+                <g transform={`translate(${s * 4}, 114) rotate(${footAngle})`}>
+                  <ellipse cx={0} cy={6} rx={34} ry={13} fill="#2d1a10" stroke={INK} strokeWidth={3} />
+                  <path d="M-12,4 Q0,-2 12,4" stroke={GOLD} strokeWidth={2.5} />
+                </g>
+              </g>
+            </g>
+          );
+        })
       )}
 
       {/* back arms (4-armed gods) */}
@@ -515,23 +758,31 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
 
       {/* torso + cloth */}
       <path d="M-78,-215 L78,-215 L64,-4 L-64,-4 Z" fill={g.skin} stroke={INK} strokeWidth={5} />
-      {/* Janeu (sacred thread) */}
       {g.janeu && (
         <line x1={-54} y1={-215} x2={44} y2={-4} stroke="#ffffff" strokeWidth={4} opacity={0.9} />
       )}
-      {/* Shoulder sash (chadar) */}
       {g.sash && (
         <path d="M-78,-215 L-32,-215 L-14,-4 L-64,-4 Z" fill={g.sash} stroke={INK} strokeWidth={3} />
       )}
-      <path d={g.long ? 'M-74,-120 L74,-120 L120,215 L-120,215 Z' : 'M-70,-14 L70,-14 L56,150 L0,200 L-56,150 Z'} fill={g.cloth} stroke={INK} strokeWidth={5} />
-      <rect x={-72} y={-24} width={144} height={22} rx={8} fill={GOLD} stroke={INK} strokeWidth={3} />
-      <path d="M-70,-215 L70,-215 L0,-100 Z" fill="#ffffff" opacity={0.15} />
-      <circle cx={0} cy={-150} r={14} fill={GOLD} />
 
-      {/* main arms: left arm balances, right arm strikes with weapon */}
-      <Arm sx={-80} a={P.aL + (pose === 'fight' ? 25 : swing * 0.6) + gest * 0.5} b={P.bL} skin={g.skin} weapon="none" frame={frame} />
-      <Arm sx={80} a={P.aR + swing + gest} b={P.bR} skin={g.skin} weapon={weapon} frame={frame} />
-      <Head g={g} angry={angry} blink={blink} mouth={mouth} tilt={tilt} />
+      {/* Dhoti / Pitambar with Gold Embroidered Borders and Pleats */}
+      <path d={g.long ? 'M-74,-120 L74,-120 L120,215 L-120,215 Z' : 'M-70,-14 L70,-14 L56,150 L0,200 L-56,150 Z'} fill={g.cloth} stroke={INK} strokeWidth={5} />
+      <path d="M-66,-10 L66,-10 L52,142 L0,192 L-52,142 Z" fill="none" stroke={GOLD} strokeWidth={3} opacity={0.85} />
+      <path d="M-18,-14 L18,-14 L12,175 L0,190 L-12,175 Z" fill={GOLD} stroke={INK} strokeWidth={2.5} />
+      <rect x={-72} y={-24} width={144} height={22} rx={8} fill={GOLD} stroke={INK} strokeWidth={3} />
+
+      {/* Royal Jeweled Kanthi Haar (Necklace with ruby and gold beads) */}
+      <g transform="translate(0, -210)">
+        <path d="M-42,10 Q0,50 42,10" fill="none" stroke={GOLD} strokeWidth={5} />
+        {[-30, -15, 0, 15, 30].map((nx, i) => (
+          <circle key={i} cx={nx} cy={20 + (1 - Math.abs(nx) / 45) * 16} r={4.5} fill={i % 2 ? '#c92a2a' : '#ffd700'} stroke={INK} strokeWidth={1.5} />
+        ))}
+      </g>
+
+      {/* main arms with alternating human walking swing and gestures */}
+      <Arm sx={-80} a={P.aL + humanArmSwingL + gest * 0.5} b={P.bL} skin={g.skin} weapon="none" frame={frame} />
+      <Arm sx={80} a={P.aR + humanArmSwingR + gest} b={P.bR} skin={g.skin} weapon={weapon} frame={frame} />
+      <Head g={g} angry={angry} blink={blink} mouth={mouth} tilt={tilt} talking={talking} frame={frame} />
     </g>
   );
   return (
@@ -623,16 +874,54 @@ const World: React.FC<{ kind: BgKind; seed: number; frame: number }> = ({ kind, 
         </>
       )}
       {kind === 'temple' && (
-        <Layer depth={0.4}><svg width={2400} height={2880} style={{ position: 'absolute' }}>
-          {[0, 1, 2, 3].map((i) => (<path key={i} d="M-190,1000 L-190,640 Q0,380 190,640 L190,1000 Z" transform="translate(1200,480)" fill="none" stroke={[GOLD, '#e8641b', '#c92a2a', GOLD][i]} strokeWidth={26} opacity={1 - i * 0.1} style={{ transform: `translate(1200px,${480}px) scale(${1 - i * 0.14})`, transformOrigin: '0 1000px' }} />))}
-          {[760, 1640].map((x, i) => (<g key={i}><rect x={x} y={1260} width={14} height={190} fill={GOLD} /><ellipse cx={x + 7} cy={1235 + Math.sin(frame / 4 + i) * 4} rx={13} ry={30} fill="#ff922b" /></g>))}
-        </svg></Layer>
+        <>
+          {/* Layer 0.25: Grand Ancient Stone Temple Vimana / Shikhar with Kalash & Dhwaja */}
+          <Layer depth={0.25}>
+            <svg width={2400} height={2880} style={{ position: 'absolute' }}>
+              <TempleVimana x={1200} y={380} frame={frame} />
+              <g transform="translate(420, 680) scale(0.65)">
+                <TempleVimana x={0} y={0} frame={frame} />
+              </g>
+              <g transform="translate(1980, 680) scale(0.65)">
+                <TempleVimana x={0} y={0} frame={frame} />
+              </g>
+            </svg>
+          </Layer>
+          {/* Layer 0.5: Temple Courtyard Guardian War Elephant, Horse & Saffron Banners */}
+          <Layer depth={0.5}>
+            <svg width={2400} height={2880} style={{ position: 'absolute' }}>
+              <RoyalElephant x={420} y={1660} scale={0.72} flip={false} frame={frame} />
+              <RoyalHorse x={1980} y={1680} scale={0.75} flip={true} frame={frame} />
+              <FlutteringDhwaja x={780} y={1700} h={360} color="#ff6b1a" frame={frame} />
+              <FlutteringDhwaja x={1620} y={1700} h={360} color="#ff6b1a" frame={frame} />
+            </svg>
+          </Layer>
+        </>
       )}
       {kind === 'battlefield' && (
-        <Layer depth={0.45}><svg width={2400} height={2880} style={{ position: 'absolute' }}>
-          {[500, 900, 1500, 1900].map((x, i) => (<g key={i}><rect x={x} y={900} width={10} height={420} fill="#2b1810" />
-            <path d={`M${x + 10},910 q${60},${20 + Math.sin(frame / 6 + i) * 10} ${120},0 l-${20},44 l${20},44 q-${60},${20} -${120},0 Z`} fill={i % 2 ? '#c92a2a' : GOLD} /></g>))}
-        </svg></Layer>
+        <>
+          {/* Layer 0.3: Distant Fluttering Battle Dhwaja & Standards */}
+          <Layer depth={0.3}>
+            <svg width={2400} height={2880} style={{ position: 'absolute' }}>
+              {[350, 750, 1200, 1650, 2050].map((bx, i) => (
+                <FlutteringDhwaja key={i} x={bx} y={1450} h={400} color={i % 2 === 0 ? '#ff6b1a' : '#c92a2a'} frame={frame} />
+              ))}
+            </svg>
+          </Layer>
+          {/* Layer 0.45: Armored War Elephant & War Horse on Battlefield */}
+          <Layer depth={0.45}>
+            <svg width={2400} height={2880} style={{ position: 'absolute' }}>
+              <RoyalHorse x={520} y={1640} scale={0.82} flip={false} frame={frame} />
+              <RoyalElephant x={1880} y={1620} scale={0.84} flip={true} frame={frame} />
+              {[500, 900, 1500, 1900].map((x, i) => (
+                <g key={i}>
+                  <rect x={x} y={900} width={10} height={420} fill="#2b1810" />
+                  <path d={`M${x + 10},910 q${60},${20 + Math.sin(frame / 6 + i) * 10} ${120},0 l-${20},44 l${20},44 q-${60},${20} -${120},0 Z`} fill={i % 2 ? '#c92a2a' : GOLD} />
+                </g>
+              ))}
+            </svg>
+          </Layer>
+        </>
       )}
       {kind === 'palace' && (
         <>

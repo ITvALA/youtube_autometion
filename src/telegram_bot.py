@@ -361,7 +361,8 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
         print(f"[YouTube Upload Error]: {yt_err}")
 
     # --- 4B. Instagram Upload (Runs even if YouTube failed!) ---
-    if os.environ.get("IG_USERNAME"):
+    has_ig_creds = bool(os.environ.get("IG_USERNAME") or os.environ.get("IG_ACCESS_TOKEN") or os.environ.get("IG_GRAPH_ACCESS_TOKEN"))
+    if has_ig_creds:
         try:
             if status_msg_id:
                 edit_msg(chat_id, status_msg_id, (
@@ -396,7 +397,7 @@ def handle_pass_async(chat_id, target_dir_name=None, message_obj=None):
 
     if ig_url:
         lines.append(f"✅ *Instagram Reel:* {ig_url}")
-    elif os.environ.get("IG_USERNAME") and ig_err:
+    elif has_ig_creds and ig_err:
         lines.append(f"⚠️ *Instagram Error:* `{ig_err[:120]}`")
 
     # Overall header
@@ -589,25 +590,48 @@ def start_bot():
                 # Help menu: triggered by -h, /h, -/h, /help, help
                 if cmd_lower in ("/help", "/h", "-h", "-/h", "help", "/start", "h"):
                     help_text = (
-                        "📚 *MindSpark Video & Book Controller* 🎬\n\n"
-                        "Aap yahan se books aur video generation direct control kar sakte hain:\n\n"
-                        "1️⃣ *Naya Video Banane Ke Liye:*\n"
-                        "• `/make <Book Name>` — Is book par naya video banana start karein\n• `/script <Aapka Script / Topic>` — Direct script bhej kar video banayein (koi book nahi)\n"
-                        "  _Example:_ `/make Bhagavad Gita`\n\n"
-                        "2️⃣ *Nayi Book Jodne Ke Liye:*\n"
-                        "• `/add <Book Name>` — books.json me nayi book save karein\n"
-                        "  _Example:_ `/add Ikigai`\n\n"
-                        "3️⃣ *Book Nikalne / Delete Karne Ke Liye:*\n"
-                        "• `/del <Book Name>` — books.json se book delete karein\n"
-                        "  _Example:_ `/del Range`\n\n"
-                        "4️⃣ *Available Books Dekhne Ke Liye:*\n"
-                        "• `/list` ya `/books` — Saari books ki list dekhein\n\n"
-                        "5️⃣ *Review & Publish:*\n"
+                        "📚 *MindSpark Video & Story Controller* 🎬\n\n"
+                        "Aap yahan se direct nayi stories aur video generate kar sakte hain:\n\n"
+                        "1️⃣ *Website ya Custom Story se Video Banayein:*\n"
+                        "• `/create` ya `/story` — Story Form ka template paayein\n"
+                        "• `/story <Aapki Kahani>` — Seedhe kahani bhej kar video generate karein\n"
+                        "• `/script <Aapka Topic>` — Direct script bhej kar video banayein\n\n"
+                        "2️⃣ *Automatic Sanatan / Itihaas Video:*\n"
+                        "• `/make` ya `/myth` — Naya viral myth/history video turant start karein\n\n"
+                        "3️⃣ *Review & Publish:*\n"
                         "• `/pass` — Video YouTube & Instagram par publish karein\n"
                         "• `/reject` — Video discard karein\n"
                         "• `/status` — Current status check karein"
                     )
                     send_msg(sender_chat, help_text)
+
+                # Command: /create or /story template & trigger
+                elif cmd_lower in ("/create", "create", "/story", "story"):
+                    form_template = (
+                        "📜 *MindSpark Story Submission Form*\n\n"
+                        "Aap kisi bhi website (jaise Saurashtra Ni Rasdhar, Marathi Bakhari, itihaas) se kahani laa kar is format me bhej sakte hain:\n\n"
+                        "```\n"
+                        "/story\n"
+                        "Title: <Kahani ka Title>\n"
+                        "Story:\n"
+                        "<Yahan kahani ya incident paste karein...>\n"
+                        "```\n\n"
+                        "💡 *Quick Option:* Aap bina title ke bhi seedhe `/story <Aapki kahani>` likhkar bhej sakte hain. Engine automatically sabse romanchak scenes, teekhe sanvaad aur animation taiyar kar dega!"
+                    )
+                    send_msg(sender_chat, form_template)
+
+                # Command: /create <text> or /story <text>
+                elif cmd_lower.startswith("/create ") or cmd_lower.startswith("create ") or cmd_lower.startswith("/story ") or cmd_lower.startswith("story "):
+                    custom_text = raw_cmd.split(" ", 1)[1].strip()
+                    if custom_text:
+                        triggered = trigger_workflow_custom_script(custom_text)
+                        preview = (custom_text[:80] + "...") if len(custom_text) > 80 else custom_text
+                        if triggered:
+                            send_msg(sender_chat, f"🔥 *Sanatan & Veer Gatha Generation Started!*\n\n📜 *Aapki Story:*\n\"{preview}\"\n\nVideo banna shuru ho gaya hai! Grand temples, haathi-ghode aur teekhe sanvaadon ke sath ~7-8 minute me aapko video mil jayegi!")
+                        else:
+                            send_msg(sender_chat, f"✅ *Story Queued!*\n\n📜 *Aapki Story:*\n\"{preview}\"\n\nNext video ke liye yeh story save ho gayi hai!")
+                    else:
+                        send_msg(sender_chat, "⚠️ Kripya apni story ya topic likhein.\nExample: `/story Title: वीर तानाजी मालुसरे ...`")
 
                 elif cmd_lower in ("/pass", "pass", "upload", "y", "yes"):
                     threading.Thread(target=handle_pass_async, args=(sender_chat, None, msg), daemon=True).start()

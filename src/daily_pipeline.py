@@ -91,8 +91,13 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
     ensure_myth_audio()
 
     if custom_script:
-        first_line = custom_script.split("\n")[0].strip()
-        short_title = " ".join(first_line.split()[:5]).title() or "पौराणिक गाथा"
+        title_m = re.search(r"(?:शीर्षक|title|नाम|topic)\s*[:=]\s*(.+)", custom_script, re.IGNORECASE)
+        if title_m:
+            short_title = title_m.group(1).strip()
+        else:
+            first_line = custom_script.split("\n")[0].strip()
+            clean_first = re.sub(r"^/(story|create|script)\s*", "", first_line, flags=re.IGNORECASE).strip()
+            short_title = " ".join(clean_first.split()[:6]).title() or "भारतीय वीर गाथा"
         topic = {"title": short_title, "summary": custom_script}
     else:
         topic = pick_myth_topic(a.book)

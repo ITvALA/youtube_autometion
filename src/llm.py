@@ -1223,31 +1223,38 @@ def generate_fallback_myth_plan(topic=None, seed=None):
 # Live story generation
 # ==============================================================================
 _MYTH_STYLES = [
-    "Seedha kahani ke sabse romanchak pal se shuru karo, phir 'ye sab kaise hua' batate hue peeche jao, ant me wahi pal poora karo.",
-    "Kahani ek insaan (kisi ek pAatra) ki nazar se sunao, jaise woh khud apni aankhon se sab dekh raha ho.",
-    "Sanvaad-pradhan kahani: kam se kam 3 scene me pAatron ke bole hue chhote sanvaad (double quotes me) daalo.",
-    "Teen hisse: pehle mushkil, phir pareeksha, phir natija. Beech me ek chhoti si ulti (twist) zaroor ho.",
-    "Ek chhoti si ghatna se shuru karo jo bilkul saadharan lage, phir dheere-dheere uska bada matlab kholo.",
+    "Dhamakedaar high-stakes shuruaat: seedha yuddh ki lalkaar, pratigya ya sabse kathin sankat se shuru karo, phir 'ye sab kaise hua' batate hue rahasya kholo.",
+    "Sanvaad-pradhan teekhi takraav: kam se kam 3 scene me pAatron ke aamne-saamne ke garma-garam sanvaad (double quotes \"...\" me) daalo.",
+    "Ek yoddha ya pAatra ki nazar se: jaise woh khud us bhayankar sankat aur balidaan ko apni aankhon se dekh raha ho.",
+    "Rahasya aur asambhav mod: shuruaat me ek aisi ghatna jo asambhav lage, phir ek aisa twist jo rongte khade kar de.",
+    "Veer-ras aur dharmsankat: shastron ki jhankaar, swabhimaan ki raksha, aur nyay ke liye sab kuch daanv par laga dena.",
 ]
-_MYTH_TONES = ["bhaavuk aur dil ko chhoone wala", "veer-ras, josh se bhara", "rahasyamayi aur ruka-ruka sa", "shaant, bhakti-bhav wala"]
+_MYTH_TONES = [
+    "veer-ras aur teekhe sanvaad (high adrenaline drama)",
+    "rahasyamayi aur rongte khade karne wala suspense",
+    "bhaavuk aur balidaan se bhara (deep emotion)",
+    "garv aur josh se bhari shreshtha itihaas gatha"
+]
 
-_MYTH_PROMPT = """Tum ek anubhavi Hindi kahani-kaar ho, jo YouTube Shorts aur voiceover ke liye kahaniyan likhte ho.
-Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekha haal ya dil ki baat, sunaa raha hai. AI ki likhi hui nahi.
+_MYTH_PROMPT = """Tum ek anubhavi Hindi kahani-kaar aur film scriptwriter ho, jo YouTube Shorts aur cinematic voiceover ke liye rochak, masaledaar aur dil ko chhoo lene wali kahaniyan likhte ho.
+Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekha romanch ya dil ki aag, poore josh ke sath sunaa raha hai. AI ki likhi hui pheeki kahani bilkul nahi.
 
 ## Bhaasha Niyam:
 - Script hamesha Devanagari me likho.
-- Roz-marra ki bolchaal ki natural Hindi use karo, jaisi ek kahani sunane wala bolta hai. Bhaari, kitaabi ya shuddh-Sanskrit shabd mat daalo.
-- Chhote vaakya rakho. Ek vaakya me ek hi baat. Beech-beech me bahut chhote vaakya bhi daalo. Jaise: "Wo ruk gaya. Kuch bola nahi."
+- Roz-marra ki bolchaal ki natural, damdaar Hindi use karo. Bhaari, kitaabi ya bejaan shabd mat daalo.
+- Chhote, teekhe vaakya rakho. Ek vaakya me ek hi baat. Beech-beech me 2-3 shabdon ke chhote punchy vaakya daalo. Jaise: "talwar nikal chuki thi. raasta koi nahi tha."
 - Vaakyon ki lambai badalte raho.
 - In cheezon se bacho: "Aaj ke is video me", "toh doston", "chaliye shuru karte hain", "ek anokha safar", "zindagi ka sabak", "yaad rakhiye".
-- Scene 1: koi fixed opening line NAHI. 'क्या आपको पता है', 'क्या आप जानते हैं' ya koi bhi sawaal-wala saancha bilkul mat use karo. Seedha kahani ke beech se, ek khaas ghatna, sanvaad ya drishya se shuru karo, aur har video ki shuruaat alag ho.
-- Last scene: conclude naturally, and the very last sentence MUST end with: 'ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!'
+- Scene 1 Hook (MIRCH-MASALA): koi fixed generic opening line NAHI. 'क्या आपको पता है', 'क्या आप जानते हैं' ya koi bhi boring saancha bilkul mat use karo. Seedha kahani ke sabse bade sankat, lalkaar, sanvaad ya drishya se shuru karo!
+- Last scene: conclude naturally with heroic pride, and the very last sentence MUST end with: 'ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!'
 
-## Kahani ki bunaavat (SABSE ZAROORI):
-- Ye ek poori KAHANI hai, summary nahi: shuruaat -> mushkil/takraav -> mod -> ant -> seekh.
-- Har scene me kahani AAGE badhni chahiye. Pichla scene dohrao mat. Har scene me koi nayi ghatna, nayi baat ya kisi pAatra ka sanvaad ho.
-- Asli naam, jagah aur ghatnaayein daalo. Kam se kam 2 chhote sanvaad (pAatra ke bole hue shabd, double quotes me) daalo.
-- Aisi line bilkul mat likho jo kisi bhi kahani pe fit ho jaaye (jaise "sach ki jeet hoti hai", "ek anokha mod", "dharm ki raksha", "kathin pareeksha"). Har line sirf IS kahani ki ho.
+## Kahani ki bunaavat aur Masaledaar Sanvaad (SABSE ZAROORI):
+- Ye ek poori KAHANI hai: shuruaat me bada dhamaka/sankat -> takraav aur sankalp -> asambhav pareeksha -> hairan kar dene wala mod -> antim vijay.
+- Har scene me kahani AAGE badhni chahiye. Pichla scene dohrao mat.
+- Kam se kam 2-3 scenes me pAatron ke damdaar sanvaad (double quotes \"...\" me) daalo. Jaise: "रुक जाओ! यदि आज शस्त्र नहीं उठाए, तो इतिहास हमें कायर कहेगा!"
+- Voiceover me emotion aur thehraav laane ke liye viram-chinh (`!`, `,`, `...`, `।`) ka behtareen prayog karo taaki TTS bolte waqt asli insaan jaisa dumdaar aur bhavuk lage.
+- Lip-Sync aur Visuals: Jis scene me sanvaad ho, wahan actor ka pose 'talk' ya 'point' rakho taaki animation me uska mukh bolta hua dikhe! Chalne ke liye 'walk', dhyan/chintan ke liye 'sit', yuddh ke liye 'fight'.
+- Grand Elements: Mandir, mehal, yuddhabhoomi ke scenes me 'temple', 'palace', ya 'battlefield' chunao jahan grand vimana shikhar, haathi, ghode aur dhwaja dikhenge.
 - Is video ki shaili: __STYLE__
 - Is video ka tone: __TONE__
 
@@ -1257,9 +1264,9 @@ __CONTEXT__
 Return ONE valid JSON object only (no markdown, no extra commentary):
 {
   "youtube": {
-    "title": "[रहस्यमयी प्रश्न]? सनातन के अनसुने रहस्य | MindSpark",
-    "description": "सनातन धर्म और भारतीय इतिहास के अनसुने रहस्य। Watch till the end! #Shorts #Sanatan #MindSpark #Mythology",
-    "tags": ["MindSpark", "Mythology", "Shorts", "Sanatan", "Hindi", "Mahabharat"]
+    "title": "[रहस्यमयी प्रश्न या गर्जना]? सनातन के अनसुने रहस्य | MindSpark",
+    "description": "सनातन धर्म, भारतीय इतिहास और वीरों के अनसुने रहस्य। Watch till the end! #Shorts #Sanatan #MindSpark #Mythology #History",
+    "tags": ["MindSpark", "Mythology", "Shorts", "Sanatan", "Hindi", "History", "VeerGatha"]
   },
   "scenes": [
     {
@@ -1281,17 +1288,18 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
         "title": "Short title in Devanagari Hindi (max 4 words)",
         "text": "One line text in Devanagari Hindi"
       },
-      "narration": "14-20 words in 100% natural conversational Devanagari Hindi."
+      "narration": "14-20 words in natural, dramatic, conversational Devanagari Hindi with powerful dialogues in quotes."
     }
   ]
 }
 
 STRICT RULES:
 1. Total scenes: __N__ scenes. 'sec': 4 to 6 per scene.
-2. Allowed characters: __ROSTER__. Pick the characters of THIS legend (1 to 3 per scene), not random gods.
-3. Allowed backgrounds: palace, forest, pond, temple, battlefield, sky. Use 'palace' for court, durbar, sabha, king or palace scenes. Use at least 4 different backgrounds and never the same one in two scenes in a row.
-4. Beats are NOT a fixed order. First beat 'intro' or 'reveal', last beat 'victory'. Use 'fight' only if the story has a real clash; peaceful stories use talk / reveal / victory.
-5. Poses: vary them. Use 'walk' when someone arrives or leaves, 'sit' for meditation or serious talk, 'point'/'talk' while speaking, 'fly' only for characters who really fly.
+2. Allowed characters: __ROSTER__. Pick the characters of THIS story (1 to 3 per scene):
+   - For kings/warriors use 'raja' or 'soldier', for wise sages use 'rishi' or 'guru', for outlaws use 'chor', or specific epic heroes/gods.
+3. Allowed backgrounds: palace, forest, pond, temple, battlefield, sky. Use at least 4 different backgrounds.
+4. Beats: First beat 'intro' or 'reveal', last beat 'victory'. Use 'talk' with dialogue quotes so character mouth flap animates.
+5. Poses: vary them. Use 'walk' for natural walking animation, 'talk' or 'point' when speaking dialogue, 'fight' in action.
 6. Two characters in a scene: x between 250 and 850, at least 250 apart, and the one on the right has flip true (they face each other).
 7. Do NOT add any camera field. Narration and Caption text MUST be 100% Devanagari Hindi (only the word MindSpark may be Latin).
 """
@@ -1320,7 +1328,20 @@ def make_myth_plan(topic, custom_script=None, seed=None):
     topic_str = topic.get("title", str(topic)) if isinstance(topic, dict) else str(topic)
     topic_summary = topic.get("summary", "") if isinstance(topic, dict) else ""
     if custom_script:
-        story_context = f"Topic: {topic_str}\nCustom Script/Details: {custom_script}"
+        story_context = f"""CUSTOM STORY FROM USER / WEBSITE / HISTORICAL SOURCE:
+Topic / Title: {topic_str}
+Story Text:
+\"\"\"{custom_script}\"\"\"
+
+CRITICAL ADAPTATION RULES FOR THIS CUSTOM STORY:
+1. Faithfully adapt THIS EXACT STORY and its specific characters/events. Do NOT replace it with any other story.
+2. Character Mapping: If this is an Indian folk tale, regional history (e.g. Saurashtra ni Rasdhar, Maratha / Rajput chronicles) or legendary heroes:
+   - For kings, maharajas, chieftains: use 'raja'.
+   - For commanders, senapatis, warriors, soldiers: use 'soldier'.
+   - For rishis, saints, advisors, gurus: use 'rishi' or 'guru'.
+   - For outlaws, dacoits, rebels: use 'chor' or 'asura'.
+   - For epic heroes / gods: use the closest matched character from __ROSTER__.
+3. Infuse full 'Mirch-Masala': fiery spoken dialogues in quotes (\"...\"), goosebump-inducing moments, high stakes, and intense Veer Ras / Adbhut Ras."""
     else:
         story_context = f"Story Topic: {topic_str}\nSummary: {topic_summary}"
 
