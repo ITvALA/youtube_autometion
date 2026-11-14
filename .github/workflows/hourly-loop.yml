@@ -1,13 +1,11 @@
-name: Hourly Loop
-# GitHub ka cron har ghante ki guarantee nahi deta (runs late hote ya skip ho jaate hain).
-# Ye workflow khud har 60 minute me daily.yml ko trigger karta hai, cron par depend nahi karta.
+name: Hour Loop (6 Videos Daily)
 on:
   workflow_dispatch:
   schedule:
-    - cron: "5 */6 * * *"   # watchdog: loop ruk gaya ho to dobara shuru kar deta hai
+    - cron: "5 */6 * * *"
 
 concurrency:
-  group: hourly-loop
+  group: four-hour-loop
   cancel-in-progress: false
 
 permissions:
@@ -21,25 +19,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Trigger daily.yml every 4 hour
+      - name: Trigger daily.yml every 4 hours
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for i in 1 2 3 4 5; do
-            git fetch -q origin main
-            if git cat-file -e origin/main:LOOP_OFF 2>/dev/null; then
-              echo "LOOP_OFF file mili. Loop band."
-              exit 0
-            fi
-            echo "Round $i: daily.yml trigger at $(date -u)"
-            gh workflow run daily.yml --ref main -f mode=myth
-            sleep14400 
-          done
+          git fetch -q origin main
+          if git cat-file -e origin/main:LOOP_OFF 2>/dev/null; then
+            echo "LOOP_OFF file mili. Loop band."
+            exit 0
+          fi
+
+          echo "daily.yml trigger at $(date -u)"
+          gh workflow run daily.yml --ref main -f mode=myth
+
+          sleep 14400
+
           git fetch -q origin main
           if git cat-file -e origin/main:LOOP_OFF 2>/dev/null; then
             echo "LOOP_OFF file mili. Dobara shuru nahi karenge."
             exit 0
           fi
+
           echo "4 ghante poore. Loop ko dobara shuru kar raha hoon."
           gh workflow run hourly-loop.yml --ref main
-          
