@@ -824,13 +824,45 @@ def validate_myth_plan(plan):
         if not isinstance(sec, (int, float)) or sec < 2.5:
             return f"scene {idx}: sec must be >= 2.5 seconds, got {sec}"
 
-        beat = sc.get("beat")
+        beat = str(sc.get("beat", "talk")).lower()
+        beat_map = {
+            'walk': 'talk',
+            'dialogue': 'talk',
+            'speak': 'talk',
+            'action': 'fight',
+            'battle': 'fight',
+            'war': 'fight',
+            'climax': 'reveal',
+            'twist': 'reveal',
+            'miracle': 'reveal',
+            'end': 'victory',
+            'win': 'victory',
+            'start': 'intro',
+            'hook': 'intro'
+        }
+        if beat in beat_map:
+            beat = beat_map[beat]
         if beat not in MYTH_BEATS:
-            return f"scene {idx}: invalid beat '{beat}'. Allowed: {sorted(list(MYTH_BEATS))}"
+            beat = "talk"
+        sc["beat"] = beat
 
-        bg = sc.get("bg")
+        bg = str(sc.get("bg", "palace")).lower()
+        bg_map = {
+            'desert': 'battlefield',
+            'mountain': 'forest',
+            'jungle': 'forest',
+            'sea': 'pond',
+            'river': 'pond',
+            'ocean': 'pond',
+            'court': 'palace',
+            'fort': 'palace',
+            'heaven': 'sky'
+        }
+        if bg in bg_map:
+            bg = bg_map[bg]
         if bg not in MYTH_BGS:
-            return f"scene {idx}: invalid bg '{bg}'. Allowed: {sorted(list(MYTH_BGS))}"
+            bg = "palace"
+        sc["bg"] = bg
 
         caption = sc.get("caption")
         if not isinstance(caption, dict) or not caption.get("title") or not caption.get("text"):
@@ -848,8 +880,33 @@ def validate_myth_plan(plan):
             if not isinstance(act, dict):
                 return f"scene {idx} actor {a_idx} must be an object"
             who = str(act.get("who", "")).lower()
+            who_map = {
+                'king': 'raja',
+                'navghan': 'raja',
+                'ra_navghan': 'raja',
+                'queen': 'durga',
+                'devi': 'durga',
+                'varudi': 'durga',
+                'aai_varudi': 'durga',
+                'khodiyar': 'durga',
+                'mogal': 'durga',
+                'villain': 'asura',
+                'sumra': 'asura',
+                'hamir_sumra': 'asura',
+                'warrior': 'soldier',
+                'sena': 'soldier',
+                'baharvatiyo': 'chor',
+                'dacoit': 'chor',
+                'robber': 'chor',
+                'outlaw': 'chor',
+                'sage': 'rishi',
+                'saint': 'guru',
+                'sadhu': 'guru'
+            }
+            if who in who_map:
+                who = who_map[who]
             if who not in ROSTER_GODS:
-                return f"scene {idx} actor {a_idx}: unknown god '{who}'. Allowed: {sorted(list(ROSTER_GODS))}"
+                who = "raja" if "raja" in ROSTER_GODS else "krishna"
             act["who"] = who
 
             pose = act.get("pose", "stand")
@@ -1247,14 +1304,20 @@ Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekh
 - Scene 1 Hook (MIRCH-MASALA): koi fixed generic opening line NAHI. 'क्या आपको पता है', 'क्या आप जानते हैं' ya koi bhi boring saancha bilkul mat use karo. Seedha kahani ke sabse bade sankat, lalkaar, sanvaad ya drishya se shuru karo!
 - Last scene: conclude naturally with heroic pride, and the very last sentence MUST end with: 'ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!'
 
+## STRICT IDENTITY & REAL CHARACTER NAMES (NO GENERIC FAIRY TALES):
+- Paatra ko generic mat bolo! 'एक योद्धा', 'एक राजा', 'एक गुरु', 'एक पक्षी' BOLNA SAKHT MANAA HAI!
+- Viewer ko video ke pehle 3 second me hi saaf pata chalna chahiye ki kahani kiski hai! Asli itihaasik / pauranik naamon ka upayog karo (jaise 'रा' नवघण', 'जाहल', 'हमीर सुमरा', 'आई वरूडी', 'जोगीदास खुमाण', 'महाराजा वजेसिंह', 'चांपराज वाळो')!
+- Scene 1 Hook me hi mukhya nayak aur sankat ka naam lo (jaise: 'जब बहन जाहल की लाज बचाने के लिए रा' नवघण ने सिंध के सुल्तान हमीर सुमरा को ललकार दिया!').
+- Jo dossier CONTEXT me diya gaya hai, usi exact gatha aur ghatna-kram par script likho. Koi man-ghadant kahani ya anjaan pAatra mat banao!
+
 ## 3-ACT PACING & TIMING BLUEPRINT (STRICT 50-55 SECONDS TOTAL):
 1. ACT 1: 0–3 Sec (THE HOOK) - Scene 1:
    - 'sec': 3 (STRICTLY 3 seconds).
    - Beat: 'intro' or 'reveal'.
    - Narration: Exactly 8-12 words in Hindi. Ek aisa sawal ya shock jo viewer ko scroll karne se turant rok le (thumb-stopper)!
    - Examples:
-     "एक ऐसा योद्धा, जिसने साक्षात मृत्यु को रणभूमि में ललकार दिया!"
-     "क्या आप जानते हैं इस मंदिर का वह रहस्य, जिसने मुगलों की पूरी फ़ौज को भगा दिया?"
+     "जब बहन जाहल की पुकार पर रा' नवघण ने सिंध के सुल्तान हमीर सुमरा की मौत लिख दी!"
+     "क्या आप जानते हैं कच्छ के खारे दलदल में आई वरूडी के कूकड़े का वह अमर चमत्कार?"
 
 2. ACT 2: 3–45 Sec (THE STORY) - Scenes 2 to N-2:
    - 'sec': 4 to 5 per scene (total ~40-42 seconds, fast-paced).
@@ -1286,7 +1349,7 @@ __CONTEXT__
 Return ONE valid JSON object only (no markdown, no extra commentary):
 {
   "youtube": {
-    "title": "[रहस्यमयी प्रश्न या गर्जना]? सनातन के अनसुने रहस्य | MindSpark",
+    "title": "रा' नवघण और आई वरूडी: सिंध के रण में अमर चमत्कार! ⚔️ | MindSpark",
     "description": "सनातन धर्म, भारतीय इतिहास और वीरों के अनसुने रहस्य। Watch till the end! #Shorts #Sanatan #MindSpark #Mythology #History",
     "tags": ["MindSpark", "Mythology", "Shorts", "Sanatan", "Hindi", "History", "VeerGatha"]
   },
@@ -1347,11 +1410,119 @@ def _salvage_json(raw):
         raise first_err
 
 
+HISTORICAL_LORE = {
+    "ra_navghan": {
+        "title": "રા' નવઘણ અને આઈ વરૂડી: સિંધના રણમાં કૂકડાનો ચમત્કાર",
+        "protagonist": "जूनागढ़ के पराक्रमी चूड़ासमा शासक रा' नवघण (Ra' Navghan - use 'raja')",
+        "sister": "धर्म-बहन जाहल (Jahal) - जिसने बचपन में नवघण को अपनी जान जोखिम में डालकर पाला था",
+        "antagonist": "सिंध का अत्याचारी सुल्तान हमीर सुमरा (Hamir Sumra - use 'asura')",
+        "divine_savior": "चारण कुल की साक्षात भगवती आई वरूडी (Aai Varudi - use 'durga')",
+        "crisis": "हमीर सुमरा ने जाहल को कैद कर लिया। जाहल ने रक्त से नवघण को पत्र भेजा: 'हे भाई नवघण, यदि एक माह में नहीं आए, तो मैं अग्नि में भस्म हो जाऊँगी!'",
+        "obstacle": "कच्छ का खारा दलदली रण और अथाह समुद्र। सेना प्यास से तड़पने लगी, कोई मार्ग नहीं था। नवघण ने तलवार निकाल ली।",
+        "miracle": "आई वरूडी ने साक्षात दर्शन दिए और अपने दिव्य कूकड़े (मुर्गे) को आगे दौड़ाया। कूकड़े के पैरों से समुद्र दो हिस्सों में बंट गया, खारा पानी मीठा अमृत बन गया और दलदल ठोस पत्थर जैसा मार्ग बन गया!",
+        "climax": "सिंध पहुंचकर रा' नवघण ने हमीर सुमरा की छाती पर पैर रखकर उसका सिर धड़ से अलग कर दिया और बहन जाहल को ससम्मान आजाद कराया!",
+        "mandatory_names": ["रा' नवघण", "जाहल", "हमीर सुमरा", "आई वरूडी", "कच्छ का रण", "सिंध"],
+        "sample_dialogues": [
+            "\"यदि जाहल की लाज बचाने नवघण सिंध न पहुंचे, तो सौराष्ट्र की माटी मुझे धिक्कारेगी!\"",
+            "\"मां वरूडी! या तो मार्ग दो, या आज नवघण अपनी सेना सहित इसी दलदल में प्राण त्यागेगा!\"",
+            "\"अत्याचारी सुमरा! बहन की रक्षा के लिए यमराज स्वयं नवघण बनकर आया है!\""
+        ]
+    },
+    "jogidas_khuman": {
+        "title": "બહારવટિયો જોગીદાસ ખુમાણ: ભાવનગર દરબાર સામે ૧૩ વર્ષની ટેક",
+        "protagonist": "काठी शूरवीर बाहरवटिया जोगीदास खुमाण (Jogidas Khuman - use 'chor' or 'raja')",
+        "rival": "भावनगर के महाराजा वजेसिंह (Maharaja Vajesinh - use 'raja')",
+        "crisis": "अन्याय और जागीर छीने जाने पर 13 वर्षों तक गिर और बाबरा के जंगलों में बगावत की, लेकिन कभी धर्म और मर्यादा नहीं तोड़ी।",
+        "code": "औरतों, बच्चों, गरीबों और निहत्थों पर कभी हथियार नहीं उठाना। केवल अत्याचारी हुकूमत से लड़ना।",
+        "miracle_climax": "भावनगर राजघराने की गर्भवती बहू की पालकी जंगल से गुजरी। जोगीदास ने अपनी नंगी तलवार से पहरा दिया, सोने के कंगन भेंट किए और ससम्मान विदा किया। महाराजा वजेसिंह ने नतमस्तक होकर गले लगाया!",
+        "mandatory_names": ["जोगीदास खुमाण", "महाराजा वजेसिंह", "भावनगर", "गिर"],
+        "sample_dialogues": [
+            "\"जोगीदास खुमाण का बाहरवटा हक के लिए है, किसी अबला या गरीब के आंसुओं के लिए नहीं!\"",
+            "\"महाराज वजेसिंह! आपकी बहू की पालकी पर जोगीदास की तलवार ढाल बनकर खड़ी है!\""
+        ]
+    },
+    "champraj_valo": {
+        "title": "બહારવટિયો ચાંપરાજ વાળો: ગીરના જંગલોમાં અજેય સિંહની લડાઈ",
+        "protagonist": "गिर का बब्बर शेर चांपराज वाळो (Champraj Valo - use 'chor' or 'soldier')",
+        "antagonist": "अंग्रेजों और गायकवाड़ की तोपों वाली विशाल फौज (use 'asura' or 'soldier')",
+        "crisis": "अत्याचारी कर और गुलामी के खिलाफ गिर की पहाड़ियों में अकेले तोपें फोड़ने वाला काठी वीर।",
+        "climax": "अंग्रेजों ने चारों तरफ से तोपें दाग दीं। चांपराज ने नंगी तलवार लेकर अकेले घोड़े पर पूरी छावनी को चीर दिया!",
+        "mandatory_names": ["चांपराज वाळो", "गिर का जंगल", "सौराष्ट्र"],
+        "sample_dialogues": [
+            "\"चांपराज वाळो झुकना नहीं जानता, यह सिर केवल अपने ईष्ट और सौराष्ट्र की माटी के आगे झुकेगा!\""
+        ]
+    },
+    "jodha_manek": {
+        "title": "ઓખાના વાઘેર વીર જોધા માણેક: ૧૮૫૭માં અંગ્રેજો સામે ભીષણ યુદ્ધ",
+        "protagonist": "ओखा मंडल के अमर वाघेर वीर जोधा माणेक (use 'raja' or 'soldier') और मूळू माणेक",
+        "antagonist": "1857 के क्रूर ब्रिटिश कर्नल और ईस्ट इंडिया कंपनी की सेना (use 'asura')",
+        "crisis": "अंग्रेज बेट द्वारका के मंदिर और जनता पर तोपें बरसा रहे थे।",
+        "climax": "जोधा माणेक ने अंग्रेजों के तोप के गोलों को हाथों से पकड़कर समुद्र में फेंक दिया और अंग्रेजों को खदेड़ दिया!",
+        "mandatory_names": ["जोधा माणेक", "मूळू माणेक", "बेट द्वारका", "अंग्रेज"],
+        "sample_dialogues": [
+            "\"जब तक द्वारकाधीश का चक्र हमारे साथ है, फिरंगी तोपें हमारा बाल भी बांका नहीं कर सकतीं!\""
+        ]
+    },
+    "aai_khodiyar": {
+        "title": "આઈ ખોડિયાર માતાજી: મગરમચ્છની સવારી અને અમૃત કુંભનો પરચો",
+        "protagonist": "मामड़िया चारण की तपस्वी पुत्री आई खोडियार (Aai Khodiyar - use 'durga')",
+        "brother": "भाई मेहरक (Mehrak - use 'shishya')",
+        "crisis": "भाई मेहरक को जहरीले कालसर्प ने डंस लिया। सूर्योदय से पहले समुद्र से अमृत लाना अनिवार्य था!",
+        "miracle": "दौड़ते हुए पैर में चोट आई (खोड़ी बनीं)। तभी साक्षात विशाल मगरमच्छ आया, खोडियार उस पर सवार हुईं और पलक झपकते अमृत लाकर भाई को जीवित किया!",
+        "mandatory_names": ["आई खोडियार", "मेहरक", "मगरमच्छ", "अमृत कुंभ"],
+        "sample_dialogues": [
+            "\"भाई के प्राणों के लिए यदि काल से भी लड़ना पड़े, तो खोडियार पीछे नहीं हटेगी!\""
+        ]
+    },
+    "aai_mogal": {
+        "title": "આઈ મોગલનો પરચો: ભગુડા ધામ અને ૧૨ હાથની લાકડીનો ચમત્કાર",
+        "protagonist": "चारण कुल की साक्षात आदिशक्ति आई मोगल (Aai Mogal - use 'durga')",
+        "crisis": "गरीब भक्त पर अन्याय और लुटेरों का हमला।",
+        "miracle": "आई मोगल की 12 हाथ की लाठी और त्रिशूल की हुंकार से अत्याचारी कांप उठे और सत्य की विजय हुई!",
+        "mandatory_names": ["आई मोगल", "भगुडा धाम", "चारण कुल", "त्रिशूल"]
+    },
+    "kadu_makrani": {
+        "title": "કાદુ મકરાણી: જૂનાગઢ નવાબ સામે એકલા લડનારો અણનમ મર્દ",
+        "protagonist": "कादू मकराणी (Kadu Makrani - use 'soldier' or 'chor')",
+        "crisis": "जूनागढ़ के अत्याचारी वजीर के काले कानूनों के खिलाफ गिरनार की तलहटी में स्वाभिमान की लड़ाई।",
+        "mandatory_names": ["कादू मकराणी", "जूनागढ़", "गिरनार"]
+    },
+    "valera_valo": {
+        "title": "વાલેરા વાળો: સૌરાષ્ટ્રની રસધારનો ખાનદાન બહારવટિયો",
+        "protagonist": "वालेरा वाळो (Valera Valo - use 'chor' or 'raja')",
+        "crisis": "दुश्मन के घर में भी दूध पीकर आने वाला और गरीबों की रक्षा करने वाला दिलेर मर्द।",
+        "mandatory_names": ["वालेरा वाळो", "सौराष्ट्र"]
+    },
+    "hothal_padamani": {
+        "title": "વીરાંગના હોથલ પદમણી: સૌરાષ્ટ્ર-કચ્છની અજેય નારી શક્તિ",
+        "protagonist": "વીરાંગના होथल पदमणी (Hothal Padamani - use 'durga')",
+        "crisis": "रण में तलवारबाजी और घुड़सवारी से डाकुओं और सेनापतियों को धूल चटाने वाली अद्वितीय अप्सरा-योद्धा।",
+        "mandatory_names": ["होथल पदमणी", "ओढा जाम", "कच्छ"]
+    },
+    "aai_nagbai": {
+        "title": "આઈ નાગબાઈ (ચોટલાવાળી): સોરઠના દરબારમાં આઈનો પ્રચંડ પરચો",
+        "protagonist": "आई नागबाई (Aai Nagbai - use 'durga')",
+        "crisis": "अत्याचारी राजा के दरबार में अपने चोटी और सत्य के बल पर घमंड चूर-चूर कर दिया।",
+        "mandatory_names": ["आई नागबाई", "सोरठ"]
+    }
+}
+
+
 def make_myth_plan(topic, custom_script=None, seed=None):
     """Generates a strict JSON plan for MINDSPARK Mythology Shorts (MythShort)."""
     rnd = random.Random(seed)
     topic_str = topic.get("title", str(topic)) if isinstance(topic, dict) else str(topic)
     topic_summary = topic.get("summary", "") if isinstance(topic, dict) else ""
+    topic_key = topic.get("topic", "") if isinstance(topic, dict) else ""
+
+    # Match lore from key or title to inject authentic factual history
+    matched_lore = None
+    search_text = f"{topic_key} {topic_str} {topic_summary}".lower()
+    for l_key, l_data in HISTORICAL_LORE.items():
+        if l_key in search_text or any(k in search_text for k in l_key.split("_") if len(k) > 3):
+            matched_lore = l_data
+            break
+
     if custom_script:
         story_context = f"""CUSTOM STORY FROM USER / WEBSITE / HISTORICAL SOURCE:
 Topic / Title: {topic_str}
@@ -1367,6 +1538,24 @@ CRITICAL ADAPTATION RULES FOR THIS CUSTOM STORY:
    - For outlaws, dacoits, rebels: use 'chor' or 'asura'.
    - For epic heroes / gods: use the closest matched character from __ROSTER__.
 3. Infuse full 'Mirch-Masala': fiery spoken dialogues in quotes (\"...\"), goosebump-inducing moments, high stakes, and intense Veer Ras / Adbhut Ras."""
+    elif matched_lore:
+        story_context = f"""AUTHENTIC HISTORICAL / PURANIC DOSSIER (STRICT FIDELITY REQUIRED):
+Story Title: {matched_lore['title']}
+Protagonist (नायक): {matched_lore.get('protagonist')}
+Key Figures: {matched_lore.get('sister', '')} {matched_lore.get('rival', '')} {matched_lore.get('brother', '')}
+Antagonist / Tyrant (खलनायक): {matched_lore.get('antagonist', '')}
+Divine Savior / Miracle (चमत्कार): {matched_lore.get('divine_savior', '')} | {matched_lore.get('miracle', matched_lore.get('miracle_climax', ''))}
+The Crisis & Life-or-Death Stakes (महा-संकट): {matched_lore.get('crisis')}
+The Great Obstacle (कठिन बाधा): {matched_lore.get('obstacle', '')}
+The Climax & Historic Victory (महा-विजय): {matched_lore.get('climax', '')}
+MANDATORY REAL NAMES TO SPEAK (Do NOT say 'ek raja' or 'ek yoddha'): {', '.join(matched_lore.get('mandatory_names', []))}
+RECOMMENDED FIERCE DIALOGUES: {matched_lore.get('sample_dialogues', [])}
+
+STRICT NARRATIVE MANDATES FOR THIS SCRIPT:
+1. EXPLICIT REAL NAMES: Every viewer must clearly hear and understand WHO this story is about. Mention the protagonist ({matched_lore.get('protagonist', '').split('(')[0].strip()}) by name in Scene 1 and Scene 2!
+2. NO GENERIC AI HALLUCINATIONS: Do NOT invent unrelated characters like a random 'guru' in a forest or fairy tale birds. Follow the real historical/puranic events provided above!
+3. FIERCE DIALOGUES: In at least 2 scenes, include character dialogue in double quotes (\"...\") with high emotion.
+"""
     else:
         story_context = f"Story Topic: {topic_str}\nSummary: {topic_summary}"
 

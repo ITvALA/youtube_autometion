@@ -23,6 +23,7 @@ import React, { createContext, useContext, useMemo } from 'react';
 import { AbsoluteFill, Audio, Easing, Sequence, Series, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { loadFont as loadNoto } from '@remotion/google-fonts/NotoSansDevanagari';
 import { ClashSparks, SlashTrail, FlyingArrows, ArmyMarch } from '../components/PuppetKit';
+import { AnimeSpeedLines } from '../components/anime/AnimeSpeedLines';
 
 const devanagariFont = loadNoto('normal', { weights: ['400', '700', '800'], subsets: ['devanagari'] }).fontFamily;
 
@@ -658,7 +659,8 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
   const entering = dir !== 0 && frame < ENTER_FRAMES && a.pose !== 'fly' && a.pose !== 'sit';
   const pose: Pose = entering ? 'walk' : a.pose;
   const P = POSES[pose] ?? POSES.stand;
-  const sc = (a.scale ?? 1) * 0.70;
+  const sc = (a.scale ?? 1) * 0.82;
+  const isDivine = ['durga', 'krishna', 'shiva', 'vishnu', 'brahma', 'parvati', 'kali', 'lakshmi', 'saraswati'].includes(String(a.who).toLowerCase());
   const ground = a.y ?? 1360;
 
   const weapon: Weapon = (a.weapon && a.weapon !== 'none')
@@ -793,7 +795,9 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
         left: posX - 280 * sc,
         top: ground - 740 * sc,
         overflow: 'visible',
-        filter: 'drop-shadow(0 18px 22px rgba(0,0,0,.45))'
+        filter: isDivine
+          ? 'drop-shadow(0 0 20px #ffd700)'
+          : 'drop-shadow(0 18px 24px rgba(0,0,0,0.75))'
       }}
     >
       <g transform={`scale(${faceLeft ? -1 : 1},1) translate(0,${lift})`}>{body}</g>
@@ -1065,30 +1069,116 @@ const Foreground: React.FC<{ kind: BgKind; seed: number }> = ({ kind, seed }) =>
   );
 };
 
-/* ───────────────────────── CAPTION (Sanatan Unfold Floating Style) ───────────────────────── */
-const Caption: React.FC<{ title: string; text: string }> = ({ title, text }) => (
-  <div style={{
-    position: 'absolute', left: 40, right: 40, bottom: 130, padding: '16px 24px',
-    color: '#ffffff',
-    textShadow: '0 4px 16px rgba(0,0,0,0.95), 0 2px 4px rgba(0,0,0,0.9)',
-    fontFamily: `${devanagariFont}, 'Noto Sans Devanagari', 'Mukta', sans-serif`,
-    fontSize: 52, lineHeight: 1.35, textAlign: 'center', fontWeight: 700,
-  }}>
-    {title && <div style={{ color: '#f5c842', fontSize: 44, marginBottom: 8, fontWeight: 800 }}>{title}</div>}
-    <div>{text}</div>
-  </div>
-);
+/* ───────────────────────── CINEMATIC SUBTITLES & TOP BADGE ───────────────────────── */
+const CinematicSubtitles: React.FC<{
+  title: string;
+  narration?: string;
+  text: string;
+}> = ({ title, narration, text }) => {
+  const displayText = narration || text;
+  // Highlight spoken dialogue inside quotes in radiant gold
+  const formattedText = useMemo(() => {
+    if (!displayText) return null;
+    const parts = displayText.split(/(".*?"|“.*?”|'.*?')/g);
+    return parts.map((part, i) => {
+      const isQuote = /^["'“].*["'”]$/.test(part.trim());
+      return isQuote ? (
+        <span key={i} style={{ color: '#ffd700', textShadow: '0 0 16px rgba(255, 215, 0, 0.65)' }}>
+          {part}{' '}
+        </span>
+      ) : (
+        <span key={i}>{part} </span>
+      );
+    });
+  }, [displayText]);
+
+  return (
+    <>
+      {/* Top Epic Cultural Badge */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 130,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          justifyContent: 'center',
+          pointerEvents: 'none',
+          zIndex: 20,
+        }}
+      >
+        <div
+          style={{
+            background: 'linear-gradient(180deg, rgba(30, 15, 8, 0.88) 0%, rgba(12, 6, 3, 0.94) 100%)',
+            border: '2px solid rgba(245, 197, 66, 0.75)',
+            boxShadow: '0 6px 24px rgba(0,0,0,0.85), inset 0 1px 2px rgba(255,215,0,0.5)',
+            borderRadius: 32,
+            padding: '10px 28px',
+            color: '#ffd700',
+            fontSize: 32,
+            fontWeight: 800,
+            fontFamily: `${devanagariFont}, 'Noto Sans Devanagari', sans-serif`,
+            letterSpacing: '0.04em',
+            textShadow: '0 2px 8px rgba(0,0,0,0.9)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <span style={{ fontSize: 30 }}>🚩</span>
+          <span>{title || 'સૌરાષ્ટ્રની રસધાર | અમર ગાથા'}</span>
+        </div>
+      </div>
+
+      {/* Lower-Third Cinematic Spoken Narration Subtitles */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 36,
+          right: 36,
+          bottom: 125,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          pointerEvents: 'none',
+          zIndex: 20,
+        }}
+      >
+        <div
+          style={{
+            background: 'linear-gradient(180deg, rgba(12, 6, 4, 0.88) 0%, rgba(5, 2, 1, 0.95) 100%)',
+            border: '1.5px solid rgba(255, 215, 0, 0.35)',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.92), 0 0 20px rgba(0,0,0,0.8)',
+            borderRadius: 24,
+            padding: '18px 26px',
+            maxWidth: 1000,
+            color: '#ffffff',
+            textShadow: '0 4px 16px rgba(0,0,0,0.98), 0 2px 4px rgba(0,0,0,0.9)',
+            fontFamily: `${devanagariFont}, 'Noto Sans Devanagari', 'Mukta', sans-serif`,
+            fontSize: 48,
+            lineHeight: 1.38,
+            textAlign: 'center',
+            fontWeight: 700,
+          }}
+        >
+          {formattedText}
+        </div>
+      </div>
+    </>
+  );
+};
 
 /* Divine floating embers / golden particles for sacred ambiance */
 const DivineParticles: React.FC<{ frame: number; seed: number }> = ({ frame, seed }) => {
   const r = rng(seed * 313);
-  const sparks = useMemo(() => Array.from({ length: 22 }).map(() => ({
-    x: 80 + r() * 920,
-    baseY: 400 + r() * 1200,
-    speed: 1.2 + r() * 2.2,
-    sway: 12 + r() * 25,
-    size: 2.5 + r() * 4.5,
+  const sparks = useMemo(() => Array.from({ length: 32 }).map(() => ({
+    x: 60 + r() * 960,
+    baseY: 300 + r() * 1400,
+    speed: 1.2 + r() * 2.5,
+    sway: 14 + r() * 28,
+    size: 2.2 + r() * 4.5,
     op: 0.35 + r() * 0.55,
+    color: r() > 0.4 ? '#ffd43b' : '#ff922b',
   })), [seed]);
 
   return (
@@ -1099,15 +1189,22 @@ const DivineParticles: React.FC<{ frame: number; seed: number }> = ({ frame, see
           const x = s.x + Math.sin((frame + i * 20) / 18) * s.sway;
           const pulse = 0.6 + 0.4 * Math.sin(frame / 8 + i);
           return (
-            <circle
-              key={i}
-              cx={x}
-              cy={y}
-              r={s.size}
-              fill="#ffd43b"
-              opacity={s.op * pulse}
-              style={{ filter: 'drop-shadow(0 0 6px #f59f00)' }}
-            />
+            <g key={i}>
+              <circle
+                cx={x}
+                cy={y}
+                r={s.size * 2.8}
+                fill={s.color}
+                opacity={s.op * pulse * 0.3}
+              />
+              <circle
+                cx={x}
+                cy={y}
+                r={s.size}
+                fill="#fff9db"
+                opacity={s.op * pulse * 0.9}
+              />
+            </g>
           );
         })}
       </svg>
@@ -1124,7 +1221,7 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number; trans?: Tra
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const a = scene.actors[scene.focus ?? 0] ?? scene.actors[0];
-  const sc = (a?.scale ?? 1) * 0.70;
+  const sc = (a?.scale ?? 1) * 0.82;
   const focus = a ? { x: a.x, y: (a.y ?? 1360) - 370 * sc } : { x: 540, y: 960 };
   const cam = scene.camera!;
   const auraPulse = scene.beat === 'reveal' ? 1 + Math.sin(frame * 0.15) * 0.12 : 1;
@@ -1215,8 +1312,27 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number; trans?: Tra
 
         <Foreground kind={scene.bg} seed={seed} />
       </Camera>
+
+      {/* Dynamic Action SpeedLines on fight / reveal beats */}
+      {(scene.beat === 'fight' || scene.beat === 'reveal') && (
+        <AnimeSpeedLines
+          color={scene.beat === 'fight' ? '#ff4d4d' : '#ffd700'}
+          count={scene.beat === 'fight' ? 42 : 28}
+          opacity={scene.beat === 'fight' ? 0.35 : 0.22}
+          center={[50, 52]}
+        />
+      )}
+
+      {/* Cinematic Film Vignette & Atmosphere */}
+      <AbsoluteFill
+        style={{
+          pointerEvents: 'none',
+          background: 'radial-gradient(ellipse at 50% 50%, transparent 48%, rgba(6, 3, 2, 0.72) 100%)',
+        }}
+      />
+
       <DivineParticles frame={frame} seed={seed} />
-      <Caption title={scene.caption.title} text={scene.caption.text} />
+      <CinematicSubtitles title={scene.caption.title} narration={scene.narration} text={scene.caption.text} />
       {flashOpacity > 0.01 && <AbsoluteFill style={{ background: '#fff7dc', opacity: flashOpacity }} />}
     </AbsoluteFill>
   );
