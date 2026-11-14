@@ -24,3 +24,4 @@
 | 18 | 2026-11-14 | 🔱 हनुमान जी और सिंदूर की कथा ⚔️ | MindSpark Mythology | Unknown | Self Improvement | https://youtu.be/EXxbjHNY_ME |
 | 19 | 2026-11-14 | 2026-11-14_133539_myth_durga_shumbh_nishumbh | Unknown | Productivity & Wisdom | https://youtu.be/tvPJpW_3FEw |
 | 20 | 2026-11-14 | 2026-11-14_144606_myth_shakti_peeth_ujani_mangalkot | Unknown | Productivity & Wisdom | https://youtu.be/kHkyW9f3fTo |
+| 21 | 2026-11-14 | 2026-11-14_221912_myth_shakti_peeth_guhyeshwari | Unknown | Productivity & Wisdom | https://youtu.be/1JZSxcLP7Uc |
