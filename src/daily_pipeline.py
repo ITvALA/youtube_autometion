@@ -2,6 +2,7 @@
 Strictly 9:16 vertical 1080x1920 with 22 dynamic visual templates.
 Also supports MINDSPARK Mythology Shorts (--mode myth).
 """
+from myth_picker import pick_myth_topic
 import os, sys, re, random, shutil, argparse, datetime, subprocess, pathlib
 from pathlib import Path
 
