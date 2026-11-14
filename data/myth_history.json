@@ -2018,5 +2018,14 @@
     "opening_fx": 4,
     "closing_fx": 2,
     "video_key": "2026-11-14_024550_myth_vaishno_devi_trikuta"
+  },
+  {
+    "topic_id": "hanuman_sindoor",
+    "topic_title": "हनुमान जी और सिंदूर की कथा",
+    "date": "2026-11-14",
+    "seed": 711771,
+    "opening_fx": 0,
+    "closing_fx": 3,
+    "video_key": "2026-11-14_064556_myth_hanuman_sindoor"
   }
 ]
