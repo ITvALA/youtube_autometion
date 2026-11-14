@@ -4,7 +4,7 @@ name: Hourly Loop
 on:
   workflow_dispatch:
   schedule:
-    - cron: "5 */3 * * *"   # watchdog: loop ruk gaya ho to dobara shuru kar deta hai
+    - cron: "5 */6 * * *"   # watchdog: loop ruk gaya ho to dobara shuru kar deta hai
 
 concurrency:
   group: hourly-loop
@@ -17,11 +17,11 @@ permissions:
 jobs:
   loop:
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
 
-      - name: Trigger daily.yml every hour
+      - name: Trigger daily.yml every 4 hour
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -33,13 +33,13 @@ jobs:
             fi
             echo "Round $i: daily.yml trigger at $(date -u)"
             gh workflow run daily.yml --ref main -f mode=myth
-            sleep 3600
+            sleep14400 
           done
           git fetch -q origin main
           if git cat-file -e origin/main:LOOP_OFF 2>/dev/null; then
             echo "LOOP_OFF file mili. Dobara shuru nahi karenge."
             exit 0
           fi
-          echo "5 ghante poore. Loop ko dobara shuru kar raha hoon."
+          echo "4 ghante poore. Loop ko dobara shuru kar raha hoon."
           gh workflow run hourly-loop.yml --ref main
           
