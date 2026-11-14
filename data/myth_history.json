@@ -2027,5 +2027,14 @@
     "opening_fx": 0,
     "closing_fx": 3,
     "video_key": "2026-11-14_064556_myth_hanuman_sindoor"
+  },
+  {
+    "topic_id": "gajendra_moksha",
+    "topic_title": "गजेंद्र मोक्ष: ग्राह के जबड़े से हाथी की पुकार",
+    "date": "2026-11-14",
+    "seed": 110255,
+    "opening_fx": 5,
+    "closing_fx": 1,
+    "video_key": "2026-11-14_104540_myth_gajendra_moksha"
   }
 ]
