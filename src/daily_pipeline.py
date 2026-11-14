@@ -2,7 +2,7 @@
 Strictly 9:16 vertical 1080x1920 with 22 dynamic visual templates.
 Also supports MINDSPARK Mythology Shorts (--mode myth).
 """
-from myth_picker import pick_myth_topic
+
 import os, sys, re, random, shutil, argparse, datetime, subprocess, pathlib
 from pathlib import Path
 
@@ -21,6 +21,7 @@ if str(ROOT / "src") not in sys.path:
 
 from common import ROOT, load_env, jload, jsave
 import theme_engine, template_engine, style_engine, llm, tts, audio, notify
+from myth_picker import pick_myth_topic
 
 THEME_HIST = ROOT / "data" / "theme_history.json"
 slug = lambda s: re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
@@ -79,23 +80,7 @@ def ensure_myth_audio():
         subprocess.run([node, str(ROOT / "scripts" / "make-myth-audio.mjs")], cwd=ROOT, check=True)
 
 
-def pick_myth_topic(forced=None):
-    topics = jload(ROOT / "data" / "myth_topics.json", [])
-    if forced:
-        for t in topics:
-            if t.get("topic", "").lower() == forced.lower() or t.get("title", "").lower() == forced.lower():
-                return t
-        return {"title": forced, "summary": forced, "topic": slug(forced) or "custom"}
-    if not topics:
-        return {"title": "श्रीकृष्ण और अर्जुन: कुरुक्षेत्र का रहस्य", "topic": "krishna_arjuna", "summary": "कुरुक्षेत्र में गीता ज्ञान और विराट रूप।"}
-    hist = jload(ROOT / "data" / "myth_history.json", [])
-    used_ids = {h.get("topic_id") for h in hist if isinstance(h, dict) and h.get("topic_id")}
-    used_titles = {h.get("topic_title") for h in hist if isinstance(h, dict) and h.get("topic_title")}
-    left = [t for t in topics if t.get("topic") not in used_ids and t.get("title") not in used_titles]
-    if not left:
-        print("[Myth] All recent topics exhausted. Resetting topic pool...")
-        left = topics
-    return random.choice(left)
+
 
 
 def run_myth_pipeline(a, voice_cfg, custom_script=None):
