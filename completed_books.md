@@ -29,3 +29,4 @@
 | 23 | 2026-11-15 | 2026-11-15_073047_myth_shakti_peeth_varanasi_vishalakshi | Unknown | Productivity & Wisdom | https://youtu.be/qaxXNqfuYDk |
 | 24 | 2026-11-15 | 2026-11-15_113044_myth_matsya_avatar | Unknown | Productivity & Wisdom | https://youtu.be/sWNWLdAkLg4 |
 | 25 | 2026-11-15 | 2026-11-15_153029_myth_chamunda_chanda_munda | Unknown | Productivity & Wisdom | https://youtu.be/YvX5qn3FVTg |
+| 26 | 2026-11-15 | 2026-11-15_185551_myth_brahma_pushkar_shap | Unknown | Productivity & Wisdom | https://youtu.be/hbN6fAVmp04 |
