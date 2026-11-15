@@ -868,6 +868,27 @@ def validate_myth_plan(plan):
         if not isinstance(narr, str) or not narr.strip():
             return f"scene {idx}: narration must be a non-empty Hindi string"
 
+        # STRICT USER MANDATE: Under no circumstance should a multi-sentence script block or prompt instruction appear on screen!
+        # Strip editorial instructions if any leaked into narration or caption
+        narr_clean = narr.strip()
+        narr_clean = re.sub(r"अलग-अलग ग्रंथों की सूचियों में[\s\S]*$", "", narr_clean).strip()
+        narr_clean = re.sub(r"सिर्फ इसी एक शक्तिपीठ[\s\S]*$", "", narr_clean).strip()
+        narr_clean = re.sub(r"इसे\s*['\"]?मान्यता है['\"]?\s*कहकर बताओ[।!?]?", "", narr_clean).strip()
+
+        # Extract strictly ONE single short sentence
+        sents = [s.strip() for s in re.split(r'[।!?\n\r]+', narr_clean) if len(s.strip()) > 3]
+        single_sent = sents[0] if sents else narr_clean
+        words = single_sent.split()
+        if len(words) > 14:
+            single_sent = " ".join(words[:12])
+        sc["narration"] = single_sent.rstrip("।!? ") + "।"
+
+        # Also ensure caption text is punchy and short (max 8 words)
+        cap_text = str(caption.get("text", "")).strip()
+        cap_words = cap_text.split()
+        if len(cap_words) > 8:
+            caption["text"] = " ".join(cap_words[:7])
+
         actors = sc.get("actors")
         if not isinstance(actors, list) or len(actors) == 0:
             return f"scene {idx}: actors must be a non-empty list"
@@ -1216,6 +1237,20 @@ def generate_fallback_myth_plan(topic=None, seed=None):
 
     short = title.split(":")[0].strip() or title
     clean_summary = summary if summary else f"{title} भारतीय इतिहास और सनातन दर्शन का एक अमर अध्याय है।"
+    # Strip prompt instructions from summary
+    clean_summary = re.sub(r"अलग-अलग ग्रंथों की सूचियों में[\s\S]*$", "", clean_summary).strip()
+    clean_summary = re.sub(r"सिर्फ इसी एक शक्तिपीठ[\s\S]*$", "", clean_summary).strip()
+    clean_summary = re.sub(r"इसे\s*['\"]?मान्यता है['\"]?\s*कहकर बताओ[।!?]?", "", clean_summary).strip()
+
+    # Split clean summary into individual short sentences (strictly 1 sentence per scene)
+    raw_sents = [s.strip() for s in re.split(r'[।!?\n\r]+', clean_summary) if len(s.strip()) > 3]
+    summary_sents = []
+    for s in raw_sents:
+        w = s.split()
+        if len(w) > 13:
+            s = " ".join(w[:12])
+        summary_sents.append(s.rstrip("।!? ") + "।")
+
     actors_seq = _detect_myth_actors_for_topic(title, summary)
     structure = rnd.choice(_FB_STRUCTURES)
 
@@ -1230,7 +1265,7 @@ def generate_fallback_myth_plan(topic=None, seed=None):
         used_dict[beat] += 1
         return item
 
-    scenes, prev_bg, summary_used = [], None, False
+    scenes, prev_bg, summary_sent_idx = [], None, 0
     for idx, (beat, role) in enumerate(structure):
         last = idx == len(structure) - 1
         bgs = [b for b in _FB_BG[beat] if b != prev_bg] or _FB_BG[beat]
@@ -1240,9 +1275,9 @@ def generate_fallback_myth_plan(topic=None, seed=None):
             narration = rnd.choice(_FB_HOOKS).format(short=short)
         elif last:
             narration = rnd.choice(_FB_CLOSINGS).format(short=short)
-        elif beat == "talk" and not summary_used:
-            narration = f"{rnd.choice(_FB_TALK_LEAD)} {clean_summary}"
-            summary_used = True
+        elif beat in ("talk", "reveal") and summary_sent_idx < len(summary_sents):
+            narration = summary_sents[summary_sent_idx]
+            summary_sent_idx += 1
         else:
             narration = take(pools, used, "victory" if beat == "intro" else beat).format(short=short)
         cap_title, cap_text = take(cap_pools, cap_used, beat)
@@ -1369,7 +1404,7 @@ Return ONE valid JSON object only (no markdown, no extra commentary):
         "title": "Short title in Devanagari Hindi (max 4 words)",
         "text": "One line text in Devanagari Hindi"
       },
-      "narration": "8-12 words for Scene 1 hook, 14-20 words for story scenes with powerful dialogues in quotes."
+      "narration": "STRICTLY ONE single short punchy sentence (8-12 words). NEVER write multiple sentences or a paragraph in one scene!"
     }
   ]
 }
@@ -1386,6 +1421,7 @@ STRICT RULES:
 5. Poses: vary them. Use 'walk' for natural walking animation, 'talk' or 'point' when speaking dialogue, 'fight' in action. Mortal characters (raja, soldier, etc.) should NEVER have pose: 'fly' - mortals always stand or pray on the ground. When celestial light or miracles descend from heaven, use bg: 'sky' with pose: 'pray' or 'stand' on earth while the celestial Devi descends blessings from the heavens.
 6. Two characters in a scene: x between 250 and 850, at least 250 apart, and the one on the right has flip true (they face each other).
 7. Do NOT add any camera field. Narration and Caption text MUST be 100% Devanagari Hindi (only the word MindSpark may be Latin).
+8. STRICT 1-SENTENCE SUBTITLE MANDATE: Har scene ka narration STRICTLY EK HI CHHOTA VAAKYA (Maximum 8-12 words) hona chahiye! Poori kahani ya multiple sentences ek scene me bilkul mat daalna. Ek scene = Ek baat (1 punchy line)!
 """
 
 

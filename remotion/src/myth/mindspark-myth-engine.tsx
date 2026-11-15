@@ -1260,22 +1260,46 @@ const CinematicSubtitles: React.FC<{
   narration?: string;
   text: string;
 }> = ({ title, narration, text }) => {
-  const displayText = narration || text;
+  // STRICT USER RULE: Never dump an entire paragraph or multiple sentences on screen.
+  // Strictly display ONE clean, punchy sentence (max ~10-12 words / 1-2 lines in the lower-third).
+  const cleanLine = useMemo(() => {
+    let raw = (narration || text || '').trim();
+    if (!raw) return '';
+
+    // Strip out any editorial / prompt instructions if leaked
+    raw = raw.replace(/अलग-अलग ग्रंथों की सूचियों में[\s\S]*$/i, '').trim();
+    raw = raw.replace(/सिर्फ इसी एक शक्तिपीठ[\s\S]*$/i, '').trim();
+    raw = raw.replace(/इसे\s*['"]?मान्यता है['"]?\s*कहकर बताओ[।!?]?/gi, '').trim();
+
+    // Extract STRICTLY the first single sentence (split by Purna Viram, ?, !, newline)
+    const sentences = raw.split(/[।!?\n\r]+/).map((s) => s.trim()).filter((s) => s.length > 2);
+    let single = sentences.length > 0 ? sentences[0] : raw;
+
+    // If single sentence is still excessively long (> 14 words), take the first 12 words
+    const words = single.split(/\s+/);
+    if (words.length > 14) {
+      single = words.slice(0, 12).join(' ') + '...';
+    }
+    return single;
+  }, [narration, text]);
+
   // Highlight spoken dialogue inside quotes in radiant gold
   const formattedText = useMemo(() => {
-    if (!displayText) return null;
-    const parts = displayText.split(/(".*?"|“.*?”|'.*?')/g);
+    if (!cleanLine) return null;
+    const parts = cleanLine.split(/(".*?"|“.*?”|'.*?')/g);
     return parts.map((part, i) => {
       const isQuote = /^["'“].*["'”]$/.test(part.trim());
       return isQuote ? (
-        <span key={i} style={{ color: '#ffd700', textShadow: '0 0 16px rgba(255, 215, 0, 0.65)' }}>
+        <span key={i} style={{ color: '#ffd700', textShadow: '0 0 16px rgba(255, 215, 0, 0.75)' }}>
           {part}{' '}
         </span>
       ) : (
         <span key={i}>{part} </span>
       );
     });
-  }, [displayText]);
+  }, [cleanLine]);
+
+  if (!cleanLine) return null;
 
   return (
     <>
@@ -1315,13 +1339,13 @@ const CinematicSubtitles: React.FC<{
         </div>
       </div>
 
-      {/* Lower-Third Cinematic Spoken Narration Subtitles */}
+      {/* Lower-Third Cinematic Spoken Narration Subtitles (Clean 1-sentence lower card) */}
       <div
         style={{
           position: 'absolute',
-          left: 36,
-          right: 36,
-          bottom: 125,
+          left: 48,
+          right: 48,
+          bottom: 115,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -1331,17 +1355,17 @@ const CinematicSubtitles: React.FC<{
       >
         <div
           style={{
-            background: 'linear-gradient(180deg, rgba(12, 6, 4, 0.88) 0%, rgba(5, 2, 1, 0.95) 100%)',
-            border: '1.5px solid rgba(255, 215, 0, 0.35)',
-            boxShadow: '0 12px 36px rgba(0,0,0,0.92), 0 0 20px rgba(0,0,0,0.8)',
-            borderRadius: 24,
-            padding: '18px 26px',
-            maxWidth: 1000,
+            background: 'linear-gradient(180deg, rgba(15, 8, 5, 0.92) 0%, rgba(6, 3, 2, 0.96) 100%)',
+            border: '1.5px solid rgba(255, 215, 0, 0.45)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.92), 0 0 18px rgba(255, 215, 0, 0.15)',
+            borderRadius: 22,
+            padding: '14px 28px',
+            maxWidth: 920,
             color: '#ffffff',
-            textShadow: '0 4px 16px rgba(0,0,0,0.98), 0 2px 4px rgba(0,0,0,0.9)',
+            textShadow: '0 3px 12px rgba(0,0,0,0.98), 0 1px 3px rgba(0,0,0,0.9)',
             fontFamily: `${devanagariFont}, 'Noto Sans Devanagari', 'Mukta', sans-serif`,
-            fontSize: 48,
-            lineHeight: 1.38,
+            fontSize: cleanLine.length > 45 ? 36 : 40,
+            lineHeight: 1.34,
             textAlign: 'center',
             fontWeight: 700,
           }}
