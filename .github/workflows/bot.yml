@@ -28,7 +28,7 @@ jobs:
       - name: Install system dependencies (ffmpeg)
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - run: pip install -U -r requirements.txt
+      - run: pip install -r requirements.txt
 
       - name: Configure git for background sync
         run: |
@@ -50,11 +50,11 @@ jobs:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-          IG_SESSIONID: ${{ secrets.IG_SESSIONID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_GRAPH_VERSION: ${{ secrets.IG_GRAPH_VERSION }}
           IG_USERNAME: ${{ secrets.IG_USERNAME }}
           IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
-          IG_APP_VERSION: ${{ secrets.IG_APP_VERSION }}
-          IG_VERSION_CODE: ${{ secrets.IG_VERSION_CODE }}
           IG_TOTP_SECRET: ${{ secrets.IG_TOTP_SECRET }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

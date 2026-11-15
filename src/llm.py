@@ -272,13 +272,13 @@ def _call_gemini(prompt, max_tokens=3500):
     raise RuntimeError(f"Gemini API failed: {last_err}")
 
 
-def _call_groq(prompt, max_tokens=2000):
+def _call_groq(prompt, max_tokens=3500):
     key = os.environ.get("GROQ_API_KEY", "").strip()
     if not key:
         raise RuntimeError("GROQ_API_KEY not configured in environment")
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-    models = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
+    models = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b"]
     last_err = None
     for m in models:
         try:
@@ -295,8 +295,10 @@ def _call_groq(prompt, max_tokens=2000):
             r = requests.post(url, headers=headers, json=body, timeout=45)
             if r.status_code == 200:
                 data = r.json()
-                print(f"[LLM] Generated plan via Groq ({m})!")
-                return data["choices"][0]["message"]["content"]
+                content = data["choices"][0]["message"].get("content", "")
+                if content:
+                    print(f"[LLM] Generated plan via Groq ({m})!")
+                    return content
             else:
                 last_err = f"{m} HTTP {r.status_code}: {r.text[:150]}"
         except Exception as e:
@@ -305,7 +307,7 @@ def _call_groq(prompt, max_tokens=2000):
     raise RuntimeError(f"All Groq models failed: {last_err}")
 
 
-def _call_openai_relay(prompt, max_tokens=2000):
+def _call_openai_relay(prompt, max_tokens=2500):
     key = os.environ.get("LLM_API_KEY") or os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not key:
         raise ValueError("LLM_API_KEY is not set.")
@@ -331,23 +333,17 @@ def _call_openai_relay(prompt, max_tokens=2000):
 
 
 def _call(prompt, max_tokens=None):
-    """Multi-tier LLM engine: Gemini -> Groq -> OpenAI/Relay."""
+    """Primary LLM engine: Groq (Qwen/GPT-OSS) -> OpenAI/Relay Backup (Gemini removed)."""
     errors = []
     kw = {"max_tokens": max_tokens} if max_tokens else {}
-    # 1. Google Gemini (if key configured)
-    if os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY_2"):
-        try:
-            return _call_gemini(prompt, **kw)
-        except Exception as e:
-            errors.append(f"Gemini: {e}")
 
-    # 2. Groq (Always available with high speed)
+    # 1. Groq (Primary high-speed LLM engine)
     try:
         return _call_groq(prompt, **kw)
     except Exception as e:
         errors.append(f"Groq: {e}")
 
-    # 3. LLM Relay / OpenAI (Backup)
+    # 2. LLM Relay / OpenAI (Backup)
     if os.environ.get("LLM_API_KEY") or os.environ.get("ANTHROPIC_API_KEY"):
         try:
             return _call_openai_relay(prompt, **kw)
