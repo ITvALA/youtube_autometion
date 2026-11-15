@@ -31,3 +31,4 @@
 | 25 | 2026-11-15 | 2026-11-15_153029_myth_chamunda_chanda_munda | Unknown | Productivity & Wisdom | https://youtu.be/YvX5qn3FVTg |
 | 26 | 2026-11-15 | 2026-11-15_185551_myth_brahma_pushkar_shap | Unknown | Productivity & Wisdom | https://youtu.be/hbN6fAVmp04 |
 | 27 | 2026-11-15 | 2026-11-15_193105_myth_kadu_makrani_junagadh | Unknown | Productivity & Wisdom | https://youtu.be/LRDkSYhMSFo |
+| 28 | 2026-11-15 | 2026-11-15_233059_myth_aai_nagbai_chotlawali | Unknown | Productivity & Wisdom | https://youtu.be/N1fHjmBotKQ |
