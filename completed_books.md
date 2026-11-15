@@ -26,3 +26,4 @@
 | 20 | 2026-11-14 | 2026-11-14_144606_myth_shakti_peeth_ujani_mangalkot | Unknown | Productivity & Wisdom | https://youtu.be/kHkyW9f3fTo |
 | 21 | 2026-11-14 | 2026-11-14_221912_myth_shakti_peeth_guhyeshwari | Unknown | Productivity & Wisdom | https://youtu.be/1JZSxcLP7Uc |
 | 22 | 2026-11-15 | 2026-11-15_021904_myth_shakti_peeth_jashoreshwari | Unknown | Productivity & Wisdom | https://youtu.be/GDhVMjSANaQ |
+| 23 | 2026-11-15 | 2026-11-15_073047_myth_shakti_peeth_varanasi_vishalakshi | Unknown | Productivity & Wisdom | https://youtu.be/qaxXNqfuYDk |
