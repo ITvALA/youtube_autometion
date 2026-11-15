@@ -7,7 +7,7 @@ on:
       count:
         description: "Number of new topics to harvest"
         type: string
-        default: "5"
+        default: "1"
       source:
         description: "Source to query (all, wikipedia, reddit, local)"
         type: choice
@@ -50,15 +50,15 @@ jobs:
         run: |
           COUNT="${{ inputs.count }}"
           SOURCE="${{ inputs.source }}"
-          [ -z "$COUNT" ] && COUNT=5
+          [ -z "$COUNT" ] && COUNT=1
           [ -z "$SOURCE" ] && SOURCE="all"
-          echo "🚀 Harvesting $COUNT new topics from $SOURCE..."
+          echo "🚀 Harvesting $COUNT new topic(s) from $SOURCE..."
           python scripts/harvest_myth_topics.py --count "$COUNT" --source "$SOURCE"
 
       - name: Commit and Push New Topics
         run: |
           if git status --porcelain data/myth_topics_extra.json | grep -q "data/myth_topics_extra.json"; then
-            echo "📦 New topics discovered! Committing to repository..."
+            echo "📦 New topic(s) discovered! Committing to repository..."
             git config --global user.name "MindSpark Harvester Bot"
             git config --global user.email "bot@mindspark.local"
             git add data/myth_topics_extra.json
@@ -69,3 +69,4 @@ jobs:
           else
             echo "ℹ️ No new topics needed or all candidates already exist in database."
           fi
+

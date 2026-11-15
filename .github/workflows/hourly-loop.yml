@@ -32,6 +32,9 @@ jobs:
           echo "daily.yml trigger at $(date -u)"
           gh workflow run daily.yml --ref main -f mode=myth
 
+          echo "harvest_topics.yml trigger (1 fresh topic) at $(date -u)"
+          gh workflow run harvest_topics.yml --ref main -f count=1 -f source=all
+
           sleep 14400
 
           git fetch -q origin main
