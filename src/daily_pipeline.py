@@ -177,8 +177,8 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
         "closingFx": closing_fx,
         "music": True,
         "sfx": True,
-        "musicVol": 0.16,
-        "duckedVol": 0.08,
+        "musicVol": 0.65,
+        "duckedVol": 0.32,
         "voiceVol": 1.0
     }
     jsave(work / "myth_props.json", myth_props)
@@ -188,7 +188,8 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
     npx = shutil.which("npx.cmd") or shutil.which("npx") or "npx.cmd"
     subprocess.run([
         npx, "remotion", "render", "src/index.ts", "MythShort", str(rendered_mp4),
-        f"--props={(work / 'myth_props.json').resolve().as_posix()}"
+        f"--props={(work / 'myth_props.json').resolve().as_posix()}",
+        "--concurrency=2"
     ], cwd=ROOT / "remotion", check=True)
 
     # Encode to ~16 MB target bitrate for Telegram
@@ -411,7 +412,8 @@ def main():
     
     subprocess.run([
         npx, "remotion", "render", "src/index.ts", "Main", str(silent),
-        f"--props={(work / 'plan.json').resolve().as_posix()}"
+        f"--props={(work / 'plan.json').resolve().as_posix()}",
+        "--concurrency=2"
     ], cwd=ROOT / "remotion", check=True)
 
     # 5. Final Video Assembly
