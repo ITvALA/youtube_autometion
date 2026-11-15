@@ -189,7 +189,8 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
     subprocess.run([
         npx, "remotion", "render", "src/index.ts", "MythShort", str(rendered_mp4),
         f"--props={(work / 'myth_props.json').resolve().as_posix()}",
-        "--concurrency=2"
+        "--concurrency=2",
+        "--gl=angle"
     ], cwd=ROOT / "remotion", check=True)
 
     # Encode to ~16 MB target bitrate for Telegram
