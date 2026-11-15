@@ -1383,7 +1383,7 @@ STRICT RULES:
    - For kings/warriors use 'raja' or 'soldier', for wise sages use 'rishi' or 'guru', for outlaws use 'chor', or specific epic heroes/gods.
 3. Allowed backgrounds: palace, forest, pond, temple, battlefield, sky. Use at least 4 different backgrounds.
 4. Beats: Scene 1 'intro' or 'reveal', middle 'talk'/'fight'/'reveal', last scene 'victory'. Use 'talk' with dialogue quotes so character mouth flap animates.
-5. Poses: vary them. Use 'walk' for natural walking animation, 'talk' or 'point' when speaking dialogue, 'fight' in action.
+5. Poses: vary them. Use 'walk' for natural walking animation, 'talk' or 'point' when speaking dialogue, 'fight' in action. Mortal characters (raja, soldier, etc.) should NEVER have pose: 'fly' - mortals always stand or pray on the ground. When celestial light or miracles descend from heaven, use bg: 'sky' with pose: 'pray' or 'stand' on earth while the celestial Devi descends blessings from the heavens.
 6. Two characters in a scene: x between 250 and 850, at least 250 apart, and the one on the right has flip true (they face each other).
 7. Do NOT add any camera field. Narration and Caption text MUST be 100% Devanagari Hindi (only the word MindSpark may be Latin).
 """
@@ -1559,7 +1559,7 @@ STRICT NARRATIVE MANDATES FOR THIS SCRIPT:
               .replace("__STYLE__", rnd.choice(_MYTH_STYLES))
               .replace("__TONE__", rnd.choice(_MYTH_TONES))
               .replace("__CONTEXT__", story_context)
-              .replace("__N__", rnd.choice(["10", "11", "10", "11"]))
+              .replace("__N__", rnd.choice(["7", "8", "7", "8"]))
               .replace("__ROSTER__", ", ".join(sorted(list(ROSTER_GODS)))))
 
     err = None

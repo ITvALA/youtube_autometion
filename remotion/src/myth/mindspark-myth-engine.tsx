@@ -656,8 +656,10 @@ const ENTER_FRAMES = 50;
 const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: number }> = ({ a, frame, talking = false, idx = 0 }) => {
   const g = ROSTER[a.who as string] ?? ROSTER.krishna;
   const dir = a.enter === 'left' ? -1 : a.enter === 'right' ? 1 : 0;
-  const entering = dir !== 0 && frame < ENTER_FRAMES && a.pose !== 'fly' && a.pose !== 'sit';
-  const pose: Pose = entering ? 'walk' : a.pose;
+  const isFlier = a.who === 'hanuman' || a.who === 'garuda';
+  const effectivePose: Pose = (a.pose === 'fly' && !isFlier) ? 'pray' : a.pose;
+  const entering = dir !== 0 && frame < ENTER_FRAMES && effectivePose !== 'fly' && effectivePose !== 'sit';
+  const pose: Pose = entering ? 'walk' : effectivePose;
   const P = POSES[pose] ?? POSES.stand;
   const sc = (a.scale ?? 1) * 0.82;
   const isDivine = ['durga', 'krishna', 'shiva', 'vishnu', 'brahma', 'parvati', 'kali', 'lakshmi', 'saraswati'].includes(String(a.who).toLowerCase());
@@ -690,12 +692,13 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
   const humanArmSwingR = walkingNow ? Math.sin(walkStep) * 28 : (pose === 'fight' ? Math.sin(frame / 4.2) * 65 : idle * 4);
 
   // Human vertical bounce (bobbing twice per step cycle)
-  const humanBob = walkingNow ? Math.abs(Math.sin(walkStep)) * 8 : pose === 'fly' ? Math.sin(frame / 7) * 22 : pose === 'sit' ? Math.sin(frame / 14) * 3 : idle * 2.5;
-  const humanTorsoSway = walkingNow ? Math.sin(walkStep) * 2.2 : pose === 'fight' || pose === 'fly' ? 0 : Math.sin(frame / 27 + idx) * 1.4;
+  const canFly = pose === 'fly' && isFlier;
+  const humanBob = walkingNow ? Math.abs(Math.sin(walkStep)) * 8 : canFly ? Math.sin(frame / 7) * 22 : pose === 'sit' ? Math.sin(frame / 14) * 3 : idle * 2.5;
+  const humanTorsoSway = walkingNow ? Math.sin(walkStep) * 2.2 : pose === 'fight' || canFly ? 0 : Math.sin(frame / 27 + idx) * 1.4;
 
   const sitDrop = pose === 'sit' ? 120 : 0;
-  const flyRot = pose === 'fly' ? 72 : 0;
-  const lift = pose === 'fly' ? -260 : 0;
+  const flyRot = canFly ? 72 : 0;
+  const lift = canFly ? -260 : 0;
 
   // Emotional gestures while speaking
   const gest = talking || pose === 'talk' || pose === 'point' ? Math.sin(frame / 4.5 + idx * 2) * 10 : 0;
@@ -717,7 +720,7 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
     <g transform={`translate(0,${sitDrop + humanBob}) rotate(${flyRot + humanTorsoSway} 0 0)`}>
       {pose === 'sit' && <RoyalThrone />}
 
-      {pose === 'fly' && [0, 1, 2, 3].map((i) => (
+      {canFly && [0, 1, 2, 3].map((i) => (
         <line key={i} x1={-60 - ((frame * 22 + i * 90) % 360)} y1={-180 + i * 110} x2={-160 - ((frame * 22 + i * 90) % 360)} y2={-180 + i * 110}
           stroke="#fff" strokeOpacity={0.5} strokeWidth={6} strokeLinecap="round" />))}
 
@@ -830,6 +833,174 @@ const Layer: React.FC<{ depth: number; children: React.ReactNode }> = ({ depth, 
   );
 };
 
+/* ───────────────────────── CELESTIAL DEVI (आई वरुडी / माँ भगवती दिव्य दर्शन) ───────────────────────── */
+const CelestialDevi: React.FC<{ frame: number; seed: number }> = ({ frame, seed }) => {
+  const glowPulse = 1 + Math.sin(frame * 0.12) * 0.1;
+  const rayRot = (frame * 0.25) % 360;
+
+  return (
+    <g transform="translate(1200, 720)">
+      <defs>
+        {/* Divine Golden Radiant Core */}
+        <radialGradient id={`deviAura${seed}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#fff7d6" stopOpacity={0.98} />
+          <stop offset="35%" stopColor="#ffd43b" stopOpacity={0.8} />
+          <stop offset="70%" stopColor="#ff922b" stopOpacity={0.45} />
+          <stop offset="100%" stopColor="#ff6b1a" stopOpacity={0} />
+        </radialGradient>
+        {/* Heavenly Beam descending to Earth */}
+        <linearGradient id={`heavenBeam${seed}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity={0.95} />
+          <stop offset="25%" stopColor="#ffe680" stopOpacity={0.8} />
+          <stop offset="65%" stopColor="#ffd43b" stopOpacity={0.5} />
+          <stop offset="100%" stopColor="#ff922b" stopOpacity={0.1} />
+        </linearGradient>
+      </defs>
+
+      {/* 1. Divine Giant God-Rays (24 rotating sunbeams covering the heavens) */}
+      <g transform={`rotate(${rayRot})`} opacity={0.75}>
+        {Array.from({ length: 24 }).map((_, i) => (
+          <path
+            key={i}
+            d={`M0,0 L${Math.cos((i * 15 * Math.PI) / 180) * 1800},${Math.sin((i * 15 * Math.PI) / 180) * 1800} L${Math.cos(((i * 15 + 7) * Math.PI) / 180) * 1800},${Math.sin(((i * 15 + 7) * Math.PI) / 180) * 1800} Z`}
+            fill="#ffe066"
+            opacity={i % 2 === 0 ? 0.38 : 0.2}
+          />
+        ))}
+      </g>
+
+      {/* 2. Concentric Pulsing Sacred Halos */}
+      <circle cx={0} cy={0} r={520 * glowPulse} fill={`url(#deviAura${seed})`} />
+      <circle cx={0} cy={0} r={320} fill="#ffd700" opacity={0.55} style={{ filter: 'blur(25px)' }} />
+
+      {/* 3. Celestial Beam of Divine Light descending directly from Devi's Hand towards the Earth */}
+      <polygon points="50,20 -500,2160 600,2160" fill={`url(#heavenBeam${seed})`} style={{ mixBlendMode: 'screen' }} />
+      {/* Shimmering core light rays inside beam */}
+      {[-260, -130, 0, 130, 260].map((rx, idx) => (
+        <line
+          key={idx}
+          x1={50}
+          y1={20}
+          x2={rx * 2}
+          y2={2160}
+          stroke="#ffffff"
+          strokeWidth={5 + Math.sin(frame * 0.2 + idx) * 2.5}
+          opacity={0.65 + Math.sin(frame * 0.15 + idx) * 0.3}
+          style={{ mixBlendMode: 'screen' }}
+        />
+      ))}
+
+      {/* 4. Colossal Divine Goddess Figure (आई वरुडी / शक्ति रूप) */}
+      <g transform="translate(0, -80) scale(1.45)">
+        {/* Divine Golden Halo behind head */}
+        <circle cx={0} cy={-130} r={105} fill="#ffd43b" stroke={GOLD} strokeWidth={6} style={{ filter: 'drop-shadow(0 0 28px #ff922b)' }} />
+        {Array.from({ length: 16 }).map((_, j) => (
+          <line
+            key={j}
+            x1={0}
+            y1={-130}
+            x2={Math.cos((j * 22.5 * Math.PI) / 180) * 138}
+            y2={-130 + Math.sin((j * 22.5 * Math.PI) / 180) * 138}
+            stroke={GOLD}
+            strokeWidth={4.5}
+          />
+        ))}
+
+        {/* 4 Divine Arms (चतुर्भुज देवी रूप) */}
+        {/* Upper Left Arm holding Sacred Trishul */}
+        <g transform="translate(-70, -30) rotate(-35)">
+          <path d="M0,0 L-75,-115" stroke="#f0b27a" strokeWidth={18} strokeLinecap="round" />
+          <g transform="translate(-75, -115)">
+            <line x1={0} y1={-80} x2={0} y2={180} stroke={GOLD} strokeWidth={7} />
+            <path d="M0,-80 L0,-140" stroke={GOLD} strokeWidth={8} />
+            <path d="M0,-100 Q-45,-120 -40,-150" fill="none" stroke={GOLD} strokeWidth={6} />
+            <path d="M0,-100 Q45,-120 40,-150" fill="none" stroke={GOLD} strokeWidth={6} />
+          </g>
+        </g>
+
+        {/* Upper Right Arm holding Divine Lotus (कमल) */}
+        <g transform="translate(70, -30) rotate(35)">
+          <path d="M0,0 L75,-115" stroke="#f0b27a" strokeWidth={18} strokeLinecap="round" />
+          <g transform="translate(75, -115)">
+            <path d="M0,0 Q-25,-30 0,-60 Q25,-30 0,0" fill="#ff6b8b" stroke="#c92a2a" strokeWidth={3} />
+            <path d="M-8,-10 Q-40,-35 -20,-60 Q-5,-45 -8,-10" fill="#f783ac" />
+            <path d="M8,-10 Q40,-35 20,-60 Q5,-45 8,-10" fill="#f783ac" />
+          </g>
+        </g>
+
+        {/* Lower Left Arm in Varada Mudra */}
+        <path d="M-52,10 Q-95,60 -75,115" fill="none" stroke="#f0b27a" strokeWidth={18} strokeLinecap="round" />
+
+        {/* Lower Right Blessing Hand (वरद / अभय हस्त - जहाँ से दिव्य रोशनी निकल रही है) */}
+        <g transform="translate(52, 10)">
+          <path d="M0,0 Q50,30 40,70" fill="none" stroke="#f0b27a" strokeWidth={18} strokeLinecap="round" />
+          {/* Hand palm facing forward glowing intensely with pure divine light */}
+          <g transform="translate(40, 70)">
+            <ellipse cx={0} cy={0} rx={18} ry={22} fill="#f0b27a" stroke={GOLD} strokeWidth={3} />
+            <circle cx={0} cy={-2} r={35 * glowPulse} fill="#ffffff" opacity={0.92} style={{ filter: 'drop-shadow(0 0 25px #ffd700)' }} />
+            <circle cx={0} cy={-2} r={16} fill="#fff9db" />
+          </g>
+        </g>
+
+        {/* Sacred Red Saree & Golden Robes (रक्तवर्णी दिव्य साड़ी) */}
+        <path d="M-58,-60 L58,-60 L90,165 L-90,165 Z" fill="#c92a2a" stroke={GOLD} strokeWidth={4} />
+        {/* Golden Zari & Ornaments */}
+        <path d="M-58,-60 Q0,40 58,-60" fill="none" stroke={GOLD} strokeWidth={8} />
+        <path d="M-80,50 Q0,115 80,50" fill="none" stroke={GOLD} strokeWidth={6} />
+        <line x1={0} y1={-60} x2={0} y2={165} stroke={GOLD} strokeWidth={8} />
+
+        {/* Devi Head & Face */}
+        <ellipse cx={0} cy={-120} rx={38} ry={46} fill="#f0b27a" stroke={INK} strokeWidth={3} />
+        {/* Long dark celestial hair */}
+        <path d="M-38,-130 C-58,-90 -68,-20 -52,50" fill="none" stroke="#1a0a06" strokeWidth={15} strokeLinecap="round" />
+        <path d="M38,-130 C58,-90 68,-20 52,50" fill="none" stroke="#1a0a06" strokeWidth={15} strokeLinecap="round" />
+
+        {/* Third Eye (त्रिनेत्र) & Sacred Chandan Bindi */}
+        <ellipse cx={0} cy={-132} rx={3.5} ry={7} fill="#c92a2a" />
+        <circle cx={0} cy={-121} r={4.5} fill="#c92a2a" />
+        {/* Compassionate divine eyes */}
+        <ellipse cx={-15} cy={-119} rx={8.5} ry={4.5} fill="#ffffff" stroke={INK} strokeWidth={1.5} />
+        <circle cx={-14} cy={-119} r={3.5} fill="#1a0a06" />
+        <ellipse cx={15} cy={-119} rx={8.5} ry={4.5} fill="#ffffff" stroke={INK} strokeWidth={1.5} />
+        <circle cx={16} cy={-119} r={3.5} fill="#1a0a06" />
+        {/* Divine Smile */}
+        <path d="M-9,-105 Q0,-100 9,-105" fill="none" stroke="#8a1820" strokeWidth={3} strokeLinecap="round" />
+
+        {/* Ornate Royal Golden Mukut (विशाल स्वर्णिम मुकुट) */}
+        <path d="M-38,-140 L38,-140 L30,-200 L0,-248 L-30,-200 Z" fill={GOLD} stroke={INK} strokeWidth={4} />
+        <polygon points="0,-248 -9,-210 9,-210" fill="#e03131" />
+        <circle cx={0} cy={-180} r={9} fill="#2b8a3e" stroke={GOLD} strokeWidth={2} />
+        <circle cx={-18} cy={-170} r={6.5} fill="#e03131" stroke={GOLD} strokeWidth={1.5} />
+        <circle cx={18} cy={-170} r={6.5} fill="#e03131" stroke={GOLD} strokeWidth={1.5} />
+
+        {/* Sacred Pink Lotus Throne beneath Goddess */}
+        <g transform="translate(0, 165)">
+          <ellipse cx={0} cy={16} rx={170} ry={38} fill="#ff6b8b" stroke="#c92a2a" strokeWidth={3} />
+          {[-130, -75, -22, 22, 75, 130].map((lx, k) => (
+            <path key={k} d={`M${lx - 28},16 Q${lx},-28 ${lx + 28},16 Z`} fill="#f783ac" stroke="#c92a2a" strokeWidth={2} />
+          ))}
+        </g>
+      </g>
+
+      {/* Billowy divine clouds rolling beneath her lotus throne */}
+      <g opacity={0.88}>
+        {[-500, -270, 0, 270, 500].map((cx, i) => (
+          <ellipse
+            key={i}
+            cx={cx + Math.sin(frame * 0.05 + i) * 22}
+            cy={280 + (i % 2) * 38}
+            rx={170 + (i % 3) * 32}
+            ry={70}
+            fill="#ffffff"
+            opacity={0.85}
+            style={{ filter: 'blur(10px)' }}
+          />
+        ))}
+      </g>
+    </g>
+  );
+};
+
 const Tree: React.FC<{ x: number; base: number; h: number; hue: number; pine?: boolean }> = ({ x, base, h, hue, pine }) => (
   <g transform={`translate(${x},${base})`}>
     <rect x={-h * 0.05} y={-h * 0.45} width={h * 0.1} height={h * 0.45} fill="#2b1810" />
@@ -853,7 +1024,7 @@ const World: React.FC<{ kind: BgKind; seed: number; frame: number }> = ({ kind, 
     pond: ['#0d1b3d', '#2a3d6b'],
     temple: ['#1a0a06', '#5a2a12'],
     battlefield: ['#2a0a08', `hsl(${10 + warm},70%,32%)`],
-    sky: ['#0a1030', '#4a6fd0'],
+    sky: ['#140722', '#3f1338'],
     palace: ['#1a071d', '#421238'],
   };
   const [c1, c2] = sky[kind];
@@ -995,6 +1166,13 @@ const World: React.FC<{ kind: BgKind; seed: number; frame: number }> = ({ kind, 
           </Layer>
         </>
       )}
+      {kind === 'sky' && (
+        <Layer depth={0.35}>
+          <svg width={2400} height={2880} style={{ position: 'absolute' }}>
+            <CelestialDevi frame={frame} seed={seed} />
+          </svg>
+        </Layer>
+      )}
       {/* ground */}
       <Layer depth={0.8}>
         <svg width={2400} height={2880} style={{ position: 'absolute' }}>
@@ -1003,8 +1181,15 @@ const World: React.FC<{ kind: BgKind; seed: number; frame: number }> = ({ kind, 
             y={1760}
             width={2400}
             height={1120}
-            fill={kind === 'battlefield' ? '#3a1a10' : kind === 'palace' ? '#220e24' : `hsl(${hue},35%,14%)`}
+            fill={kind === 'battlefield' ? '#3a1a10' : kind === 'palace' ? '#220e24' : kind === 'sky' ? '#140c1f' : `hsl(${hue},35%,14%)`}
           />
+          {kind === 'sky' && (
+            <g>
+              <polygon points="0,1740 320,1660 680,1740 1050,1640 1480,1740 1880,1630 2400,1740 2400,2880 0,2880" fill="#140d22" />
+              <ellipse cx={1200} cy={1780} rx={520} ry={85} fill="#ffd700" opacity={0.65} style={{ filter: 'blur(22px)' }} />
+              <ellipse cx={1200} cy={1780} rx={220} ry={35} fill="#ffffff" opacity={0.85} style={{ filter: 'blur(10px)' }} />
+            </g>
+          )}
           {kind === 'pond' && (<g>
             <ellipse cx={1200} cy={1840} rx={760} ry={150} fill="#2d5aa8" opacity={0.9} />
             {[0, 1, 2].map((i) => (<ellipse key={i} cx={1200} cy={1840} rx={140 + ((frame * 3 + i * 90) % 270)} ry={(140 + ((frame * 3 + i * 90) % 270)) * 0.2} fill="none" stroke="#bcd4ff" strokeOpacity={0.5} strokeWidth={4} />))}
