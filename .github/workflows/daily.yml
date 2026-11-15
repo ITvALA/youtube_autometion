@@ -179,7 +179,7 @@ jobs:
           key: ig-session-${{ github.run_id }}
           restore-keys: ig-session-
 
-      - name: Upload to Instagram (1/day, optional)
+      - name: Upload to Instagram (3/day)
         if: steps.guard.outputs.skip != 'true' && vars.IG_AUTO_UPLOAD == 'true'
         continue-on-error: true
         env:
@@ -190,8 +190,12 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          if [ "$(date -u +%H)" != "12" ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            echo "Instagram: aaj ka slot nahi, skip."
+          # 10# ensures bash treats 08, 09 as base-10 numbers
+          HOUR=$((10#$(date -u +%H)))
+          # Har 4 ghante ke loop mein (HOUR / 4) % 2 check karne se alternate runs (6 me se 3) hi chalenge
+          SLOT=$(( (HOUR / 4) % 2 ))
+          if [ "$SLOT" -ne 0 ]; then
+            echo "Instagram: is 4-hour slot ko skip kar rahe hain (din me max 3 upload)."
             exit 0
           fi
           python src/instagram_upload.py data/output/*/
