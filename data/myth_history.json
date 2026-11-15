@@ -2090,5 +2090,14 @@
     "opening_fx": 1,
     "closing_fx": 0,
     "video_key": "2026-11-15_073047_myth_shakti_peeth_varanasi_vishalakshi"
+  },
+  {
+    "topic_id": "matsya_avatar",
+    "topic_title": "मत्स्य अवतार: मनु और प्रलय की नाव",
+    "date": "2026-11-15",
+    "seed": 244238,
+    "opening_fx": 4,
+    "closing_fx": 1,
+    "video_key": "2026-11-15_113044_myth_matsya_avatar"
   }
 ]
