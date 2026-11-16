@@ -36,3 +36,4 @@
 | 30 | 2026-11-16 | 2026-11-16_063432_myth_shakti_peeth_jalandhar_devi_talab | Unknown | Productivity & Wisdom | https://youtu.be/77F2mqe32BA |
 | 31 | 2026-11-16 | 2026-11-16_073142_myth_annapurna_shiv_bhiksha | Unknown | Productivity & Wisdom | https://youtu.be/51wKDM-_xb8 |
 | 32 | 2026-11-16 | 2026-11-16_113204_myth_brihadisvara_shadow_mystery | Unknown | Productivity & Wisdom | https://youtu.be/x-230-Fdq2U |
+| 33 | 2026-11-16 | 2026-11-16_153223_myth_ra_navghan_aai_varudi | Unknown | Productivity & Wisdom | https://youtu.be/crz2eiKU8XM |
