@@ -39,3 +39,4 @@
 | 33 | 2026-11-16 | 2026-11-16_153223_myth_ra_navghan_aai_varudi | Unknown | Productivity & Wisdom | https://youtu.be/crz2eiKU8XM |
 | 34 | 2026-11-16 | 2026-11-16_193243_myth_shakti_peeth_vibhash_tamluk | Unknown | Productivity & Wisdom | https://youtu.be/XMe2SIUeyug |
 | 35 | 2026-11-16 | 2026-11-16_220523_myth_sita_dharti_samaye | Unknown | Productivity & Wisdom | https://youtu.be/EG8cAhfXIAU |
+| 36 | 2026-11-16 | 2026-11-16_233408_myth_shakti_peeth_nandikeshwari | Unknown | Productivity & Wisdom | https://youtu.be/ZUs42QnVt1g |
