@@ -43,3 +43,4 @@
 | 37 | 2026-11-17 | 2026-11-17_033334_myth_shakti_peeth_jayanti_nartiang | Unknown | Productivity & Wisdom | https://youtu.be/6GjjVvB3tGY |
 | 38 | 2026-11-17 | 2026-11-17_073410_myth_varaha_avatar | Unknown | Productivity & Wisdom | https://youtu.be/pyBCn9nXE2A |
 | 39 | 2026-11-17 | 2026-11-17_113359_myth_aai_kambai_charan | Unknown | Productivity & Wisdom | https://youtu.be/V1xebuDzk5M |
+| 40 | 2026-11-17 | 2026-11-17_153438_myth_shakti_peeth_amarnath | Unknown | Productivity & Wisdom | https://youtu.be/5JBxiRTaJfk |
