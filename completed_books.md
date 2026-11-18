@@ -49,3 +49,4 @@
 | 43 | 2026-11-17 | 2026-11-17_233547_myth_jyotirlinga_kedarnath | Unknown | Productivity & Wisdom | https://youtu.be/IsikT-AY9uY |
 | 44 | 2026-11-18 | 2026-11-18_033515_myth_jyotirlinga_grishneshwar | Unknown | Productivity & Wisdom | https://youtu.be/TQdxbMkKOCs |
 | 45 | 2026-11-18 | 2026-11-18_075458_myth_jyotirlinga_somnath | Unknown | Productivity & Wisdom | https://youtu.be/msNos60oBVw |
+| 46 | 2026-11-18 | 2026-11-18_113539_myth_jyotirlinga_rameshwaram | Unknown | Productivity & Wisdom | https://youtu.be/2hdwvucnsW8 |
