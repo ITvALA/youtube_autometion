@@ -52,3 +52,4 @@
 | 46 | 2026-11-18 | 2026-11-18_113539_myth_jyotirlinga_rameshwaram | Unknown | Productivity & Wisdom | https://youtu.be/2hdwvucnsW8 |
 | 47 | 2026-11-18 | 2026-11-18_154915_myth_shakti_peeth_ambaji | Unknown | Productivity & Wisdom | https://youtu.be/gW4_i0w6HE0 |
 | 48 | 2026-11-18 | 2026-11-18_193649_myth_ashapura_mata_kutch | Unknown | Productivity & Wisdom | https://youtu.be/AHnAkfHMla0 |
+| 49 | 2026-11-18 | 2026-11-18_233644_myth_shakti_peeth_tripura_sundari | Unknown | Productivity & Wisdom | https://youtu.be/vxCnL21SLSE |
