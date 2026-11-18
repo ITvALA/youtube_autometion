@@ -47,3 +47,4 @@
 | 41 | 2026-11-17 | 2026-11-17_193428_myth_shakti_peeth_shri_shail | Unknown | Productivity & Wisdom | https://youtu.be/zPmX01dcF7E |
 | 42 | 2026-11-17 | 2026-11-17_205958_myth_brahma_saraswati | Unknown | Productivity & Wisdom | https://youtu.be/lqCuWSf-JF0 |
 | 43 | 2026-11-17 | 2026-11-17_233547_myth_jyotirlinga_kedarnath | Unknown | Productivity & Wisdom | https://youtu.be/IsikT-AY9uY |
+| 44 | 2026-11-18 | 2026-11-18_033515_myth_jyotirlinga_grishneshwar | Unknown | Productivity & Wisdom | https://youtu.be/TQdxbMkKOCs |
