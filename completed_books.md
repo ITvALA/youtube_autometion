@@ -55,3 +55,4 @@
 | 49 | 2026-11-18 | 2026-11-18_233644_myth_shakti_peeth_tripura_sundari | Unknown | Productivity & Wisdom | https://youtu.be/vxCnL21SLSE |
 | 50 | 2026-11-19 | 2026-11-19_033657_myth_shakti_peeth_harsiddhi_ujjain | Unknown | Productivity & Wisdom | https://youtu.be/Uhmd_uHNy44 |
 | 51 | 2026-11-19 | 2026-11-19_075818_myth_shakti_peeth_kamakhya | Unknown | Productivity & Wisdom | https://youtu.be/pLZXWniDydM |
+| 52 | 2026-11-19 | 2026-11-19_114043_myth_krishna_govardhan | Unknown | Productivity & Wisdom | https://youtu.be/ccsnb1unKh8 |
