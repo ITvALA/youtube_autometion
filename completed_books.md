@@ -59,3 +59,4 @@
 | 53 | 2026-11-19 | 2026-11-19_153803_myth_shakti_peeth_pithapuram | Unknown | Productivity & Wisdom | https://youtu.be/eE4cLbf4jnE |
 | 54 | 2026-11-19 | 2026-11-19_193755_myth_jwalaji_akbar_chhatra | Unknown | Productivity & Wisdom | https://youtu.be/JFc4IQFQUSM |
 | 55 | 2026-11-19 | 2026-11-19_204446_myth_karni_mata_deshnoke | Unknown | Productivity & Wisdom | https://youtu.be/q4Wh6H68y2I |
+| 56 | 2026-11-19 | 2026-11-19_233824_myth_pabuji_rathore_sacrifice | Unknown | Productivity & Wisdom | https://youtu.be/1P43ZUH-0AY |
