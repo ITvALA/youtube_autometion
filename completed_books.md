@@ -54,3 +54,4 @@
 | 48 | 2026-11-18 | 2026-11-18_193649_myth_ashapura_mata_kutch | Unknown | Productivity & Wisdom | https://youtu.be/AHnAkfHMla0 |
 | 49 | 2026-11-18 | 2026-11-18_233644_myth_shakti_peeth_tripura_sundari | Unknown | Productivity & Wisdom | https://youtu.be/vxCnL21SLSE |
 | 50 | 2026-11-19 | 2026-11-19_033657_myth_shakti_peeth_harsiddhi_ujjain | Unknown | Productivity & Wisdom | https://youtu.be/Uhmd_uHNy44 |
+| 51 | 2026-11-19 | 2026-11-19_073043_myth_meldi_mata_parcha | Unknown | Productivity & Wisdom | https://youtu.be/Be1sBxLuzvc |
