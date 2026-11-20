@@ -65,3 +65,4 @@
 | 59 | 2026-11-20 | 2026-11-20_074054_myth_shakti_peeth_kalighat | Unknown | Productivity & Wisdom | https://youtu.be/kYqj9_Wqu8U |
 | 60 | 2026-11-20 | 2026-11-20_113938_myth_shakti_peeth_attahas | Unknown | Productivity & Wisdom | https://youtu.be/A0jXxRgVZRA |
 | 61 | 2026-11-20 | 2026-11-20_151212_myth_hadi_rani_sheesh_daan | Unknown | Productivity & Wisdom | https://youtu.be/yK0MsiqS32c |
+| 62 | 2026-11-20 | 2026-11-20_170408_pf_jyotirlinga_vaidyanath | Unknown | Productivity & Wisdom | https://youtu.be/kdr3YVpGKw0 |

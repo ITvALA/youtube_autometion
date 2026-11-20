@@ -2396,5 +2396,13 @@
     "opening_fx": 3,
     "closing_fx": 2,
     "video_key": "2026-11-20_151212_myth_hadi_rani_sheesh_daan"
+  },
+  {
+    "topic_id": "jyotirlinga_vaidyanath",
+    "topic_title": "वैद्यनाथ ज्योतिर्लिंग: रावण की तपस्या और अटका हुआ शिवलिंग",
+    "date": "2026-11-20",
+    "seed": 245777,
+    "engine": "paperfilm",
+    "video_key": "2026-11-20_170408_pf_jyotirlinga_vaidyanath"
   }
 ]
