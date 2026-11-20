@@ -63,3 +63,4 @@
 | 57 | 2026-11-20 | 2026-11-20_033831_myth_jyotirlinga_mahakaleshwar | Unknown | Productivity & Wisdom | https://youtu.be/VTnI9rIVclo |
 | 58 | 2026-11-20 | 2026-11-20_042229_myth_yayati_puru_yauvan_tyag | Unknown | Productivity & Wisdom | https://youtu.be/axJO38atv84 |
 | 59 | 2026-11-20 | 2026-11-20_074054_myth_shakti_peeth_kalighat | Unknown | Productivity & Wisdom | https://youtu.be/kYqj9_Wqu8U |
+| 60 | 2026-11-20 | 2026-11-20_113938_myth_shakti_peeth_attahas | Unknown | Productivity & Wisdom | https://youtu.be/A0jXxRgVZRA |
