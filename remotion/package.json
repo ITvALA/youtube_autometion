@@ -10,7 +10,10 @@
     "check": "tsc --noEmit",
     "myth:audio": "node ../scripts/make-myth-audio.mjs",
     "myth:preview": "remotion preview src/index.ts MythShort",
-    "myth:render": "remotion render src/index.ts MythShort out/myth_demo.mp4"
+    "myth:render": "remotion render src/index.ts MythShort out/myth_demo.mp4",
+    "paperfilm:studio": "remotion studio src/index.ts",
+    "paperfilm:render": "remotion render src/cinematic/entry.tsx PaperFilm out/paperfilm.mp4 --props=../data/demo_paperfilm.json",
+    "paperfilm:render:myth": "remotion render src/cinematic/entry.tsx PaperFilm out/paperfilm_myth.mp4 --props=../data/demo_paperfilm_myth.json"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
