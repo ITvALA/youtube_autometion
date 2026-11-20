@@ -267,6 +267,20 @@ def run_myth_pipeline(a, voice_cfg, custom_script=None):
     print("DONE:", final)
 
 
+def _run_logged(cmd, cwd, tail_lines=14):
+    """Run a command, stream its output to the Actions log, and on failure raise an error that contains the last lines."""
+    proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            text=True, encoding="utf-8", errors="replace")
+    tail = []
+    for line in proc.stdout:
+        print(line, end="")
+        if line.strip():
+            tail.append(line.strip())
+            tail = tail[-tail_lines:]
+    if proc.wait() != 0:
+        raise RuntimeError("render failed (exit %s): %s" % (proc.returncode, " || ".join(tail)[-700:]))
+
+
 def run_paperfilm_pipeline(a, voice_cfg, custom_script=None):
     """Mythology Short rendered with the PaperFilm engine (remotion/src/cinematic/PaperFilm.tsx)."""
     print("=" * 60)
@@ -313,12 +327,12 @@ def run_paperfilm_pipeline(a, voice_cfg, custom_script=None):
     print("🎬 Rendering PaperFilm via Remotion...")
     rendered_mp4 = work / "rendered.mp4"
     npx = shutil.which("npx.cmd") or shutil.which("npx") or "npx.cmd"
-    subprocess.run([
+    _run_logged([
         npx, "remotion", "render", "src/cinematic/entry.tsx", "PaperFilm", str(rendered_mp4),
         f"--props={(work / 'pf_props.json').resolve().as_posix()}",
         "--concurrency=2",
         "--gl=angle"
-    ], cwd=ROOT / "remotion", check=True)
+    ], cwd=ROOT / "remotion")
 
     # final: video (+ its whoosh/thump sfx track) + voice/BGM, ~16 MB for Telegram
     final = out / "final.mp4"
@@ -433,9 +447,14 @@ def main():
                 return
             except Exception as e:
                 # safety net: a PaperFilm failure must not kill the daily video
-                print(f"⚠️ PaperFilm engine failed ({type(e).__name__}: {e}) - falling back to old MythShort engine")
+                import traceback
+                tb = traceback.format_exc()
+                print(f"::error::PaperFilm engine failed ({type(e).__name__}: {e})")
+                print(tb)
+                print("⚠️ falling back to old MythShort engine")
                 try:
-                    notify.send_msg(f"⚠️ PaperFilm failed, MythShort fallback chala: {str(e)[:200]}")
+                    where = [l.strip() for l in tb.splitlines() if l.strip().startswith("File ")][-1:]
+                    notify.send_msg(f"⚠️ PaperFilm FAIL ({type(e).__name__}) -> MythShort fallback\n{str(e)[-600:]}\n{where[0][-160:] if where else ''}")
                 except Exception:
                     pass
         run_myth_pipeline(a, voice_cfg, custom_script=custom_script)

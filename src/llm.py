@@ -311,9 +311,11 @@ def _call_openai_relay(prompt, max_tokens=2500):
     key = os.environ.get("LLM_API_KEY") or os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not key:
         raise ValueError("LLM_API_KEY is not set.")
-    base = os.environ.get("LLM_BASE_URL", "https://api.llmsrelay.com/v1").rstrip("/")
+    base = os.environ.get("LLM_BASE_URL", "https://api.llmsrelay.com").strip().rstrip("/")
+    if base.endswith("/v1"):          # secret may or may not contain /v1 - accept both
+        base = base[:-3].rstrip("/")
     model = os.environ.get("LLM_MODEL", "gpt-4o-mini")
-    url = f"{base}/chat/completions"
+    url = f"{base}/v1/chat/completions"
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     body = {
         "model": model,
@@ -349,6 +351,13 @@ def _call(prompt, max_tokens=None):
             return _call_openai_relay(prompt, **kw)
         except Exception as e:
             errors.append(f"Relay: {e}")
+
+    # 3. Gemini (last resort, only tried when a GEMINI_API_KEY secret exists)
+    if os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY_2"):
+        try:
+            return _call_gemini(prompt, **kw)
+        except Exception as e:
+            errors.append(f"Gemini: {e}")
 
     raise RuntimeError("All LLMs failed: " + " | ".join(errors))
 
