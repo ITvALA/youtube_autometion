@@ -5,7 +5,8 @@ import demo from "../../data/demo_plan.json";
 import {CharacterDemoVertical} from "./components/Character";
 import {PuppetStory, DEMO_SCENES, totalFrames} from "./components/PuppetKit";
 import {PuppetWarStory, PUPPET_WAR_STORY_FRAMES} from "./components/PuppetWarStory";
-import {PaperFilm, totalFramesPF, type PFProps} from "./cinematic/PaperFilm";
+import {PaperFilm, totalFramesPF} from "./cinematic/PaperFilm";
+import type {PFProps} from "./cinematic/types";
 import pfDemo from "../../data/demo_paperfilm.json";
 import {MythShort, EXAMPLE_SCENES, totalFrames as mythTotalFrames, Scene as MythScene} from "./myth/mindspark-myth-engine";
 
