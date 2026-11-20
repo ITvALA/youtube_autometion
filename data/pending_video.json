@@ -1,27 +1,32 @@
 {
-  "dir_name": "2026-11-20_170408_pf_jyotirlinga_vaidyanath",
-  "file_id": "BAACAgUAAxkDAAIC9GsAAX-wmeDXcfUPV-YhqC7P-HhuqwACziQAAohiAVQpy-KPjZq84j0E",
-  "file_unique_id": "AgADziQAAohiAVQ",
-  "message_id": 756,
-  "caption": "🎬 *New Reel Ready for Review!*\n\n🔱 *रावण ने शिवलिंग धरती पर क्यों रखा? 🐉🔥*\n\n🎞️ MindSpark Mythology Shorts (PaperFilm)\n🎲 Seed: 245777 | 9:16 Vertical\n🎙️ Voice: xtts local 9/9 | xtts v2 hf viraj ref v1\n\n👉 Tap *PASS* button to upload immediately to YouTube!",
+  "dir_name": "2026-11-20_172820_pf_parshuram_avatar",
+  "file_id": "BAACAgUAAxkDAAIC9WsAAYUAAdkDzGoUZ1wzzSjjAAE1wkDhAALZJAACiGIBVJi81g3NgVxKPQQ",
+  "file_unique_id": "AgAD2SQAAohiAVQ",
+  "message_id": 757,
+  "caption": "🎬 *New Reel Ready for Review!*\n\n🔱 *परशुराम का खून खरारा: पिता की आज्ञा 🪓*\n\n🎞️ MindSpark Mythology Shorts (PaperFilm)\n🎲 Seed: 697265 | 9:16 Vertical\n🎙️ Voice: xtts local 9/9 | xtts v2 hf viraj ref v1\n\n👉 Tap *PASS* button to upload immediately to YouTube!",
   "meta": {
     "mode": "myth",
     "engine": "paperfilm",
-    "topic": "वैद्यनाथ ज्योतिर्लिंग: रावण की तपस्या और अटका हुआ शिवलिंग",
-    "title": "रावण ने शिवलिंग धरती पर क्यों रखा? 🐉🔥",
-    "description": "रावण की तपस्या और शिवलिंग का अटकना। जानिए वैद्यनाथ धाम की असली कहानी।\n#Vaidyanath #Ravan #Shiv #Shorts",
+    "topic": "परशुराम: पिता की आज्ञा और फरसे की कथा",
+    "title": "परशुराम का खून खरारा: पिता की आज्ञा 🪓",
+    "description": "ऋषि जमदग्नि की कठोर आज्ञा और परशुराम का निर्णायक कार्रवाई। यह कहानी है वामन के रूप में आए विष्णु के आशीर्वाद और कुरुक्षेत्र के युद्ध की।\n#Parashurama #Mahabharata #Mythology #HindiKahani #MindSpark",
     "tags": [
-      "Vaidyanath",
-      "Ravan",
-      "Shiv",
-      "Jyotirlinga",
-      "Hindi Kahani"
+      "Parashurama",
+      "Hindi Kahani",
+      "Mahabharata",
+      "Mythology",
+      "Jamadagni",
+      "Vishnu",
+      "Kuruksheetra",
+      "Axe",
+      "Ancient India",
+      "MindSpark"
     ],
     "privacy": "public",
-    "seed": 245777,
+    "seed": 697265,
     "scenes_count": 9
   },
-  "timestamp": 1795194800,
+  "timestamp": 1795196160,
   "status": "pending_review",
-  "run_id": "44778863984"
+  "run_id": "44783057798"
 }
