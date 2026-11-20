@@ -62,3 +62,4 @@
 | 56 | 2026-11-19 | 2026-11-19_233824_myth_pabuji_rathore_sacrifice | Unknown | Productivity & Wisdom | https://youtu.be/1P43ZUH-0AY |
 | 57 | 2026-11-20 | 2026-11-20_033831_myth_jyotirlinga_mahakaleshwar | Unknown | Productivity & Wisdom | https://youtu.be/VTnI9rIVclo |
 | 58 | 2026-11-20 | 2026-11-20_042229_myth_yayati_puru_yauvan_tyag | Unknown | Productivity & Wisdom | https://youtu.be/axJO38atv84 |
+| 59 | 2026-11-20 | 2026-11-20_072123_myth_shakti_peeth_attahas | Unknown | Productivity & Wisdom | https://youtu.be/6nFKb68BWKA |
