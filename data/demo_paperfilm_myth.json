@@ -1,0 +1,275 @@
+{
+ "scenes": [
+  {
+   "kind": "title",
+   "narration": "Dwarka Shri Krishna ki nagri",
+   "text": "द्वारका",
+   "sub": "श्रीकृष्ण की नगरी",
+   "hit": 1,
+   "accent": "teal",
+   "durationSec": 3.6,
+   "words": [
+    {
+     "w": "Dwarka",
+     "s": 0.3,
+     "e": 0.994
+    },
+    {
+     "w": "Shri",
+     "s": 0.994,
+     "e": 1.515
+    },
+    {
+     "w": "Krishna",
+     "s": 1.515,
+     "e": 2.296
+    },
+    {
+     "w": "ki",
+     "s": 2.296,
+     "e": 2.643
+    },
+    {
+     "w": "nagri",
+     "s": 2.643,
+     "e": 3.25
+    }
+   ]
+  },
+  {
+   "kind": "map",
+   "narration": "Ye jagah Bharat ke Gujarat rajya mein hai aur Arabian Sea ke kinare basi hai",
+   "text": "भारत → गुजरात → द्वारका",
+   "sub": "अरब सागर के किनारे",
+   "state": "Gujarat",
+   "district": "Devbhumi Dwarka",
+   "place": {
+    "name": "द्वारका",
+    "lat": 22.2376,
+    "lon": 68.9674
+   },
+   "hit": 4,
+   "hit2": 9,
+   "span": 0.9,
+   "accent": "red",
+   "durationSec": 8.0,
+   "words": [
+    {
+     "w": "Ye",
+     "s": 0.3,
+     "e": 0.62
+    },
+    {
+     "w": "jagah",
+     "s": 0.62,
+     "e": 1.179
+    },
+    {
+     "w": "Bharat",
+     "s": 1.179,
+     "e": 1.818
+    },
+    {
+     "w": "ke",
+     "s": 1.818,
+     "e": 2.138
+    },
+    {
+     "w": "Gujarat",
+     "s": 2.138,
+     "e": 2.857
+    },
+    {
+     "w": "rajya",
+     "s": 2.857,
+     "e": 3.416
+    },
+    {
+     "w": "mein",
+     "s": 3.416,
+     "e": 3.895
+    },
+    {
+     "w": "hai",
+     "s": 3.895,
+     "e": 4.295
+    },
+    {
+     "w": "aur",
+     "s": 4.295,
+     "e": 4.694
+    },
+    {
+     "w": "Arabian",
+     "s": 4.694,
+     "e": 5.413
+    },
+    {
+     "w": "Sea",
+     "s": 5.413,
+     "e": 5.813
+    },
+    {
+     "w": "ke",
+     "s": 5.813,
+     "e": 6.132
+    },
+    {
+     "w": "kinare",
+     "s": 6.132,
+     "e": 6.771
+    },
+    {
+     "w": "basi",
+     "s": 6.771,
+     "e": 7.251
+    },
+    {
+     "w": "hai",
+     "s": 7.251,
+     "e": 7.65
+    }
+   ]
+  },
+  {
+   "kind": "list",
+   "narration": "Maanyata hai ki Dwarka Shri Krishna ki rajdhani thi aur ye Char Dham aur Sapt Puri dono mein aati hai",
+   "text": "द्वारका क्यों ख़ास है",
+   "items": [
+    "श्रीकृष्ण की राजधानी (मान्यता)",
+    "चार धाम में से एक",
+    "सप्त पुरियों में से एक"
+   ],
+   "hit": 2,
+   "accent": "mustard",
+   "durationSec": 8.0,
+   "words": [
+    {
+     "w": "Maanyata",
+     "s": 0.3,
+     "e": 0.902
+    },
+    {
+     "w": "hai",
+     "s": 0.902,
+     "e": 1.204
+    },
+    {
+     "w": "ki",
+     "s": 1.204,
+     "e": 1.445
+    },
+    {
+     "w": "Dwarka",
+     "s": 1.445,
+     "e": 1.927
+    },
+    {
+     "w": "Shri",
+     "s": 1.927,
+     "e": 2.288
+    },
+    {
+     "w": "Krishna",
+     "s": 2.288,
+     "e": 2.83
+    },
+    {
+     "w": "ki",
+     "s": 2.83,
+     "e": 3.071
+    },
+    {
+     "w": "rajdhani",
+     "s": 3.071,
+     "e": 3.674
+    },
+    {
+     "w": "thi",
+     "s": 3.674,
+     "e": 3.975
+    },
+    {
+     "w": "aur",
+     "s": 3.975,
+     "e": 4.276
+    },
+    {
+     "w": "ye",
+     "s": 4.276,
+     "e": 4.517
+    },
+    {
+     "w": "Char",
+     "s": 4.517,
+     "e": 4.879
+    },
+    {
+     "w": "Dham",
+     "s": 4.879,
+     "e": 5.24
+    },
+    {
+     "w": "aur",
+     "s": 5.24,
+     "e": 5.541
+    },
+    {
+     "w": "Sapt",
+     "s": 5.541,
+     "e": 5.903
+    },
+    {
+     "w": "Puri",
+     "s": 5.903,
+     "e": 6.264
+    },
+    {
+     "w": "dono",
+     "s": 6.264,
+     "e": 6.626
+    },
+    {
+     "w": "mein",
+     "s": 6.626,
+     "e": 6.987
+    },
+    {
+     "w": "aati",
+     "s": 6.987,
+     "e": 7.349
+    },
+    {
+     "w": "hai",
+     "s": 7.349,
+     "e": 7.65
+    }
+   ]
+  },
+  {
+   "kind": "title",
+   "narration": "Jai Dwarkadhish",
+   "text": "जय द्वारकाधीश",
+   "sub": "",
+   "hit": 1,
+   "stamp": "जय!",
+   "accent": "red",
+   "durationSec": 3.2,
+   "words": [
+    {
+     "w": "Jai",
+     "s": 0.3,
+     "e": 1.008
+    },
+    {
+     "w": "Dwarkadhish",
+     "s": 1.008,
+     "e": 2.85
+    }
+   ]
+  }
+ ],
+ "seed": 5,
+ "captions": true,
+ "sfx": true
+}
