@@ -2,7 +2,8 @@
 //   npx remotion render src/cinematic/entry.tsx PaperFilm out/paperfilm.mp4 --props=../data/demo_paperfilm.json
 import React from "react";
 import {Composition, CalculateMetadataFunction, registerRoot} from "remotion";
-import {PaperFilm, totalFramesPF, type PFProps} from "./PaperFilm";
+import {PaperFilm, totalFramesPF} from "./PaperFilm";
+import type {PFProps} from "./types";
 import demo from "../../../data/demo_paperfilm.json";
 
 const FPS = 30;
