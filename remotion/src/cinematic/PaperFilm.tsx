@@ -3,6 +3,7 @@ import {AbsoluteFill, Audio, Easing, Img, Sequence, delayRender, continueRender,
 import type {PFAccent, PFProps, PFScene} from "./types";
 import {MapItem, mapTimes} from "./MapItem";
 import {PaperTempleCutout, PaperCityCutout, PaperCharDhamCutout, PaperDwarkadhishCutout} from "./PaperSvgAssets";
+import {PaperStage} from "./PaperStage";
 
 /* ------------------------------------------------------------------ fonts */
 const FONTS: [string, string, string][] = [
@@ -129,8 +130,8 @@ const MapRoute: React.FC<{s: PFScene; lf: number; fps: number; text: React.CSSPr
   );
 };
 
-/* ---------------------------------------- full-screen scenes: map / photo cover the whole 9:16 frame */
-export const isFull = (s: PFScene) => s.kind === "map" || (s.kind === "photo" && !!s.image);
+/* ---------------------------------------- full-screen scenes: map / cutout / story stage */
+export const isFull = (s: PFScene) => s.kind === "map" || s.kind === "cutout" || s.kind === "card" || s.kind === "title" || s.kind === "quote" || (s.kind === "photo" && !!s.image);
 
 const FullScene: React.FC<{s: PFScene; i: number; lf: number; fps: number; width: number; height: number}> = ({s, i, lf, fps, width, height}) => {
   const accent = s.accent || ACCENT_CYCLE[i % 4];
@@ -147,17 +148,27 @@ const FullScene: React.FC<{s: PFScene; i: number; lf: number; fps: number; width
       </AbsoluteFill>
     );
   }
-  const z = 1 + 0.12 * clamp(lf / Math.max(1, Math.round(s.durationSec * fps)));
-  return (
-    <AbsoluteFill style={{background: "#111"}}>
-      <Img src={staticFile(s.image as string)} style={{width: "100%", height: "100%", objectFit: "cover", transform: `scale(${z})`, filter: "sepia(.22) contrast(1.06) saturate(.95)"}} />
-      <AbsoluteFill style={{background: "linear-gradient(rgba(10,6,2,.6) 0%, rgba(10,6,2,0) 28%, rgba(10,6,2,0) 50%, rgba(10,6,2,.72) 100%), radial-gradient(ellipse at 50% 48%, rgba(0,0,0,0) 45%, rgba(10,6,2,.5) 100%)"}} />
-      <div style={{position: "absolute", left: 40, right: 40, top: 150, display: "flex", justifyContent: "center"}}>
-        <div style={{...t(74, DISPLAY), background: CREAM, padding: "10px 34px", borderRadius: 10, boxShadow: "0 8px 18px rgba(0,0,0,.45)", transform: "rotate(-1deg)", textAlign: "center"}}>
-          <Highlighter start={Math.round((s.words[s.hit ?? 0]?.s ?? 0.4) * fps)} f={lf} color={a.main}>{s.text}</Highlighter>
+  if (s.kind === "photo" && s.image) {
+    const z = 1 + 0.12 * clamp(lf / Math.max(1, Math.round(s.durationSec * fps)));
+    return (
+      <AbsoluteFill style={{background: "#111"}}>
+        <Img src={staticFile(s.image as string)} style={{width: "100%", height: "100%", objectFit: "cover", transform: `scale(${z})`, filter: "sepia(.22) contrast(1.06) saturate(.95)"}} />
+        <AbsoluteFill style={{background: "linear-gradient(rgba(10,6,2,.6) 0%, rgba(10,6,2,0) 28%, rgba(10,6,2,0) 50%, rgba(10,6,2,.72) 100%), radial-gradient(ellipse at 50% 48%, rgba(0,0,0,0) 45%, rgba(10,6,2,.5) 100%)"}} />
+        <div style={{position: "absolute", left: 40, right: 40, top: 150, display: "flex", justifyContent: "center"}}>
+          <div style={{...t(74, DISPLAY), background: CREAM, padding: "10px 34px", borderRadius: 10, boxShadow: "0 8px 18px rgba(0,0,0,.45)", transform: "rotate(-1deg)", textAlign: "center"}}>
+            <Highlighter start={Math.round((s.words[s.hit ?? 0]?.s ?? 0.4) * fps)} f={lf} color={a.main}>{s.text}</Highlighter>
+          </div>
         </div>
-      </div>
-      {s.stamp && <div style={{position: "absolute", right: 60, top: 330}}><Stamp solid text={s.stamp} start={Math.round((s.words[s.hit ?? 0]?.s ?? 0.4) * fps)} f={lf} fps={fps} /></div>}
+        {s.stamp && <div style={{position: "absolute", right: 60, top: 330}}><Stamp solid text={s.stamp} start={Math.round((s.words[s.hit ?? 0]?.s ?? 0.4) * fps)} f={lf} fps={fps} /></div>}
+      </AbsoluteFill>
+    );
+  }
+
+  // 2D Layered Paper Cutout Stage (User Reference Art: Sun, Flying Birds, Pop-Up Mountains, Temple, Character)
+  return (
+    <AbsoluteFill>
+      <PaperStage s={s} lf={lf} fps={fps} w={width} h={height} />
+      {s.stamp && <div style={{position: "absolute", right: 60, top: 290}}><Stamp solid text={s.stamp} start={Math.round((s.words[s.hit ?? 0]?.s ?? 0.3) * fps)} f={lf} fps={fps} /></div>}
     </AbsoluteFill>
   );
 };
@@ -392,7 +403,7 @@ export const PaperFilm: React.FC<PFProps> = ({scenes, seed = 7, captions = true,
 
   const hitOf = (s: PFScene) => Math.round((s.words[s.hit ?? Math.floor(s.words.length * 0.35)]?.s ?? 0.4) * fps);
   const tx = width / 2 + shx, ty = height * 0.46 + shy;
-  const fullOp = isFull(sc) ? clamp(lf / 8) * clamp((len - lf) / 8) : 0;
+  const fullOp = isFull(sc) ? 1 : 0;
 
   return (
     <AbsoluteFill style={{background: KRAFT, overflow: "hidden"}}>
