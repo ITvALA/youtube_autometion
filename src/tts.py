@@ -18,6 +18,14 @@ except ImportError:
     except ImportError:
         def normalize_hindi_numbers(t): return t
 
+try:
+    from hinglish_utils import ensure_hinglish_narration
+except ImportError:
+    try:
+        from src.hinglish_utils import ensure_hinglish_narration
+    except ImportError:
+        def ensure_hinglish_narration(n, t): return n
+
 ROOT = Path(__file__).resolve().parent.parent
 CACHE_DIR = ROOT / "data" / "tts_cache"
 USAGE_FILE = ROOT / "data" / "tts_usage.json"
@@ -859,6 +867,9 @@ def narrate(scenes, workdir, cfg, pad=0.45):
             tail = pad
         s["durationSec"] = round(dur(padded), 3)
 
+        # Ensure lyrics are in Hinglish (Roman Hindi) and match voice
+        if s.get("tts_text"):
+            s["narration"] = ensure_hinglish_narration(s.get("narration", ""), s["tts_text"])
         tokens = strip_tags(s["narration"]).split()
         words = []
         if tokens:

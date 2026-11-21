@@ -19,6 +19,14 @@ except ImportError:
     except ImportError:
         def normalize_hindi_numbers(t): return t
 
+try:
+    from hinglish_utils import ensure_hinglish_narration
+except ImportError:
+    try:
+        from src.hinglish_utils import ensure_hinglish_narration
+    except ImportError:
+        def ensure_hinglish_narration(n, t): return n
+
 KINDS = ["title", "card", "number", "quote", "list", "map"]   # "photo" is not used: no images in the pipeline
 ACCENTS = ["red", "teal", "mustard", "ink"]
 DATA_DIR = ROOT / "remotion" / "src" / "cinematic" / "data"
@@ -93,7 +101,7 @@ OUTPUT: sirf ek JSON object (koi markdown nahi, koi explanation nahi):
   "scenes": [
     {
       "kind": "title | card | number | quote | list | map",
-      "narration": "Hinglish (Roman letters) me bolne wali line, STRICTLY 8-12 words max. Ye screen par caption banegi.",
+      "narration": "STRICTLY Hinglish (Hindi bolchal in Roman / English alphabet, jaise WhatsApp par likhte hain: 'Shivaji Maharaj Vishalgadh mein ghire hue the'). KABHI BHI English bhasha ke words (jaise 'were trapped', 'surrounded by', 'facing', 'their eyes') mat likho! Ye video screen par LYRICS / SUBTITLE banegi, STRICTLY 8-12 words max.",
       "tts_text": "WAHI line shuddh Devanagari Hindi me, voice ke liye. Numbers aur Saal (years) bilkul shabdon me likho (jaise 1660 ko 'सन सोलह सौ साठ', 1947 ko 'सन उन्नीस सौ सैंतालीस', 300 ko 'तीन सौ', 4000 ko 'चार हज़ार'). Kabhi bhi 'सौ छह सौ' ya toote shabdon me mat likho.",
       "text": "Screen par bada text, Devanagari, max 6 words",
       "sub": "chhoti line (optional), max 6 words",
@@ -259,6 +267,10 @@ def clean_plan(plan, seed=None):
         # Normalize numbers & historical years in tts_text so voice speaks proper words (e.g. 1660 -> सन सोलह सौ साठ)
         if sc.get("tts_text"):
             sc["tts_text"] = normalize_hindi_numbers(sc["tts_text"])
+
+        # Ensure narration is STRICTLY Hinglish (screen lyrics in Roman Hindi, never pure English)
+        if sc.get("tts_text"):
+            sc["narration"] = ensure_hinglish_narration(sc.get("narration", ""), sc["tts_text"])
 
     # YouTube Growth & Packaging Engine Audits (21 Hook Formulas & Packaging Linter)
     hook_audit = yt_growth_engine.score_hook(out[0].get("narration") or out[0].get("text", ""))
