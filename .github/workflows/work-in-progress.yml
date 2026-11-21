@@ -1,0 +1,96 @@
+name: "🚧 Work in Progress (Pause All Workflows)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Select Action:"
+        required: true
+        default: "pause"
+        type: choice
+        options:
+          - "pause"
+          - "resume"
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  manage_workflows:
+    name: "Manage Workflows"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Execute Pause or Resume
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ACTION: ${{ github.event.inputs.action }}
+        run: |
+          echo "Selected Action: $ACTION"
+          
+          # List of target workflows to pause / resume
+          TARGET_WORKFLOWS=(
+            "bot.yml"
+            "harvest_topics.yml"
+            "apply-vox.yml"
+            "apply-niche-icons.yml"
+            "video-failure-alert.yml"
+            "approve.yml"
+            "ig-login.yml"
+          )
+
+          if [ "$ACTION" = "pause" ]; then
+            echo "🛑 PAUSING ALL WORKFLOWS (Work in Progress Mode)..."
+            
+            for wf in "${TARGET_WORKFLOWS[@]}"; do
+              if [ -f ".github/workflows/$wf" ]; then
+                echo "Disabling workflow: $wf"
+                gh workflow disable "$wf" || true
+              fi
+            done
+
+            # Cancel any currently active / running runs (except current run)
+            echo "Cancelling any running jobs..."
+            RUNS=$(gh run list --status in_progress --json databaseId -q '.[].databaseId' || true)
+            for r in $RUNS; do
+              if [ "$r" != "${{ github.run_id }}" ]; then
+                echo "Cancelling run ID: $r"
+                gh run cancel "$r" || true
+              fi
+            done
+
+            # Send Telegram Notification
+            if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+              curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                -d "chat_id=${TELEGRAM_CHAT_ID}" \
+                -d "text=🚧 *Work in Progress Mode ACTIVATED!*%0A%0ASaare automatic workflows aur cron runs pause/disable kar diye gaye hain.%0A%0AAb koi bhi video ya process automatic nahi chalega jab tak aap 'Work in Progress' workflow me 'resume' select karke manually na chalayein." \
+                -d "parse_mode=Markdown" > /dev/null || true
+            fi
+            
+            echo "✅ All workflows paused successfully."
+
+          elif [ "$ACTION" = "resume" ]; then
+            echo "▶️ RESUMING ALL WORKFLOWS..."
+
+            for wf in "${TARGET_WORKFLOWS[@]}"; do
+              if [ -f ".github/workflows/$wf" ]; then
+                echo "Enabling workflow: $wf"
+                gh workflow enable "$wf" || true
+              fi
+            done
+
+            # Send Telegram Notification
+            if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+              curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                -d "chat_id=${TELEGRAM_CHAT_ID}" \
+                -d "text=✅ *Work in Progress Mode DEACTIVATED!*%0A%0ASaare workflows aur scheduled runs wapas ACTIVE kar diye gaye hain." \
+                -d "parse_mode=Markdown" > /dev/null || true
+            fi
+
+            echo "✅ All workflows resumed successfully."
+          fi
