@@ -2,6 +2,7 @@ import React, {useMemo, useState, useEffect} from "react";
 import {AbsoluteFill, Audio, Easing, Img, Sequence, delayRender, continueRender, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig} from "remotion";
 import type {PFAccent, PFProps, PFScene} from "./types";
 import {MapItem, mapTimes} from "./MapItem";
+import {PaperTempleCutout, PaperCityCutout, PaperCharDhamCutout, PaperDwarkadhishCutout} from "./PaperSvgAssets";
 
 /* ------------------------------------------------------------------ fonts */
 const FONTS: [string, string, string][] = [
@@ -172,11 +173,69 @@ const Item: React.FC<{s: PFScene; i: number; lf: number; fps: number; hitF: numb
   const shownItems = s.items || [];
   const itemStart = (k: number) => Math.round((s.words[Math.floor((k * s.words.length) / Math.max(1, shownItems.length))]?.s ?? 0) * fps);
 
+  const hay = `${s.text} ${s.sub || ""} ${s.narration || ""}`.toLowerCase();
+  const isDeity = hay.includes("द्वारकाधीश") || hay.includes("dwarkadhish") || hay.includes("कृष्ण") || hay.includes("krishna") || hay.includes("शिव") || hay.includes("shiva") || hay.includes("महादेव") || hay.includes("राम") || hay.includes("rama") || hay.includes("हनुमान") || hay.includes("hanuman") || hay.includes("भगवान");
+  const isCharDham = !isDeity && (hay.includes("धाम") || hay.includes("dham") || hay.includes("सप्त") || hay.includes("मान्यता") || hay.includes("चार धाम") || hay.includes("तीर्थ") || hay.includes("ज्योतिर्लिंग"));
+  const isCity = !isDeity && !isCharDham && (hay.includes("नगरी") || hay.includes("नगर") || hay.includes("समुद्र") || hay.includes("किला") || hay.includes("साम्राज्य") || hay.includes("राजधानी"));
+  const isTemple = !isDeity && !isCharDham && !isCity && (hay.includes("द्वारका") || hay.includes("सोमनाथ") || hay.includes("काशी") || hay.includes("उज्जैन") || hay.includes("मंदिर") || hay.includes("temple") || hay.includes("शिखर"));
+
   if (s.kind === "map") {
     return (
       <Sheet w={W} h={1180} seed={sd} accent={accent} tilt={tilt * 0.6}>
         <MapItem s={s} lf={lf} fps={fps} accent={a.main} accentDark={a.dark} />
         <MapRoute s={s} lf={lf} fps={fps} text={text(60)} body={text(40, BODY)} />
+        {s.stamp && <Stamp text={s.stamp} start={hitF} f={lf} fps={fps} />}
+      </Sheet>
+    );
+  }
+  if (isDeity) {
+    return (
+      <Sheet w={W} h={1200} seed={sd} accent={accent} tilt={tilt}>
+        <Tape rot={-3} />
+        <div style={{...text(104, DISPLAY), lineHeight: 1.15, textAlign: "center", marginBottom: 20}}>
+          <Highlighter start={hitF} f={lf} color={a.main}>{s.text}</Highlighter>
+        </div>
+        <PaperDwarkadhishCutout progress={easeIO(clamp(lf / 14))} width={680} height={560} />
+        {s.sub && <div style={{...text(46, BODY), marginTop: 22, textAlign: "center", opacity: 0.85}}>{s.sub}</div>}
+        {s.stamp && <Stamp text={s.stamp} start={hitF} f={lf} fps={fps} />}
+      </Sheet>
+    );
+  }
+  if (isCharDham) {
+    return (
+      <Sheet w={W} h={1160} seed={sd} accent={accent} tilt={tilt}>
+        <Tape rot={3} />
+        <div style={{...text(86, DISPLAY), lineHeight: 1.18, textAlign: "center", marginBottom: 26, color: a.main}}>
+          <Highlighter start={hitF} f={lf} color={ACC.mustard.main}>{s.text}</Highlighter>
+        </div>
+        <PaperCharDhamCutout progress={easeIO(clamp(lf / 14))} width={760} height={500} />
+        {s.sub && <div style={{...text(44, BODY), marginTop: 24, textAlign: "center", opacity: 0.8}}>{s.sub}</div>}
+        {s.stamp && <Stamp text={s.stamp} start={hitF} f={lf} fps={fps} />}
+      </Sheet>
+    );
+  }
+  if (isCity) {
+    return (
+      <Sheet w={W} h={1180} seed={sd} accent={accent} tilt={tilt}>
+        <Tape rot={-2} />
+        <div style={{...text(98, DISPLAY), lineHeight: 1.18, textAlign: "center", marginBottom: 22}}>
+          <Highlighter start={hitF} f={lf} color={a.main}>{s.text}</Highlighter>
+        </div>
+        <PaperCityCutout progress={easeIO(clamp(lf / 14))} width={720} height={500} />
+        {s.sub && <div style={{...text(46, BODY), marginTop: 20, textAlign: "center", opacity: 0.8}}>{s.sub}</div>}
+        {s.stamp && <Stamp text={s.stamp} start={hitF} f={lf} fps={fps} />}
+      </Sheet>
+    );
+  }
+  if (isTemple) {
+    return (
+      <Sheet w={W} h={1180} seed={sd} accent={accent} tilt={tilt}>
+        <Tape rot={2} />
+        <div style={{...text(104, DISPLAY), lineHeight: 1.18, textAlign: "center", marginBottom: 20}}>
+          <Highlighter start={hitF} f={lf} color={a.main}>{s.text}</Highlighter>
+        </div>
+        <PaperTempleCutout progress={easeIO(clamp(lf / 14))} width={660} height={530} />
+        {s.sub && <div style={{...text(48, BODY), marginTop: 20, textAlign: "center", opacity: 0.8}}>{s.sub}</div>}
         {s.stamp && <Stamp text={s.stamp} start={hitF} f={lf} fps={fps} />}
       </Sheet>
     );

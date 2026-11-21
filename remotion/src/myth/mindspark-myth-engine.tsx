@@ -551,7 +551,7 @@ const RoyalHorse: React.FC<{ x: number; y: number; scale?: number; flip?: boolea
 
 /* ───────────────────────── TEMPLE VIMANA & ARCHITECTURE (भव्य पाषाण मंदिर) ───────────────────────── */
 const TempleVimana: React.FC<{ x: number; y: number; frame: number }> = ({ x, y, frame }) => (
-  <g transform={`translate(${x}, ${y})`}>
+  <g transform={`translate(${x}, ${y})`} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.85)) drop-shadow(0 20px 28px rgba(15,8,4,0.7))' }}>
     <path d="M-220,1200 L-220,950 L220,950 L220,1200 Z" fill="#442a1d" stroke="#25140b" strokeWidth={6} />
     <path d="M-180,950 L-180,780 L180,780 L180,950 Z" fill="#523424" stroke="#25140b" strokeWidth={5} />
     <path d="M-140,780 L-140,620 L140,620 L140,780 Z" fill="#5f3d2b" stroke="#25140b" strokeWidth={5} />
@@ -799,8 +799,8 @@ const Character: React.FC<{ a: Actor; frame: number; talking?: boolean; idx?: nu
         top: ground - 740 * sc,
         overflow: 'visible',
         filter: isDivine
-          ? 'drop-shadow(0 0 20px #ffd700)'
-          : 'drop-shadow(0 18px 24px rgba(0,0,0,0.75))'
+          ? 'drop-shadow(0 0 24px #ffd700) drop-shadow(0 0 4px rgba(255,255,255,0.95)) drop-shadow(0 18px 24px rgba(20,10,5,0.75))'
+          : 'drop-shadow(0 0 4px rgba(255,255,255,0.95)) drop-shadow(0 18px 24px rgba(20,10,5,0.75))'
       }}
     >
       <g transform={`scale(${faceLeft ? -1 : 1},1) translate(0,${lift})`}>{body}</g>
@@ -1531,6 +1531,17 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number; trans?: Tra
           background: 'radial-gradient(ellipse at 50% 50%, transparent 48%, rgba(6, 3, 2, 0.72) 100%)',
         }}
       />
+
+      {/* Paper-Craft Grain & Cutout Texture Overlay */}
+      <AbsoluteFill style={{ mixBlendMode: 'multiply', opacity: 0.22, pointerEvents: 'none' }}>
+        <svg width="100%" height="100%">
+          <filter id={`pfgrain_${seed}`}>
+            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed={seed} />
+            <feColorMatrix values="0 0 0 0 .35  0 0 0 0 .28  0 0 0 0 .18  0 0 0 .9 0" />
+          </filter>
+          <rect width="100%" height="100%" filter={`url(#pfgrain_${seed})`} />
+        </svg>
+      </AbsoluteFill>
 
       <DivineParticles frame={frame} seed={seed} />
       <CinematicSubtitles title={scene.caption.title} narration={scene.narration} text={scene.caption.text} />

@@ -417,7 +417,7 @@ def main():
     ap.add_argument("--mode", choices=["book", "myth"], default="myth", help="Pipeline mode: 'myth' (default) or 'book'")
     ap.add_argument("--myth", action="store_true", help="Shortcut for --mode myth")
     ap.add_argument("--engine", choices=["paperfilm", "myth"], default=os.environ.get("MYTH_ENGINE", "paperfilm"),
-                    help="Myth video engine: 'paperfilm' (new, default) or 'myth' (old MythShort)")
+                    help="Myth video engine: 'paperfilm' (paper-cut craft engine, default) or 'myth' (puppet engine)")
     ap.add_argument("--template")
     ap.add_argument("--style", help="Force Vox style ID (v001 ... v212)")
     ap.add_argument("--headless", action="store_true", help="CI mode (kept for clarity)")
