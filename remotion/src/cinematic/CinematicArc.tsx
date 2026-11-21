@@ -12,28 +12,29 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import type {PFProps, PFScene, PFWord} from "./types";
+import type {PFAccent, PFProps, PFScene, PFWord} from "./types";
 import {
   PaperTempleCutout,
   PaperCityCutout,
   PaperCharDhamCutout,
   PaperDwarkadhishCutout,
 } from "./PaperSvgAssets";
+import {MapItem} from "./MapItem";
 
 /* ------------------------------------------------------------------ fonts */
 const FONTS: [string, string, string][] = [
-  ["CA Display", "RozhaOne-Regular.ttf", "400"],
-  ["CA Hand", "YatraOne-Regular.ttf", "400"],
-  ["CA Bold", "Mukta-ExtraBold.ttf", "800"],
-  ["CA Body", "Mukta-Medium.ttf", "500"],
+  ["PM Display", "RozhaOne-Regular.ttf", "400"],
+  ["PM Hand", "YatraOne-Regular.ttf", "400"],
+  ["PM Bold", "Mukta-ExtraBold.ttf", "800"],
+  ["PM Body", "Mukta-Medium.ttf", "500"],
 ];
-const DISPLAY = "'CA Display','Mukta',serif";
-const HAND = "'CA Hand','Mukta',serif";
-const BOLD = "'CA Bold','Mukta',sans-serif";
-const BODY = "'CA Body','Mukta',sans-serif";
+const DISPLAY = "'PM Display','Mukta',serif";
+const HAND = "'PM Hand','Mukta',serif";
+const BOLD = "'PM Bold','Mukta',sans-serif";
+const BODY = "'PM Body','Mukta',sans-serif";
 
 const useFonts = () => {
-  const [h] = useState(() => delayRender("cinematic-arc-fonts"));
+  const [h] = useState(() => delayRender("papermotion-fonts"));
   useEffect(() => {
     Promise.all(
       FONTS.map(async ([name, file, weight]) => {
@@ -47,155 +48,289 @@ const useFonts = () => {
   }, [h]);
 };
 
+/* ---------------------------------------------------------------- palette (Ground Paper) */
+const INK = "#1d1b1a";
+const CREAM = "#fbf5e6";
+const KRAFT = "#efe3c6";
+const SHADOW_COLOR = "rgba(40, 25, 12, 0.45)";
+
+const ACC: Record<PFAccent, {main: string; dark: string; light: string}> = {
+  red: {main: "#d8452e", dark: "#9c2c1b", light: "#f8d5cf"},
+  teal: {main: "#1f8a87", dark: "#14605e", light: "#d0ecea"},
+  mustard: {main: "#e8a92b", dark: "#b47d12", light: "#fdf0d5"},
+  ink: {main: "#34302d", dark: "#171514", light: "#e6e3df"},
+};
+const ACCENT_CYCLE: PFAccent[] = ["red", "teal", "mustard", "ink"];
+
 /* ---------------------------------------------------------------- helpers */
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-const easeOutCubic = Easing.bezier(0.215, 0.61, 0.355, 1);
-const easeInOutCubic = Easing.bezier(0.645, 0.045, 0.355, 1);
+const easeIO = Easing.bezier(0.65, 0, 0.25, 1);
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-const pseudoRandom = (seed: number) => {
-  let s = seed | 0;
-  return () => {
-    s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+const rng = (seed: number) => () => {
+  seed |= 0;
+  seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+
+/** Hand-torn paper card jagged edge generator */
+const jaggedPath = (w: number, h: number, seed: number, amp = 7, step = 42) => {
+  const r = rng(seed);
+  const pts: string[] = [];
+  const edge = (x0: number, y0: number, x1: number, y1: number, nx: number, ny: number) => {
+    const len = Math.hypot(x1 - x0, y1 - y0);
+    const n = Math.max(2, Math.round(len / step));
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      const o = (r() - 0.5) * 2 * amp;
+      pts.push(`${(lerp(x0, x1, t) + nx * o).toFixed(1)},${(lerp(y0, y1, t) + ny * o).toFixed(1)}`);
+    }
   };
+  edge(0, 0, w, 0, 0, 1);
+  edge(w, 0, w, h, 1, 0);
+  edge(w, h, 0, h, 0, 1);
+  edge(0, h, 0, 0, 1, 0);
+  return "M" + pts.join("L") + "Z";
 };
 
-/* ---------------------------------------------------------------- particles */
-const Embers: React.FC<{seed: number; count?: number}> = ({seed, count = 36}) => {
-  const frame = useCurrentFrame();
-  const dots = useMemo(() => {
-    const rng = pseudoRandom(seed);
-    return Array.from({length: count}, (_, i) => ({
-      id: i,
-      x: rng() * 1080,
-      yStart: 1920 + rng() * 400,
-      speed: 1.4 + rng() * 2.8,
-      size: 2 + rng() * 5.5,
-      opacity: 0.25 + rng() * 0.65,
-      hue: 35 + rng() * 25, // warm golden embers
-      swayAmp: 15 + rng() * 30,
-      swayFreq: 0.02 + rng() * 0.03,
-      delay: rng() * 120,
-    }));
-  }, [seed, count]);
-
-  return (
-    <AbsoluteFill style={{pointerEvents: "none", overflow: "hidden"}}>
-      {dots.map((d) => {
-        const effectiveFrame = frame + d.delay;
-        const totalDistance = 1920 + 500;
-        const yProgress = ((effectiveFrame * d.speed) % totalDistance);
-        const y = 1920 + 200 - yProgress;
-        const x = d.x + Math.sin(effectiveFrame * d.swayFreq + d.id) * d.swayAmp;
-        const alpha =
-          y > 1800 ? clamp((1920 - y) / 120) * d.opacity :
-          y < 200 ? clamp(y / 200) * d.opacity : d.opacity;
-
-        return (
-          <div
-            key={d.id}
-            style={{
-              position: "absolute",
-              left: `${x}px`,
-              top: `${y}px`,
-              width: `${d.size}px`,
-              height: `${d.size}px`,
-              borderRadius: "50%",
-              backgroundColor: `hsl(${d.hue}, 100%, 72%)`,
-              boxShadow: `0 0 ${d.size * 2.5}px hsl(${d.hue}, 100%, 60%)`,
-              opacity: alpha,
-            }}
-          />
-        );
-      })}
-    </AbsoluteFill>
+/* ---------------------------------------------------------------- Paper Sheet Card */
+const PaperSheet: React.FC<{
+  w: number;
+  h: number;
+  seed: number;
+  accent: PFAccent;
+  tilt?: number;
+  children: React.ReactNode;
+}> = ({w, h, seed, accent, tilt = 0, children}) => {
+  const paths = useMemo(
+    () => [
+      jaggedPath(w, h, seed + 1, 9),
+      jaggedPath(w, h, seed + 2, 7),
+      jaggedPath(w, h, seed + 3, 5, 56),
+    ],
+    [w, h, seed]
   );
-};
+  const a = ACC[accent];
 
-/* ---------------------------------------------------------------- Sacred Mandala */
-const SacredMandala: React.FC<{speed?: number}> = ({speed = 0.08}) => {
-  const frame = useCurrentFrame();
-  const rotation = frame * speed;
   return (
     <div
       style={{
-        position: "absolute",
-        left: "50%",
-        top: "45%",
-        transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-        width: 1400,
-        height: 1400,
-        pointerEvents: "none",
-        opacity: 0.07,
-        zIndex: 1,
+        position: "relative",
+        width: w,
+        height: h,
+        transform: `rotate(${tilt}deg)`,
       }}
     >
-      <svg viewBox="0 0 400 400" width="100%" height="100%">
-        <circle cx="200" cy="200" r="190" fill="none" stroke="#ffd700" strokeWidth="1.5" strokeDasharray="6 6" />
-        <circle cx="200" cy="200" r="160" fill="none" stroke="#ffd700" strokeWidth="1" />
-        <circle cx="200" cy="200" r="130" fill="none" stroke="#ffd700" strokeWidth="2" strokeDasharray="12 4" />
-        <polygon points="200,40 338,280 62,280" fill="none" stroke="#ffd700" strokeWidth="1.5" />
-        <polygon points="200,360 338,120 62,120" fill="none" stroke="#ffd700" strokeWidth="1.5" />
-        <circle cx="200" cy="200" r="80" fill="none" stroke="#ffd700" strokeWidth="1.2" />
-        <circle cx="200" cy="200" r="40" fill="none" stroke="#ffd700" strokeWidth="2" />
+      {/* Layer 1: Dark accent back layer with deep paper drop shadow */}
+      <svg
+        width={w}
+        height={h}
+        viewBox={`0 0 ${w} ${h}`}
+        style={{
+          position: "absolute",
+          left: 18,
+          top: 22,
+          overflow: "visible",
+          transform: "rotate(1.5deg)",
+          filter: "drop-shadow(0 18px 24px rgba(50, 30, 15, 0.42))",
+        }}
+      >
+        <path d={paths[0]} fill={a.dark} />
       </svg>
+
+      {/* Layer 2: Colored craft layer */}
+      <svg
+        width={w}
+        height={h}
+        viewBox={`0 0 ${w} ${h}`}
+        style={{
+          position: "absolute",
+          left: -8,
+          top: 10,
+          overflow: "visible",
+          transform: "rotate(-1.2deg)",
+          filter: "drop-shadow(0 10px 14px rgba(50, 30, 15, 0.3))",
+        }}
+      >
+        <path d={paths[1]} fill={a.main} />
+      </svg>
+
+      {/* Layer 3: Warm Cream parchment face layer */}
+      <svg
+        width={w}
+        height={h}
+        viewBox={`0 0 ${w} ${h}`}
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          overflow: "visible",
+          filter: "drop-shadow(0 6px 8px rgba(50, 30, 15, 0.28))",
+        }}
+      >
+        <path d={paths[2]} fill={CREAM} stroke="#ede0c4" strokeWidth={1.5} />
+      </svg>
+
+      {/* Card Content Container */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          padding: "54px 48px",
+          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          color: INK,
+          zIndex: 5,
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 };
 
-/* ---------------------------------------------------------------- Word-by-Word Kinetic Captions */
-const KineticCaptions: React.FC<{
+/* ---------------------------------------------------------------- Masking Tape */
+const MaskingTape: React.FC<{rot?: number; width?: number}> = ({rot = -3, width = 200}) => (
+  <div
+    style={{
+      position: "absolute",
+      top: -24,
+      left: "50%",
+      marginLeft: -width / 2,
+      width,
+      height: 54,
+      background: "rgba(240, 225, 172, 0.88)",
+      borderLeft: "2px dashed rgba(210, 195, 140, 0.6)",
+      borderRight: "2px dashed rgba(210, 195, 140, 0.6)",
+      transform: `rotate(${rot}deg)`,
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.22)",
+      zIndex: 20,
+    }}
+  />
+);
+
+/* ---------------------------------------------------------------- Paper Ink Stamp */
+const PaperStamp: React.FC<{
+  text: string;
+  startFrame: number;
+  currentFrame: number;
+  fps: number;
+  color?: string;
+}> = ({text, startFrame, currentFrame, fps, color = "#d8452e"}) => {
+  if (currentFrame < startFrame) return null;
+  const p = spring({
+    frame: currentFrame - startFrame,
+    fps,
+    config: {damping: 10, mass: 0.4, stiffness: 220},
+  });
+  const scale = interpolate(p, [0, 1], [2.4, 1.0]);
+  const opacity = interpolate(p, [0, 0.3], [0, 1]);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        right: 42,
+        bottom: 50,
+        padding: "8px 24px",
+        border: `4px solid ${color}`,
+        borderRadius: 10,
+        fontFamily: DISPLAY,
+        fontSize: 36,
+        fontWeight: 800,
+        color,
+        letterSpacing: "3px",
+        textTransform: "uppercase",
+        opacity,
+        transform: `scale(${scale}) rotate(-8deg)`,
+        boxShadow: `0 4px 12px rgba(216, 69, 46, 0.35)`,
+        zIndex: 30,
+      }}
+    >
+      {text}
+    </div>
+  );
+};
+
+/* ---------------------------------------------------------------- Highlighter Marker */
+const PaperHighlighter: React.FC<{
+  start: number;
+  f: number;
+  color: string;
+  children: React.ReactNode;
+}> = ({start, f, color, children}) => {
+  const p = easeIO(clamp((f - start) / 12));
+  return (
+    <span style={{position: "relative", display: "inline-block"}}>
+      <span
+        style={{
+          position: "absolute",
+          left: -8,
+          right: -8,
+          bottom: "8%",
+          height: "44%",
+          backgroundColor: color,
+          opacity: 0.58,
+          transformOrigin: "left center",
+          transform: `scaleX(${p}) skewX(-7deg)`,
+          borderRadius: 6,
+        }}
+      />
+      <span style={{position: "relative", zIndex: 2}}>{children}</span>
+    </span>
+  );
+};
+
+/* ---------------------------------------------------------------- Kinetic Paper Subtitles */
+const PaperCaptions: React.FC<{
   words: PFWord[];
   currentSec: number;
-  hitIndex?: number;
-}> = ({words, currentSec, hitIndex}) => {
+  accentColor: string;
+}> = ({words, currentSec, accentColor}) => {
   if (!words || words.length === 0) return null;
 
   return (
     <div
       style={{
         position: "absolute",
-        bottom: 220,
-        left: 60,
-        right: 60,
+        bottom: 180,
+        left: 50,
+        right: 50,
         display: "flex",
         flexWrap: "wrap",
         justifyContent: "center",
         alignItems: "center",
         gap: "10px 14px",
-        padding: "16px 28px",
-        borderRadius: 24,
-        background: "rgba(10, 8, 7, 0.72)",
-        backdropFilter: "blur(14px)",
-        border: "1px solid rgba(255, 215, 0, 0.2)",
-        boxShadow: "0 12px 36px rgba(0,0,0,0.6)",
-        zIndex: 50,
+        padding: "16px 24px",
+        borderRadius: 18,
+        background: "rgba(251, 245, 230, 0.94)",
+        border: "2px solid #e3d3ab",
+        boxShadow: "0 8px 24px rgba(40, 25, 12, 0.32)",
+        zIndex: 40,
       }}
     >
       {words.map((w, idx) => {
         const isActive = currentSec >= w.s && currentSec <= w.e + 0.12;
         const isPast = currentSec > w.e + 0.12;
-        const isHit = hitIndex !== undefined && idx === hitIndex && isActive;
-
-        let color = isPast ? "rgba(255, 255, 255, 0.65)" : "rgba(255, 255, 255, 0.88)";
-        if (isActive) color = "#ffd23f";
-        if (isHit) color = "#ff4d4d";
 
         return (
           <span
             key={idx}
             style={{
               fontFamily: BOLD,
-              fontSize: isActive ? 44 : 38,
+              fontSize: isActive ? 42 : 36,
               fontWeight: 800,
-              color,
-              transform: isActive ? "scale(1.12)" : "scale(1.0)",
-              transition: "transform 0.08s ease, color 0.08s ease",
-              textShadow: isActive
-                ? "0 0 16px rgba(255, 210, 63, 0.75), 0 2px 8px rgba(0,0,0,0.9)"
-                : "0 2px 6px rgba(0,0,0,0.8)",
+              color: isActive ? "#ffffff" : isPast ? "#1d1b1a" : "#7a6a4a",
+              backgroundColor: isActive ? accentColor : "transparent",
+              padding: isActive ? "3px 12px" : "0px",
+              borderRadius: 8,
+              transform: isActive ? "scale(1.08)" : "scale(1.0)",
+              transition: "transform 0.08s ease",
               display: "inline-block",
             }}
           >
@@ -207,296 +342,207 @@ const KineticCaptions: React.FC<{
   );
 };
 
-/* ---------------------------------------------------------------- Single Scene Arc View */
-const SceneView: React.FC<{
+/* ---------------------------------------------------------------- Single Paper Scene */
+const CARD_W = 920;
+
+const PaperSceneView: React.FC<{
   scene: PFScene;
-  actIndex: number;
-  totalActs: number;
+  index: number;
   seed: number;
   fps: number;
-}> = ({scene, actIndex, totalActs, seed, fps}) => {
+}> = ({scene, index, seed, fps}) => {
   const frame = useCurrentFrame();
   const currentSec = frame / fps;
-  const totalFrames = Math.max(30, Math.round(scene.durationSec * fps));
+  const accent = scene.accent || ACCENT_CYCLE[index % 4];
+  const a = ACC[accent];
+  const sd = seed * 37 + index * 89;
+  const tilt = ((index % 2 ? 1 : -1) * (1.2 + (index % 3) * 0.4));
 
-  // Determine hit frame
+  // Determine hit frame for stamp and highlighter
   const hitWord =
     scene.hit !== undefined && scene.words && scene.words[scene.hit]
       ? scene.words[scene.hit]
       : null;
-  const hitFrame = hitWord ? Math.round(hitWord.s * fps) : Math.round(totalFrames * 0.35);
+  const hitFrame = hitWord ? Math.round(hitWord.s * fps) : Math.round(fps * 0.4);
 
-  // Remotion spring for impact
-  const hitSpring = spring({
-    frame: Math.max(0, frame - hitFrame),
-    fps,
-    config: {damping: 12, mass: 0.5, stiffness: 180},
-  });
-
-  // Continuous cinematic parallax drift
-  const scaleDrift = interpolate(frame, [0, totalFrames], [1.0, 1.05], {
-    easing: easeInOutCubic,
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const tiltDrift = interpolate(frame, [0, totalFrames], [-0.4, 0.4]);
-
-  // Combined scale with punch
-  const isPunchActive = frame >= hitFrame && frame < hitFrame + 18;
-  const punchScale = isPunchActive ? interpolate(hitSpring, [0, 1], [1.0, 1.06]) : 1.0;
-  const totalScale = scaleDrift * punchScale;
-
-  // Act classification: 0=Hook, intermediate=Lore/Tension, last=Payoff
-  const isHook = actIndex === 0;
-  const isPayoff = actIndex === totalActs - 1;
-  const isClimax = actIndex === totalActs - 2 || scene.kind === "number";
-
-  // Atmosphere background gradient based on act
-  const bgGradient = useMemo(() => {
-    if (isHook) {
-      return "radial-gradient(circle at 50% 38%, #36170d 0%, #170905 50%, #080302 100%)";
-    }
-    if (isClimax) {
-      return "radial-gradient(circle at 50% 45%, #3d1010 0%, #1a0808 55%, #0a0303 100%)";
-    }
-    if (isPayoff) {
-      return "radial-gradient(circle at 50% 50%, #3a280e 0%, #1f1506 55%, #0a0802 100%)";
-    }
-    return "radial-gradient(circle at 50% 40%, #1c2230 0%, #0d121c 55%, #05070a 100%)";
-  }, [isHook, isClimax, isPayoff]);
-
-  // Asset auto-detection from text/narration
-  const combinedText = `${scene.text || ""} ${scene.narration || ""} ${scene.sub || ""}`.toLowerCase();
-  const isTemple = /मंदिर|temple|धाम|शिखर|द्वारका|केदार|काशी|सोमनाथ|शक्तिपीठ|तीर्थ/i.test(combinedText);
-  const isCity = /नगरी|शहर|द्वारिका|मथुरा|अयोध्या|साम्राज्य|किला|दुर्ग|राजधानी/i.test(combinedText);
-  const isCharDham = /चारधाम|char dham|बद्रीनाथ|रामेश्वरम|पुरी/i.test(combinedText);
-
-  // Entrance spring for main card
+  // Entrance spring (authentic stop-motion / paper drop feel)
   const enterSpring = spring({
     frame,
     fps,
-    config: {damping: 14, mass: 0.7, stiffness: 140},
+    config: {damping: 14, mass: 0.6, stiffness: 160},
   });
-  const cardOpacity = interpolate(enterSpring, [0, 0.4], [0, 1]);
-  const cardTranslateY = interpolate(enterSpring, [0, 1], [60, 0]);
+  const dropScale = interpolate(enterSpring, [0, 1], [1.12, 1.0]);
+  const dropOpacity = interpolate(enterSpring, [0, 0.3], [0, 1]);
 
-  return (
-    <AbsoluteFill
-      style={{
-        background: bgGradient,
-        overflow: "hidden",
-        transform: `scale(${totalScale}) rotate(${tiltDrift}deg)`,
-      }}
-    >
-      <SacredMandala speed={isClimax ? 0.14 : 0.06} />
-      <Embers seed={seed + actIndex * 13} count={isClimax ? 48 : 32} />
+  // Asset detection from text/narration
+  const combined = `${scene.text || ""} ${scene.sub || ""} ${scene.narration || ""}`.toLowerCase();
+  const isDeity = /द्वारकाधीश|dwarkadhish|कृष्ण|krishna|शिव|shiva|महादेव|राम|rama|हनुमान|भगवान/i.test(combined);
+  const isCharDham = !isDeity && /धाम|dham|सप्त|चार धाम|तीर्थ|ज्योतिर्लिंग|शिखर/i.test(combined);
+  const isCity = !isDeity && !isCharDham && /नगरी|शहर|द्वारिका|मथुरा|अयोध्या|साम्राज्य|किला|दुर्ग|राजधानी/i.test(combined);
+  const isTemple = !isDeity && !isCharDham && !isCity && /द्वारका|सोमनाथ|काशी|उज्जैन|मंदिर|temple/i.test(combined);
 
-      {/* Cinematic Vignette */}
-      <AbsoluteFill
+  // Map kind handling
+  if (scene.kind === "map") {
+    return (
+      <div
         style={{
-          boxShadow: "inset 0 0 160px rgba(0,0,0,0.88), inset 0 0 320px rgba(0,0,0,0.72)",
-          pointerEvents: "none",
-          zIndex: 4,
-        }}
-      />
-
-      {/* Main Content Center */}
-      <AbsoluteFill
-        style={{
+          position: "absolute",
+          inset: 0,
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
           justifyContent: "center",
-          padding: "0 60px 180px 60px",
-          zIndex: 10,
-          opacity: cardOpacity,
-          transform: `translateY(${cardTranslateY}px)`,
+          alignItems: "center",
+          paddingBottom: 80,
+          opacity: dropOpacity,
+          transform: `scale(${dropScale})`,
         }}
       >
-        {/* Top Act Tag / Badge */}
+        <PaperSheet w={CARD_W} h={1200} seed={sd} accent={accent} tilt={tilt * 0.7}>
+          <MaskingTape rot={-2} width={220} />
+          <MapItem s={scene} lf={frame} fps={fps} accent={a.main} accentDark={a.dark} />
+          {scene.stamp && (
+            <PaperStamp
+              text={scene.stamp}
+              startFrame={hitFrame}
+              currentFrame={frame}
+              fps={fps}
+              color={a.dark}
+            />
+          )}
+        </PaperSheet>
+        <PaperCaptions words={scene.words} currentSec={currentSec} accentColor={a.main} />
+      </div>
+    );
+  }
+
+  // Number stat card
+  if (scene.kind === "number") {
+    const numProgress = easeIO(clamp((frame - hitFrame) / (fps * 1.0)));
+    const currentVal = Math.round((scene.number ?? 0) * numProgress);
+
+    return (
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          paddingBottom: 80,
+          opacity: dropOpacity,
+          transform: `scale(${dropScale})`,
+        }}
+      >
+        <PaperSheet w={CARD_W} h={960} seed={sd} accent={accent} tilt={tilt}>
+          <MaskingTape rot={2} width={200} />
+          <div style={{fontFamily: DISPLAY, fontSize: 180, color: a.main, lineHeight: 1}}>
+            {currentVal.toLocaleString("en-IN")}
+            {scene.unit && <span style={{fontSize: 84, marginLeft: 12}}>{scene.unit}</span>}
+          </div>
+          <div style={{fontFamily: DISPLAY, fontSize: 64, marginTop: 24, textAlign: "center"}}>
+            <PaperHighlighter start={hitFrame} f={frame} color={ACC.mustard.main}>
+              {scene.text}
+            </PaperHighlighter>
+          </div>
+          {scene.sub && (
+            <div style={{fontFamily: BODY, fontSize: 38, marginTop: 16, opacity: 0.82, textAlign: "center"}}>
+              {scene.sub}
+            </div>
+          )}
+          {scene.stamp && (
+            <PaperStamp
+              text={scene.stamp}
+              startFrame={hitFrame}
+              currentFrame={frame}
+              fps={fps}
+              color={a.dark}
+            />
+          )}
+        </PaperSheet>
+        <PaperCaptions words={scene.words} currentSec={currentSec} accentColor={a.main} />
+      </div>
+    );
+  }
+
+  // Standard craft card with handcrafted paper cutouts
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingBottom: 80,
+        opacity: dropOpacity,
+        transform: `scale(${dropScale})`,
+      }}
+    >
+      <PaperSheet w={CARD_W} h={1220} seed={sd} accent={accent} tilt={tilt}>
+        <MaskingTape rot={tilt > 0 ? 3 : -3} width={210} />
+
+        {/* Headline with Paper Highlighter */}
         <div
           style={{
-            fontFamily: BOLD,
-            fontSize: 22,
-            letterSpacing: "4px",
-            textTransform: "uppercase",
-            color: "#ffd700",
-            background: "rgba(255, 215, 0, 0.12)",
-            border: "1px solid rgba(255, 215, 0, 0.35)",
-            padding: "8px 24px",
-            borderRadius: 30,
-            marginBottom: 36,
-            backdropFilter: "blur(10px)",
-            boxShadow: "0 0 20px rgba(255, 215, 0, 0.25)",
+            fontFamily: DISPLAY,
+            fontSize: 72,
+            lineHeight: 1.2,
+            textAlign: "center",
+            marginBottom: 26,
+            color: INK,
           }}
         >
-          {isHook
-            ? "⚡ MYTHIC REVELATION"
-            : isClimax
-            ? "⚔️ CLIMAX & TRUTH"
-            : isPayoff
-            ? "🔱 DIVINE ETERNAL"
-            : "📜 SACRED LORE"}
+          <PaperHighlighter start={hitFrame} f={frame} color={a.light}>
+            {scene.text}
+          </PaperHighlighter>
         </div>
 
-        {/* Centerpiece SVG Icon Cutout with Golden Aura */}
-        <div
-          style={{
-            width: 320,
-            height: 320,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-            marginBottom: 24,
-            filter: "drop-shadow(0 0 32px rgba(255, 215, 0, 0.45)) drop-shadow(0 16px 24px rgba(0,0,0,0.85))",
-          }}
-        >
-          {/* Radiant Backglow */}
-          <div
-            style={{
-              position: "absolute",
-              width: 300,
-              height: 300,
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(255,200,50,0.35) 0%, transparent 72%)",
-              transform: `scale(${1.0 + Math.sin(frame * 0.08) * 0.08})`,
-            }}
-          />
-
+        {/* Authentic Sanjhi Cutout Piece */}
+        <div style={{margin: "12px 0 20px 0"}}>
           {isCharDham ? (
-            <PaperCharDhamCutout />
-          ) : isTemple ? (
-            <PaperTempleCutout />
+            <PaperCharDhamCutout progress={clamp(frame / 14)} width={720} height={480} />
           ) : isCity ? (
-            <PaperCityCutout />
+            <PaperCityCutout progress={clamp(frame / 14)} width={700} height={480} />
+          ) : isTemple ? (
+            <PaperTempleCutout progress={clamp(frame / 14)} width={640} height={500} />
           ) : (
-            <PaperDwarkadhishCutout />
+            <PaperDwarkadhishCutout progress={clamp(frame / 14)} width={660} height={520} />
           )}
         </div>
 
-        {/* Primary Headline Title */}
-        <h1
-          style={{
-            fontFamily: DISPLAY,
-            fontSize: isHook ? 68 : 58,
-            fontWeight: 800,
-            lineHeight: 1.25,
-            textAlign: "center",
-            margin: "0 0 16px 0",
-            maxWidth: 960,
-            background: "linear-gradient(135deg, #ffffff 0%, #fff0b8 40%, #ffd700 80%, #ff9500 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.95))",
-          }}
-        >
-          {scene.text}
-        </h1>
-
-        {/* Sub-Headline / Supporting Lore */}
+        {/* Sub-Headline Text */}
         {scene.sub && (
-          <p
+          <div
             style={{
-              fontFamily: HAND,
-              fontSize: 34,
-              color: "#e2d2b5",
+              fontFamily: BODY,
+              fontSize: 40,
+              color: INK,
+              opacity: 0.85,
               textAlign: "center",
-              margin: "0 0 20px 0",
-              maxWidth: 860,
-              textShadow: "0 2px 12px rgba(0,0,0,0.9)",
+              maxWidth: 780,
             }}
           >
             {scene.sub}
-          </p>
-        )}
-
-        {/* Numeric Stat Highlight for Kind="number" */}
-        {scene.number !== undefined && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 12,
-              margin: "12px 0 24px 0",
-              padding: "12px 36px",
-              background: "rgba(255, 60, 60, 0.15)",
-              border: "2px solid rgba(255, 80, 80, 0.5)",
-              borderRadius: 24,
-              boxShadow: "0 0 30px rgba(255, 60, 60, 0.35)",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: DISPLAY,
-                fontSize: 84,
-                fontWeight: 900,
-                color: "#ff5252",
-                textShadow: "0 0 24px rgba(255, 82, 82, 0.8)",
-              }}
-            >
-              {Math.round(
-                interpolate(
-                  frame,
-                  [hitFrame, hitFrame + 24],
-                  [0, scene.number],
-                  {extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: easeOutCubic}
-                )
-              )}
-            </span>
-            {scene.unit && (
-              <span
-                style={{
-                  fontFamily: BOLD,
-                  fontSize: 38,
-                  color: "#ffffff",
-                }}
-              >
-                {scene.unit}
-              </span>
-            )}
           </div>
         )}
 
-        {/* Slam Stamp Reveal */}
-        {scene.stamp && frame >= hitFrame && (
-          <div
-            style={{
-              marginTop: 18,
-              padding: "10px 32px",
-              fontFamily: BOLD,
-              fontSize: 36,
-              fontWeight: 900,
-              letterSpacing: "3px",
-              color: "#ffffff",
-              background: "linear-gradient(135deg, #d8452e, #8f1f14)",
-              border: "3px solid #ffbebe",
-              borderRadius: 16,
-              boxShadow: "0 8px 24px rgba(216, 69, 46, 0.65), 0 0 20px rgba(255, 100, 100, 0.4)",
-              transform: `scale(${interpolate(hitSpring, [0, 1], [2.2, 1.0])}) rotate(${interpolate(
-                hitSpring,
-                [0, 1],
-                [-8, -2]
-              )}deg)`,
-            }}
-          >
-            {scene.stamp}
-          </div>
+        {/* Red / Dark Ink Stamp */}
+        {scene.stamp && (
+          <PaperStamp
+            text={scene.stamp}
+            startFrame={hitFrame}
+            currentFrame={frame}
+            fps={fps}
+            color={a.dark}
+          />
         )}
-      </AbsoluteFill>
+      </PaperSheet>
 
-      {/* Kinetic Captions Box */}
-      <KineticCaptions
-        words={scene.words}
-        currentSec={currentSec}
-        hitIndex={scene.hit}
-      />
-    </AbsoluteFill>
+      <PaperCaptions words={scene.words} currentSec={currentSec} accentColor={a.main} />
+    </div>
   );
 };
 
-/* ---------------------------------------------------------------- Main CinematicArc Composition */
+/* ---------------------------------------------------------------- Main Composition */
 export const totalFramesCA = (scenes: PFScene[], fps = 30): number =>
   scenes.reduce((acc, sc) => acc + Math.max(30, Math.round(sc.durationSec * fps)), 0);
 
@@ -504,9 +550,8 @@ export const CinematicArc: React.FC<PFProps> = ({scenes, seed = 42, sfx = true})
   useFonts();
   const {fps} = useVideoConfig();
 
-  // Compute scene sequence boundaries
   let accumulatedFrame = 0;
-  const sceneTimeline = useMemo(() => {
+  const timeline = useMemo(() => {
     return scenes.map((sc, i) => {
       const frames = Math.max(30, Math.round(sc.durationSec * fps));
       const from = accumulatedFrame;
@@ -516,34 +561,67 @@ export const CinematicArc: React.FC<PFProps> = ({scenes, seed = 42, sfx = true})
   }, [scenes, fps]);
 
   return (
-    <AbsoluteFill style={{backgroundColor: "#080706"}}>
-      {/* Sound Design Triggers */}
+    <AbsoluteFill
+      style={{
+        backgroundColor: "#e8dec7", // Authentic natural parchment kraft board
+        backgroundImage: `radial-gradient(circle at 50% 50%, #f6eed8 0%, #e3d3ab 60%, #cbb98c 100%)`,
+        overflow: "hidden",
+      }}
+    >
+      {/* Physical Paper Grain Texture Overlay */}
+      <svg
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          opacity: 0.28,
+          pointerEvents: "none",
+          mixBlendMode: "multiply",
+        }}
+      >
+        <filter id="pfgrain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise" />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#pfgrain)" />
+      </svg>
+
+      {/* Natural Paper Edge Vignette */}
+      <AbsoluteFill
+        style={{
+          boxShadow: "inset 0 0 100px rgba(120, 95, 60, 0.45), inset 0 0 200px rgba(80, 55, 30, 0.35)",
+          pointerEvents: "none",
+          zIndex: 2,
+        }}
+      />
+
+      {/* Audio SFX Sequences */}
       {sfx &&
-        sceneTimeline.map((item) => (
+        timeline.map((item) => (
           <Sequence key={`sfx-${item.index}`} from={item.from} durationInFrames={item.frames}>
-            <Audio src={staticFile("myth-audio/whoosh.wav")} volume={0.65} />
+            <Audio src={staticFile("myth-audio/whoosh.wav")} volume={0.5} />
             {item.scene.hit !== undefined && item.scene.words && item.scene.words[item.scene.hit] && (
               <Sequence
                 from={Math.round(item.scene.words[item.scene.hit].s * fps)}
-                durationInFrames={45}
+                durationInFrames={30}
               >
-                <Audio src={staticFile("myth-audio/thump.wav")} volume={0.85} />
+                <Audio src={staticFile("myth-audio/thump.wav")} volume={0.7} />
               </Sequence>
             )}
           </Sequence>
         ))}
 
-      {/* Visual Scenes Sequence */}
-      {sceneTimeline.map((item) => (
+      {/* Visual Scenes */}
+      {timeline.map((item) => (
         <Sequence
-          key={`scene-${item.index}`}
+          key={`sc-${item.index}`}
           from={item.from}
           durationInFrames={item.frames}
         >
-          <SceneView
+          <PaperSceneView
             scene={item.scene}
-            actIndex={item.index}
-            totalActs={scenes.length}
+            index={item.index}
             seed={seed}
             fps={fps}
           />
