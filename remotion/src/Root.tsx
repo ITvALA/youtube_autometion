@@ -7,6 +7,7 @@ import {PuppetStory, DEMO_SCENES, totalFrames} from "./components/PuppetKit";
 import {PuppetWarStory, PUPPET_WAR_STORY_FRAMES} from "./components/PuppetWarStory";
 import {PaperFilm, totalFramesPF} from "./cinematic/PaperFilm";
 import {CinematicArc, totalFramesCA} from "./cinematic/CinematicArc";
+import {LibraryPreview} from "./cinematic/paper/library/LibraryPreview";
 import type {PFProps} from "./cinematic/types";
 import pfDemo from "../../data/demo_paperfilm.json";
 import {MythShort, EXAMPLE_SCENES, totalFrames as mythTotalFrames, Scene as MythScene} from "./myth/mindspark-myth-engine";
@@ -108,6 +109,14 @@ export const Root: React.FC = () => (
       height={1920}
       defaultProps={pfDemo as unknown as PFProps}
       calculateMetadata={caCalc}
+    />
+    <Composition
+      id="LibraryPreview"
+      component={LibraryPreview}
+      durationInFrames={240}
+      fps={FPS}
+      width={1080}
+      height={1920}
     />
   </>
 );

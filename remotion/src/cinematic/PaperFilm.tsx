@@ -4,6 +4,7 @@ import type {PFAccent, PFProps, PFScene} from "./types";
 import {MapItem, mapTimes} from "./MapItem";
 import {PaperTempleCutout, PaperCityCutout, PaperCharDhamCutout, PaperDwarkadhishCutout} from "./PaperSvgAssets";
 import {PaperStage} from "./PaperStage";
+import {PaperScene} from "./paper/library/PaperScene";
 
 /* ------------------------------------------------------------------ fonts */
 const FONTS: [string, string, string][] = [
@@ -160,6 +161,15 @@ const FullScene: React.FC<{s: PFScene; i: number; lf: number; fps: number; width
           </div>
         </div>
         {s.stamp && <div style={{position: "absolute", right: 60, top: 330}}><Stamp solid text={s.stamp} start={Math.round((s.words[s.hit ?? 0]?.s ?? 0.4) * fps)} f={lf} fps={fps} /></div>}
+      </AbsoluteFill>
+    );
+  }
+
+  if (s.paper_spec) {
+    return (
+      <AbsoluteFill>
+        <PaperScene spec={s.paper_spec} durationInFrames={Math.max(15, Math.round(s.durationSec * fps))} />
+        {s.stamp && <div style={{position: "absolute", right: 60, top: 290}}><Stamp solid text={s.stamp} start={Math.round((s.words[s.hit ?? 0]?.s ?? 0.3) * fps)} f={lf} fps={fps} /></div>}
       </AbsoluteFill>
     );
   }

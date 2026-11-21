@@ -1,3 +1,5 @@
+import type { PaperSceneSpec } from "./paper/library/types";
+
 // Paper-cut "film" composition: one big paper board, one continuous camera,
 // every effect lands on a spoken word (ported from the cinematic-skill idea).
 export type PFWord = {w: string; s: number; e: number}; // seconds, relative to scene start
@@ -23,6 +25,7 @@ export type PFScene = {
   hit2?: number;            // kind "map": words[] index jahan jagah par zoom ho (hit = rajya par zoom)
   span?: number;            // kind "map": final zoom ka size in degrees (default 1.1)
   accent?: PFAccent;
+  paper_spec?: PaperSceneSpec;
 };
 
 export type PFProps = {

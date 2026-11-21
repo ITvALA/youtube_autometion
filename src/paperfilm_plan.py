@@ -31,6 +31,154 @@ KINDS = ["title", "card", "number", "quote", "list", "map"]   # "photo" is not u
 ACCENTS = ["red", "teal", "mustard", "ink"]
 DATA_DIR = ROOT / "remotion" / "src" / "cinematic" / "data"
 
+BACKGROUNDS = [
+    "village", "forest", "river_ghat", "mountains_temple", "palace_courtyard",
+    "desert", "ocean_boat", "night_sky", "cave", "battlefield"
+]
+TIMES_OF_DAY = ["dawn", "day", "dusk", "night"]
+PROPS = [
+    "hut", "tree_banyan", "tree_pine", "tree_palm", "cow", "boat", "well",
+    "diya", "fire", "banner", "cloud", "bird", "bell", "chariot", "bow",
+    "mace", "crown", "pot"
+]
+CHAR_BUILDS = ["normal", "muscular", "slender", "elder"]
+CHAR_TYPES = ["warrior", "king", "rishi", "commoner", "deity", "guard"]
+CHAR_POSES = ["idle_breath", "blink", "walk", "run", "sit", "bow", "point", "raise_hands", "talk"]
+CHAR_EMOTIONS = ["calm", "fierce", "joy", "sorrow"]
+CAMERA_PRESETS = ["push-in", "pull-out", "pan", "orbit", "crane"]
+TRANSITIONS = ["slide", "tear", "fold", "page-turn"]
+
+
+def derive_paper_spec(spec, seed, scene_idx, context_text=""):
+    """
+    Validates LLM-supplied paper_spec against the library.
+    If missing or invalid, derives a rich, seeded spec matching context_text.
+    Two videos will never share the same opening, background, camera path or closing effect!
+    """
+    rnd = random.Random((seed or 42) + scene_idx * 1337)
+    ctx = str(context_text).lower()
+
+    # 1. Determine Background
+    bg = None
+    if isinstance(spec, dict) and spec.get("bg") in BACKGROUNDS:
+        bg = spec["bg"]
+    else:
+        if any(w in ctx for w in ["युद्ध", "लड़ाई", "battle", "सेना", "तलवार", "वीर", "रक्त", "बाजीप्रभु", "पवनखिंड"]):
+            bg = "battlefield"
+        elif any(w in ctx for w in ["मंदिर", "temple", "पहाड़", "शिखर", "तीर्थ", "शिव", "कैलाश", "पूजा", "घंटी"]):
+            bg = "mountains_temple"
+        elif any(w in ctx for w in ["गंगा", "नदी", "घाट", "river", "जल", "स्नान", "काशी", "वाराणसी"]):
+            bg = "river_ghat"
+        elif any(w in ctx for w in ["महल", "दरबार", "राजा", "सिंहासन", "राजधानी", "किला", "palace"]):
+            bg = "palace_courtyard"
+        elif any(w in ctx for w in ["जंगल", "वन", "forest", "पेड़", "ऋषि", "आश्रम", "तपस्या"]):
+            bg = "forest"
+        elif any(w in ctx for w in ["गुफा", "cave", "अमरनाथ", "रहस्य", "तहखाना"]):
+            bg = "cave"
+        elif any(w in ctx for w in ["समुद्र", "सागर", "नाव", "द्वारका", "डूबी", "ocean"]):
+            bg = "ocean_boat"
+        elif any(w in ctx for w in ["रात", "रात्रि", "night", "अंधकार", "तारे", "चाँद"]):
+            bg = "night_sky"
+        elif any(w in ctx for w in ["रेगिस्तान", "मरुस्थल", "dune", "desert", "रेत"]):
+            bg = "desert"
+        elif any(w in ctx for w in ["गाँव", "गांव", "कुआं", "झोपड़ी", "किसान", "village"]):
+            bg = "village"
+        else:
+            bg = rnd.choice(BACKGROUNDS)
+
+    variant = spec.get("variant") if isinstance(spec, dict) and isinstance(spec.get("variant"), int) and 0 <= spec["variant"] <= 2 else rnd.choice([0, 1, 2])
+    time_of_day = spec.get("timeOfDay") if isinstance(spec, dict) and spec.get("timeOfDay") in TIMES_OF_DAY else (
+        "night" if bg == "night_sky" else rnd.choice(["dawn", "day", "dusk", "night"])
+    )
+
+    # 2. Props
+    props = []
+    if isinstance(spec, dict) and isinstance(spec.get("props"), list):
+        for p in spec["props"]:
+            if isinstance(p, dict) and p.get("type") in PROPS:
+                props.append({
+                    "type": p["type"],
+                    "x": int(p.get("x", 540)),
+                    "y": int(p.get("y", 1250)),
+                    "scale": float(p.get("scale", 1.0)),
+                    "flip": bool(p.get("flip", False)),
+                })
+    if not props:
+        if bg == "battlefield":
+            props = [{"type": "banner", "x": 300, "y": 1280, "scale": 1.1}, {"type": "fire", "x": 780, "y": 1320, "scale": 1.0}]
+        elif bg == "mountains_temple":
+            props = [{"type": "diya", "x": 450, "y": 1260, "scale": 0.9}, {"type": "bell", "x": 640, "y": 950, "scale": 0.9}]
+        elif bg == "village":
+            props = [{"type": "tree_banyan", "x": 220, "y": 1200, "scale": 1.0}, {"type": "well", "x": 750, "y": 1300, "scale": 0.9}]
+        elif bg == "river_ghat":
+            props = [{"type": "diya", "x": 420, "y": 1400, "scale": 0.9}, {"type": "boat", "x": 780, "y": 1360, "scale": 0.9}]
+        else:
+            p_type = rnd.choice(["fire", "diya", "banner", "cloud", "tree_pine", "tree_palm"])
+            props = [{"type": p_type, "x": rnd.randint(250, 800), "y": rnd.randint(1100, 1400), "scale": 1.0}]
+
+    # 3. Characters
+    characters = []
+    if isinstance(spec, dict) and isinstance(spec.get("characters"), list):
+        for c in spec["characters"]:
+            if isinstance(c, dict):
+                c_type = c.get("type") if c.get("type") in CHAR_TYPES else "warrior"
+                c_pose = c.get("pose") if c.get("pose") in CHAR_POSES else "idle_breath"
+                c_build = c.get("build") if c.get("build") in CHAR_BUILDS else "normal"
+                c_emotion = c.get("emotion") if c.get("emotion") in CHAR_EMOTIONS else "calm"
+                characters.append({
+                    "type": c_type,
+                    "pose": c_pose,
+                    "build": c_build,
+                    "emotion": c_emotion,
+                    "x": int(c.get("x", 540)),
+                    "y": int(c.get("y", 1250)),
+                    "scale": float(c.get("scale", 1.1)),
+                    "flip": bool(c.get("flip", False)),
+                })
+    if not characters:
+        c_type = "warrior" if bg == "battlefield" else ("rishi" if bg == "forest" else ("king" if bg == "palace_courtyard" else "warrior"))
+        c_pose = "talk" if scene_idx == 0 else rnd.choice(["idle_breath", "point", "talk", "walk"])
+        characters = [{
+            "type": c_type,
+            "pose": c_pose,
+            "build": "muscular" if c_type == "warrior" else "normal",
+            "emotion": "fierce" if bg == "battlefield" else "calm",
+            "x": 540,
+            "y": 1250,
+            "scale": 1.15
+        }]
+
+    # 4. Camera preset (Never a fixed camera)
+    cam_move = None
+    if isinstance(spec, dict) and isinstance(spec.get("camera"), dict) and spec["camera"].get("move") in CAMERA_PRESETS:
+        cam_move = spec["camera"]["move"]
+    else:
+        cam_presets_order = ["push-in", "pull-out", "pan", "orbit", "crane"]
+        cam_move = cam_presets_order[(scene_idx + rnd.randint(0, 4)) % len(cam_presets_order)]
+
+    cam_speed = float(spec["camera"].get("speed", 1.0)) if (isinstance(spec, dict) and isinstance(spec.get("camera"), dict)) else 1.0
+
+    # 5. Transitions
+    trans = None
+    if isinstance(spec, dict) and spec.get("transition") in TRANSITIONS:
+        trans = spec["transition"]
+    else:
+        trans = rnd.choice(TRANSITIONS)
+
+    scene_seed = (rnd.randint(1000, 99999) + scene_idx * 997)
+
+    return {
+        "bg": bg,
+        "variant": variant,
+        "timeOfDay": time_of_day,
+        "props": props,
+        "characters": characters,
+        "camera": {"move": cam_move, "speed": cam_speed},
+        "transition": trans,
+        "seed": scene_seed,
+    }
+
+
 
 GEO_LORE = {
     "pawankhind": {"state": "Maharashtra", "district": "Kolhapur", "name": "पावनखिंड", "lat": 16.89, "lon": 73.83, "aliases": ["पावनखिंड", "बाजीप्रभु", "विशालगढ़", "baji", "pawankhind"]},
@@ -116,6 +264,12 @@ KIND ke extra fields:
 - number: "number": 1500 (sirf ank, JSON number), "unit": "साल" ya "%" ya "करोड़" (optional).
 - list: "items": ["max 4 words", "max 4 words", "max 4 words"]  (3 items).
 - quote: "text" = kisi paatra ka dialogue, "sub" = kisne bola.
+- paper_spec (OPTIONAL, Handcrafted 2D Paper Stage visual scene spec):
+    "bg": "village | forest | river_ghat | mountains_temple | palace_courtyard | desert | ocean_boat | night_sky | cave | battlefield",
+    "variant": 0,
+    "timeOfDay": "dawn | day | dusk | night",
+    "camera": {"move": "push-in | pull-out | pan | orbit | crane", "speed": 1.0},
+    "transition": "slide | tear | fold | page-turn"
 - map: sirf tab jab kahani Bharat ki kisi asli jagah par ho. Fields:
     "state": __STATES__ me se EXACT ek naam (English),
     "district": "English zila (optional, pakka ho tabhi)",
@@ -230,6 +384,10 @@ def clean_plan(plan, seed=None):
                         sc["hit2_word"] = str(s["hit2_word"]).strip()
                 if s.get("span") and _num(s["span"]):
                     sc["span"] = max(0.3, min(4.0, _num(s["span"])))
+
+        # Validate / enrich paper_spec for 2D paper stage engine
+        context_str = f"{sc.get('text', '')} {sc.get('narration', '')} {sc.get('tts_text', '')}"
+        sc["paper_spec"] = derive_paper_spec(s.get("paper_spec"), seed, i, context_str)
         out.append(sc)
 
     if len(out) < 4:
