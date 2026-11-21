@@ -143,6 +143,7 @@ const FullScene: React.FC<{s: PFScene; i: number; lf: number; fps: number; width
         <div style={{position: "absolute", left: 40, right: 40, top: 150}}>
           <MapRoute s={s} lf={lf} fps={fps} text={t(74, DISPLAY)} body={t(46, BODY)} strip />
         </div>
+        {s.stamp && <div style={{position: "absolute", right: 60, top: 290}}><Stamp solid text={s.stamp} start={Math.round((s.words[0]?.s ?? 0.3) * fps)} f={lf} fps={fps} /></div>}
       </AbsoluteFill>
     );
   }

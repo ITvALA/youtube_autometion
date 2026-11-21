@@ -310,7 +310,14 @@ async def _synth_edge_async(text, cfg, out):
 
 
 def _synth_edge(text, cfg, out):
-    return asyncio.run(_synth_edge_async(text, cfg, out))
+    last_err = None
+    for attempt in range(3):
+        try:
+            return asyncio.run(_synth_edge_async(text, cfg, out))
+        except Exception as e:
+            last_err = e
+            time.sleep(1.2)
+    raise RuntimeError(f"Edge-TTS failed after 3 attempts: {last_err}")
 
 
 def _synth_elevenlabs(text, cfg, out):

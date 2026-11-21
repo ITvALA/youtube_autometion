@@ -17,6 +17,36 @@ ACCENTS = ["red", "teal", "mustard", "ink"]
 DATA_DIR = ROOT / "remotion" / "src" / "cinematic" / "data"
 
 
+GEO_LORE = {
+    "pawankhind": {"state": "Maharashtra", "district": "Kolhapur", "name": "पावनखिंड", "lat": 16.89, "lon": 73.83, "aliases": ["पावनखिंड", "बाजीप्रभु", "विशालगढ़", "baji", "pawankhind"]},
+    "somnath": {"state": "Gujarat", "district": "Gir Somnath", "name": "सोमनाथ मंदिर", "lat": 20.8880, "lon": 70.4012, "aliases": ["सोमनाथ", "somnath"]},
+    "dwarka": {"state": "Gujarat", "district": "Devbhumi Dwarka", "name": "द्वारकाधीश", "lat": 22.2376, "lon": 68.9674, "aliases": ["द्वारका", "dwarka"]},
+    "pabuji": {"state": "Rajasthan", "district": "Nagaur", "name": "कोलूमण्ड", "lat": 27.05, "lon": 72.85, "aliases": ["पाबूजी", "राठौड़", "pabuji", "चारणी"]},
+    "amarkantak": {"state": "Madhya Pradesh", "district": "Anuppur", "name": "अमरकंटक", "lat": 22.67, "lon": 81.75, "aliases": ["अमरकंटक", "शोणदेश", "amarkantak", "shonadesh"]},
+    "padmanabhaswamy": {"state": "Kerala", "district": "Thiruvananthapuram", "name": "पद्मनाभस्वामी", "lat": 8.4830, "lon": 76.9436, "aliases": ["पद्मनाभस्वामी", "padmanabha"]},
+    "ellora": {"state": "Maharashtra", "district": "Aurangabad", "name": "एलोरा कैलाश", "lat": 20.0238, "lon": 75.1793, "aliases": ["एलोरा", "कैलाश मंदिर", "ellora"]},
+    "konark": {"state": "Odisha", "district": "Puri", "name": "कोणार्क सूर्य मंदिर", "lat": 19.8876, "lon": 86.0945, "aliases": ["कोणार्क", "konark"]},
+    "lepakshi": {"state": "Andhra Pradesh", "district": "Sri Sathya Sai", "name": "लेपाक्षी मंदिर", "lat": 13.8041, "lon": 77.6067, "aliases": ["लेपाक्षी", "lepakshi"]},
+    "amarnath": {"state": "Jammu and Kashmir", "name": "अमरनाथ गुफा", "lat": 34.2157, "lon": 75.5036, "aliases": ["अमरनाथ", "amarnath", "कश्मीर"]},
+    "pushkar": {"state": "Rajasthan", "district": "Ajmer", "name": "पुष्कर", "lat": 26.49, "lon": 74.55, "aliases": ["पुष्कर", "मणिबंध", "pushkar"]},
+    "kashi": {"state": "Uttar Pradesh", "district": "Varanasi", "name": "काशी विश्वनाथ", "lat": 25.3109, "lon": 83.0107, "aliases": ["काशी", "वाराणसी", "kashi"]},
+    "ayodhya": {"state": "Uttar Pradesh", "district": "Ayodhya", "name": "अयोध्या धाम", "lat": 26.7922, "lon": 82.1998, "aliases": ["अयोध्या", "ayodhya"]},
+    "kurukshetra": {"state": "Haryana", "district": "Kurukshetra", "name": "कुरुक्षेत्र", "lat": 29.9695, "lon": 76.8783, "aliases": ["कुरुक्षेत्र", "kurukshetra"]},
+    "hampi": {"state": "Karnataka", "district": "Vijayanagara", "name": "हम्पी विजयनगर", "lat": 15.3350, "lon": 76.4600, "aliases": ["हम्पी", "hampi", "विजयनगर"]},
+}
+
+
+def _detect_geo(topic):
+    hay = (str(topic.get("title", "")) + " " + str(topic.get("summary", "")) + " " + str(topic.get("topic", "")) + " " + str(topic.get("topic_title", ""))).lower()
+    for k, data in GEO_LORE.items():
+        if k in hay:
+            return data
+        for al in data.get("aliases", []):
+            if al.lower() in hay:
+                return data
+    return None
+
+
 def _load_geo():
     states, districts = [], {}
     try:
@@ -200,7 +230,8 @@ def clean_plan(plan, seed=None):
                 sc["kind"] = "card"
                 sc["text"] = re.sub(r"\s*→\s*", " ", sc["text"]).strip()
             seen_map = True
-    out[0]["kind"] = "title"
+    if out[0]["kind"] not in ("map", "title"):
+        out[0]["kind"] = "title"
     out[0].pop("items", None)
     out[0].pop("number", None)
 
@@ -239,6 +270,7 @@ def make_series_part_plan(topic, part, slot_info, seed=None):
     part_num = slot_info.get("current_part", 1)
     tot_parts = slot_info.get("total_parts", 2)
     is_final = slot_info.get("is_final_part", False)
+    geo = _detect_geo(topic)
 
     part_ctx = (
         f"KAHANI: {topic_title}\n"
@@ -250,19 +282,35 @@ def make_series_part_plan(topic, part, slot_info, seed=None):
         f"CLIFFHANGER: {part.get('cliffhanger')}\n\n"
         f"CRITICAL STORYTELLING RULES:\n"
         f"1. YE KOI TRAILER NAHI HAI! KABHI BHI disjointed cinematic teaser dialogues mat likho. Asli katha sunao.\n"
-        f"2. Scene 1 kind 'title' hoga: seedha kahani ka mukhya vishay/patra/mandir ka naam Devanagari me bolo.\n"
-        f"3. Scene 1 ka 'stamp' STRICTLY 'भाग {part_num}' hoga.\n"
     )
-    if not is_final:
+    if geo:
         part_ctx += (
-            f"4. Aakhri scene ka narration agle video ka suspense dega: '...Lekin aage kya hua? Dekhiye agle video mein!'\n"
-            f"   (DHYAN DEIN: Spoken voice me 'bhaag 2' nahi bolna, STRICTLY 'dekhiye agle video mein' bolna hai!)\n"
-            f"5. Aakhri scene ka 'stamp' STRICTLY 'अगला भाग' hoga!\n"
+            f"2. PEHLA SCENE (SCENE 1) STRICTLY KIND 'map' HOGA (THE MAP HOOK)!\n"
+            f"   - 'state': '{geo['state']}'\n"
+            f"   - 'district': '{geo.get('district', '')}'\n"
+            f"   - 'place': {json.dumps({'name': geo['name'], 'lat': geo['lat'], 'lon': geo['lon']}, ensure_ascii=False)}\n"
+            f"   - 'text': 'भारत → {geo['state']} → {geo['name']}'\n"
+            f"   - 'hit_word': Narration ka wo word jab '{geo['state']}' bola jaye\n"
+            f"   - 'hit2_word': Narration ka wo word jab '{geo['name'].split()[0]}' bola jaye\n"
+            f"   - Scene 1 Narration me seedha sthan, nayak aur sankat ka damdaar dialogue aana chahiye (jaise '1660 mein Maharashtra ke Pawankhind mein, Bajiprabhu Deshpande ne maha-balidan diya!')\n"
+            f"   - Scene 1 Stamp: 'भाग {part_num}'\n"
         )
     else:
         part_ctx += (
-            f"4. Ye is kahani ka FINAL BHAG hai! Aakhri scene me kahani ka antim divya sandesh aur purnata ho.\n"
-            f"5. Aakhri scene ka 'stamp' 'कथा सम्पूर्ण' hoga.\n"
+            f"2. Scene 1 kind 'title' hoga: seedha kahani ka mukhya vishay/patra/mandir ka naam Devanagari me bolo.\n"
+            f"   Scene 1 Stamp: 'भाग {part_num}'\n"
+        )
+
+    if not is_final:
+        part_ctx += (
+            f"3. Aakhri scene ka narration agle video ka suspense dega: '...Lekin aage kya hua? Dekhiye agle video mein!'\n"
+            f"   (DHYAN DEIN: Spoken voice me 'bhaag 2' nahi bolna, STRICTLY 'dekhiye agle video mein' bolna hai!)\n"
+            f"4. Aakhri scene ka 'stamp' STRICTLY 'अगला भाग' hoga!\n"
+        )
+    else:
+        part_ctx += (
+            f"3. Ye is kahani ka FINAL BHAG hai! Aakhri scene me kahani ka antim divya sandesh aur purnata ho.\n"
+            f"4. Aakhri scene ka 'stamp' 'कथा सम्पूर्ण' hoga.\n"
         )
 
     prompt = (_PROMPT
@@ -281,6 +329,38 @@ def make_series_part_plan(topic, part, slot_info, seed=None):
             
             # Enforce series branding on scenes and metadata
             scenes = plan["scenes"]
+            if geo and len(scenes) > 0:
+                scenes[0]["kind"] = "map"
+                scenes[0]["state"] = geo["state"]
+                if geo.get("district"):
+                    scenes[0]["district"] = geo["district"]
+                scenes[0]["place"] = {"name": geo["name"], "lat": geo["lat"], "lon": geo["lon"]}
+                st_hi = {
+                    "Maharashtra": "महाराष्ट्र", "Gujarat": "गुजरात", "Rajasthan": "राजस्थान",
+                    "Madhya Pradesh": "मध्य प्रदेश", "Uttar Pradesh": "उत्तर प्रदेश",
+                    "Kerala": "केरल", "Karnataka": "कर्नाटक", "Odisha": "ओडिशा",
+                    "Andhra Pradesh": "आंध्र प्रदेश", "Jammu and Kashmir": "जम्मू-कश्मीर",
+                    "Haryana": "हरियाणा", "Punjab": "पंजाब", "Bihar": "बिहार",
+                }.get(geo["state"], geo["state"])
+                scenes[0]["text"] = f"भारत → {st_hi} → {geo['name']}"
+                
+                st_kw = geo["state"]
+                pl_kw = geo["name"].split()[0]
+                # Ensure state and place are in scene 0 narration for map zoom synchronization
+                narr = scenes[0].get("narration", "")
+                if st_kw.lower() not in narr.lower() and "maharashtra" not in narr.lower() and "rajasthan" not in narr.lower() and "gujarat" not in narr.lower():
+                    scenes[0]["narration"] = f"{st_kw} ke {pl_kw} mein, " + narr
+                    scenes[0]["tts_text"] = f"{geo['state']} के {geo['name']} में, " + scenes[0].get("tts_text", narr)
+                
+                scenes[0]["hit_word"] = st_kw
+                scenes[0]["hit2_word"] = pl_kw
+                
+                # If there was another map scene later, change it to card so there's only 1 map
+                for later_sc in scenes[1:]:
+                    if later_sc.get("kind") == "map":
+                        later_sc["kind"] = "card"
+                        later_sc["text"] = re.sub(r"\s*→\s*", " ", later_sc.get("text", "")).strip()
+
             scenes[0]["stamp"] = f"भाग {part_num}"
             if not is_final:
                 scenes[-1]["stamp"] = "अगला भाग"
