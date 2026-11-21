@@ -597,7 +597,7 @@ STYLE MODE REQUIREMENTS:
    * Hook scene: chauka dene wali line ya sawal se shuru. Last scene: garam, ek saaf call-to-action.
 9. BRANDING MANDATES:
    - {hook_start_req}
-   - Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...aise aur powerful insights ke liye MindSpark ko subscribe karein!").
+   - KABHI BHI 'subscribe kare' ya 'like kare' mat bolo. Kahani ko shandar seekh/conclusion ke sath khatam karo.
 
 10. VOX VISUALS (har scene ke data me "visual" do): {{"items":[{{"icon":"<icon>","label":"<1-3 shabd, Devanagari me>"}}], "country":"<English country name, sirf jab koi desh central ho>"}}.
    - 1 item = ek bada illustration, 2 items = compare (jaise desh ka map + paisa), 3 items = list.
@@ -676,7 +676,7 @@ DEVANAGARI HINDI LYRICS & AUDIO (100% MANDATORY DEVANAGARI):
    * Hook scene: chauka dene wali line ya sawal se shuru. Last scene: garam, ek saaf call-to-action.
 BRANDING MANDATES:
 - First scene narration MUST start directly with "{book['title']} हमें सिखाती है..." (NO greetings like 'Namaste dosto', NO 'Kitab' prefix, start directly with the book title).
-- Last scene narration MUST conclude with the channel name "MindSpark" (e.g. "...ऐसे और शक्तिशाली विचारों के लिए MindSpark को सब्सक्राइब करें!").
+- KABHI BHI 'subscribe kare' ya 'like kare' mat bolo.
 Avoid these recent scene sequences: {json.dumps(recent_sequences or [])}.
 youtube.title under 70 chars, description 2 short lines + hashtags."""
 
@@ -690,22 +690,23 @@ youtube.title under 70 chars, description 2 short lines + hashtags."""
             plan = json.loads(raw)
             plan = normalize(plan)
 
-            # Programmatically guarantee book name at start and MindSpark at end
+            # Programmatically guarantee book name at start and clean subscribe lines
             if plan.get("scenes"):
                 first_s = plan["scenes"][0]
-                last_s = plan["scenes"][-1]
                 b_title = book.get("title", "").replace(",", "").strip()
                 f_narr = first_s.get("narration", "").strip()
                 # Strip out any greetings like "Namaste dosto", "Kitab", etc.
                 f_narr = re.sub(r'^(?:namaste\s*(?:dosto)?[\s!,.]*|kitab\s+|dosto[\s!,.]*)+', '', f_narr, flags=re.IGNORECASE).strip()
                 first_s["narration"] = f_narr
 
-                l_narr = last_s.get("narration", "")
-                if "mindspark" not in l_narr.lower() and "माइंडस्पार्क" not in l_narr:
-                    last_s["narration"] = l_narr.rstrip(".! ") + ". ऐसे और शक्तिशाली विचारों के लिए MindSpark को सब्सक्राइब करें!"
-
-                # Ensure tts_text exists on each scene
+                # Ensure tts_text exists and clean any subscribe callouts
                 for sc in plan["scenes"]:
+                    for field in ["narration", "tts_text"]:
+                        if field in sc and isinstance(sc[field], str):
+                            sc[field] = re.sub(r"(?i)\s*(?:aise\s+aur\s+.*?ke\s+liye\s+)?mindspark\s+ko\s+subscribe\s+karein?[.!]?", "", sc[field]).strip()
+                            sc[field] = re.sub(r"(?i)\s*(?:ऐसे\s+और\s+.*?के\s+लिए\s+)?(?:माइंडस्पार्क|mindspark)\s+को\s+सब्सक्राइब\s+करें[.!]?", "", sc[field]).strip()
+                            sc[field] = re.sub(r"(?i)\s*subscribe\s+karein?[.!]?", "", sc[field]).strip()
+                            sc[field] = re.sub(r"(?i)\s*सब्सक्राइब\s+करें[.!]?", "", sc[field]).strip()
                     if not sc.get("tts_text"):
                         sc["tts_text"] = sc["narration"]
 
@@ -1219,9 +1220,9 @@ _FB_NARR = {
     ],
 }
 _FB_CLOSINGS = [
-    "{short} की यह कथा सिखाती है कि सही राह पर चलने वाला कभी अकेला नहीं होता। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
-    "यही है {short} की सीख: भरोसा और धर्म साथ हों, तो हर मुश्किल छोटी पड़ जाती है। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
-    "बस यही थी {short} की अमर कहानी। इसे अपनों के साथ ज़रूर बाँटिए। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!",
+    "{short} की यह कथा सिखाती है कि सही राह पर चलने वाला कभी अकेला नहीं होता।",
+    "यही है {short} की सीख: भरोसा और धर्म साथ हों, तो हर मुश्किल छोटी पड़ जाती है।",
+    "बस यही थी {short} की अमर कहानी, जो आज भी धर्म और साहस की राह दिखाती है।",
 ]
 _FB_CAPTIONS = {
     "intro": [("अनसुना रहस्य", "एक अनकही बात"), ("एक पुरानी कथा", "जो आज भी ज़िंदा है"), ("सुनिए ज़रा", "कहानी यहीं से शुरू होती है")],
@@ -1291,7 +1292,7 @@ def generate_fallback_myth_plan(topic=None, seed=None):
             narration = take(pools, used, "victory" if beat == "intro" else beat).format(short=short)
         cap_title, cap_text = take(cap_pools, cap_used, beat)
         if last:
-            cap_title, cap_text = "सनातन ज्ञान", "MindSpark को सब्सक्राइब करें"
+            cap_title, cap_text = "सनातन ज्ञान", "सत्यमेव जयते"
         actors = [dict(a) for a in actors_seq[min(role, len(actors_seq) - 1)]]
         sec = 3 if idx == 0 else (5 if (last or idx >= len(structure) - 2) else rnd.choice([4, 5, 5]))
         scenes.append({
@@ -1342,7 +1343,7 @@ Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekh
 - Vaakyon ki lambai badalte raho.
 - In cheezon se bacho: "Aaj ke is video me", "toh doston", "chaliye shuru karte hain", "ek anokha safar", "zindagi ka sabak", "yaad rakhiye".
 - Scene 1 Hook (MIRCH-MASALA): koi fixed generic opening line NAHI. 'क्या आपको पता है', 'क्या आप जानते हैं' ya koi bhi boring saancha bilkul mat use karo. Seedha kahani ke sabse bade sankat, lalkaar, sanvaad ya drishya se shuru karo!
-- Last scene: conclude naturally with heroic pride, and the very last sentence MUST end with: 'ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!'
+- Last scene: conclude naturally with heroic pride and an inspiring truth. KABHI BHI 'subscribe kare' ya 'like kare' ya channel promotion mat bolo!
 
 ## STRICT IDENTITY & REAL CHARACTER NAMES (NO GENERIC FAIRY TALES):
 - Paatra ko generic mat bolo! 'एक योद्धा', 'एक राजा', 'एक गुरु', 'एक पक्षी' BOLNA SAKHT MANAA HAI!
@@ -1370,8 +1371,7 @@ Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekh
    - 'sec': 4 to 5 per scene (total ~8-10 seconds, ending at 50-55s total).
    - Beat: 'reveal' -> 'victory'.
    - Scene N-1: Kahani ka sabse bada chamatkar ya hairan kar dene wala mod (Twist)!
-   - Scene N: Kahani ki amar seekh, aur last sentence MUST end with:
-     'ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!'
+   - Scene N: Kahani ki amar seekh aur antim prabhavshali sandesh. KABHI BHI 'subscribe kare' mat bolo!
 
 ## Kahani ki bunaavat aur Masaledaar Sanvaad (SABSE ZAROORI):
 - Ye ek poori KAHANI hai: 0-3s Hook -> 3-45s Tez takraav aur sankalp -> 45-55s Chamatkar/Twist aur Antim Vijay.
@@ -1649,10 +1649,12 @@ STRICT NARRATIVE MANDATES FOR THIS SCRIPT:
                     elif sc.get("sec", 5) < 4:
                         sc["sec"] = 4
 
-                last_s = plan["scenes"][-1]
-                l_narr = last_s.get("narration", "")
-                if "mindspark" not in l_narr.lower() and "माइंडस्पार्क" not in l_narr:
-                    last_s["narration"] = l_narr.rstrip(".! ") + "। ऐसी और गाथाओं के लिए MindSpark को सब्सक्राइब करें!"
+                # Clean any subscribe callouts from all scenes
+                for sc in plan["scenes"]:
+                    for field in ["narration", "tts_text"]:
+                        if field in sc and isinstance(sc[field], str):
+                            sc[field] = re.sub(r"(?i)\s*(?:ऐसी\s+और\s+.*?के\s+लिए\s+)?(?:माइंडस्पार्क|mindspark)\s*(?:को)?\s*(?:सब्सक्राइब|subscribe)\s*(?:करें|karein?)?[.!।]?", "", sc[field]).strip()
+                            sc[field] = re.sub(r"(?i)\s*(?:सब्सक्राइब|subscribe)\s*(?:करें|karein?)?[.!।]?", "", sc[field]).strip()
 
             err = validate_myth_plan(plan)
             if not err:

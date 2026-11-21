@@ -76,7 +76,7 @@ KIND ke extra fields:
 
 RULES:
 1. Scene 1 hamesha kind "title" ho: 3 second ka hook, kahani ka naam ya sabse chaunkane wali baat.
-2. Aakhri scene me narration ke end me MindSpark ko subscribe karne ka line ho.
+2. Aakhri scene me kahani ka antim prabhavshali sandesh/conclusion ho. KABHI BHI 'subscribe kare' ya 'like kare' ya channel promotion mat bolo.
 3. Kahani ke asli naam, jagah aur ghatnayen use karo. Kuch bhi apni taraf se mat gadho. Ek hi kind lagatar 3 baar mat lagao.
 4. Beech ke scenes me kam se kam 1 "quote" ya "number" ho agar kahani me dialogue ya ank ho.
 5. Pura video lagbhag 40-55 second ka ho (narration jyada lamba mat likho).
@@ -195,11 +195,12 @@ def clean_plan(plan, seed=None):
     out[0].pop("items", None)
     out[0].pop("number", None)
 
-    # MindSpark closing line
-    last = out[-1]
-    if "mindspark" not in last["narration"].lower():
-        last["narration"] = last["narration"].rstrip(".! ") + ". MindSpark ko subscribe karein!"
-        last["tts_text"] = last["tts_text"].rstrip("।.! ") + "। माइंडस्पार्क को सब्सक्राइब करें!"
+    # Clean up any subscribe / channel promotion mentions across all scenes
+    for sc in out:
+        for k in ["narration", "tts_text", "text", "sub"]:
+            if k in sc and isinstance(sc[k], str):
+                sc[k] = re.sub(r"(?i)\s*(?:aisi\s+aur\s+gathaon\s+ke\s+liye\s+)?(?:mindspark|माइंडस्पार्क)\s*(?:ko|को)?\s*(?:subscribe|सब्सक्राइब)\s*(?:karein?|करें)?[.!।]?", "", sc[k]).strip()
+                sc[k] = re.sub(r"(?i)\s*(?:subscribe|सब्सक्राइब)\s*(?:karein?|करें)?[.!।]?", "", sc[k]).strip()
 
     # YouTube Growth & Packaging Engine Audits (21 Hook Formulas & Packaging Linter)
     hook_audit = yt_growth_engine.score_hook(out[0].get("narration") or out[0].get("text", ""))
