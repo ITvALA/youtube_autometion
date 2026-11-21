@@ -330,8 +330,7 @@ def run_paperfilm_pipeline(a, voice_cfg, custom_script=None):
     _run_logged([
         npx, "remotion", "render", "src/cinematic/entry.tsx", "PaperFilm", str(rendered_mp4),
         f"--props={(work / 'pf_props.json').resolve().as_posix()}",
-        "--concurrency=2",
-        "--gl=angle"
+        "--concurrency=2"
     ], cwd=ROOT / "remotion")
 
     # final: video (+ its whoosh/thump sfx track) + voice/BGM, ~16 MB for Telegram
@@ -458,8 +457,7 @@ def run_cinematic_pipeline(a, voice_cfg, custom_script=None):
     _run_logged([
         npx, "remotion", "render", "src/cinematic/entry.tsx", "CinematicArc", str(rendered_mp4),
         f"--props={(work / 'ca_props.json').resolve().as_posix()}",
-        "--concurrency=2",
-        "--gl=angle"
+        "--concurrency=2"
     ], cwd=ROOT / "remotion")
 
     final = out / "final.mp4"
