@@ -188,9 +188,9 @@ const BEAT_RULES: Record<Beat, { shots: ShotName[]; moves: MoveName[] }> = {
   victory: { shots: ['low', 'wide', 'high'],                       moves: ['pullOut', 'tiltUp', 'orbit'] },
 };
 
-// first scene voice starts quickly with 4 frames lead so scene 0 is immediately active
+// scenes start immediately with zero voice lead so audio and video are 100% in sync without delay
 export const withLead = (scenes: Scene[]): Scene[] =>
-  scenes.map((s, i) => (i === 0 ? { ...s, voiceLead: s.voiceLead ?? 4 } : s));
+  scenes.map((s) => ({ ...s, voiceLead: s.voiceLead ?? 0 }));
 
 export function directCameras(rawScenes: Scene[], seed: number): Scene[] {
   const scenes = withLead(rawScenes);
@@ -1437,7 +1437,7 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number; trans?: Tra
 
   // who is speaking right now (mouth + gestures); talk scenes alternate between the actors
   const win = Math.max(1, Math.round((scene.voiceSec ?? 0) * fps));
-  const local = frame - (6 + (scene.voiceLead ?? 0));
+  const local = Math.max(0, frame - 1);
   const speaking = !!scene.voice && local >= 0 && local <= win;
   let speaker = scene.focus ?? 0;
   if (scene.actors.length > 1 && scene.beat === 'talk') {
@@ -1658,7 +1658,7 @@ const MythAudio: React.FC<{
     }
     if (s.voice) {
       items.push(
-        <Sequence key={`voice${i}`} from={st + 6 + (s.voiceLead ?? 0)} durationInFrames={Math.round((s.voiceSec ?? 8) * fps) + 6}>
+        <Sequence key={`voice${i}`} from={st + 1} durationInFrames={Math.round((s.voiceSec ?? 8) * fps) + 3}>
           <Audio src={staticFile(s.voice)} volume={voiceVol} />
         </Sequence>,
       );
@@ -1672,8 +1672,8 @@ const MythAudio: React.FC<{
   );
 };
 
-/* Total frames of a video (use this for durationInFrames; honours voice lengths) */
-export const sceneFrames = (s: Scene, fps = 30) => Math.max(1, Math.round(Math.max(s.sec, s.voiceSec ? s.voiceSec + 0.4 + (s.voiceLead ?? 0) / fps : 0) * fps));
+/* Total frames of a video (use this for durationInFrames; honours voice lengths with tight cuts) */
+export const sceneFrames = (s: Scene, fps = 30) => Math.max(1, Math.round(Math.max(s.sec, s.voiceSec ? s.voiceSec + 0.08 : 0) * fps));
 export const totalFrames = (scenes: Scene[], fps = 30) => withLead(scenes).reduce((a, s) => a + sceneFrames(s, fps), 0);
 
 export const MythShort: React.FC<{

@@ -884,12 +884,12 @@ def validate_myth_plan(plan):
         narr_clean = re.sub(r"सिर्फ इसी एक शक्तिपीठ[\s\S]*$", "", narr_clean).strip()
         narr_clean = re.sub(r"इसे\s*['\"]?मान्यता है['\"]?\s*कहकर बताओ[।!?]?", "", narr_clean).strip()
 
-        # Extract strictly ONE single short sentence
+        # Extract strictly ONE single short sentence with complete narrative flow
         sents = [s.strip() for s in re.split(r'[।!?\n\r]+', narr_clean) if len(s.strip()) > 3]
         single_sent = sents[0] if sents else narr_clean
         words = single_sent.split()
-        if len(words) > 14:
-            single_sent = " ".join(words[:12])
+        if len(words) > 16:
+            single_sent = " ".join(words[:15])
         sc["narration"] = single_sent.rstrip("।!? ") + "।"
 
         # Also ensure caption text is punchy and short (max 8 words)
@@ -1376,6 +1376,18 @@ Tumhara kaam aisi kahani likhna hai jise sunkar lage ki koi insaan, aankhon dekh
 ## Kahani ki bunaavat aur Masaledaar Sanvaad (SABSE ZAROORI):
 - Ye ek poori KAHANI hai: 0-3s Hook -> 3-45s Tez takraav aur sankalp -> 45-55s Chamatkar/Twist aur Antim Vijay.
 - Har scene me kahani AAGE badhni chahiye. Pichla scene dohrao mat.
+- NARRATIVE BRIDGES & STORY SPINE (SEAMLESS SCENE CONTINUITY):
+  * KABHI BHI toote hue ya bina context ke alag-thalag vakya mat likho! Jaise Scene 1: 'राम भरत से मिले', Scene 2: 'राम वनवास गए' - ye galat aur toota hua lagta hai!
+  * Har agla scene pichhle scene ka natural kram (Cause-and-Effect / Karana aur Parinaam) hona chahiye.
+  * Har scene me narrative connectors aur ghatnakram ka taar jodte hue likho:
+    - 'लेकिन तभी...'
+    - 'और फिर...'
+    - 'इसके बाद...'
+    - 'तभी अचानक...'
+    - 'पिता के वचनों का मान रखने के लिए...'
+    - 'इसलिए...'
+  * Example: Agar Scene 1 me milan hua, toh Scene 2 me: 'लेकिन वचन की मर्यादा निभाते हुए, राम ने भरत को गले लगाकर भारी मन से वनवास की राह चुन ली।'
+  * Har scene ki narration ek complete, rochak sentence (10-14 shabdon ka) hona chahiye jisme flow kabhi na toote!
 - Kam se kam 2-3 scenes me pAatron ke damdaar sanvaad (double quotes \"...\" me) daalo. Jaise: "रुक जाओ! यदि आज शस्त्र नहीं उठाए, तो इतिहास हमें कायर कहेगा!"
 - Voiceover me emotion aur thehraav laane ke liye viram-chinh (`!`, `,`, `...`, `।`) ka behtareen prayog karo taaki TTS bolte waqt asli insaan jaisa dumdaar aur bhavuk lage.
 - Lip-Sync aur Visuals: Jis scene me sanvaad ho, wahan actor ka pose 'talk' ya 'point' rakho taaki animation me uska mukh bolta hua dikhe! Chalne ke liye 'walk', dhyan/chintan ke liye 'sit', yuddh ke liye 'fight'.
