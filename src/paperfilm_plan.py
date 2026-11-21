@@ -218,6 +218,79 @@ def clean_plan(plan, seed=None):
     return {"youtube": y, "scenes": out}
 
 
+def make_series_part_plan(topic, part, slot_info, seed=None):
+    """Creates a strictly 35-45s PaperFilm plan for a specific Part in a multi-part series."""
+    rnd = random.Random(seed)
+    states, _ = _load_geo()
+    topic_title = topic.get("topic_title") or topic.get("title") or "पौराणिक गाथा"
+    part_num = slot_info.get("current_part", 1)
+    tot_parts = slot_info.get("total_parts", 2)
+    is_final = slot_info.get("is_final_part", False)
+
+    part_ctx = (
+        f"KAHANI: {topic_title}\n"
+        f"YE HAI: BHAG {part_num} (Kul {tot_parts} bhag me se)\n"
+        f"PART TITLE: {part.get('part_title')}\n"
+        f"IS BHAG KI KAHANI (sirf isi ko 7-8 scenes me dikhana hai):\n{part.get('part_summary')}\n"
+        f"HOOK LINE: {part.get('hook_line')}\n"
+        f"RECAP BRIDGE: {part.get('recap_bridge')}\n"
+        f"CLIFFHANGER: {part.get('cliffhanger')}\n\n"
+        f"SERIES SPECIFIC RULES:\n"
+        f"- Scene 1 kind 'title' hoga. Uska 'stamp' STRICTLY 'भाग {part_num}' hoga!\n"
+    )
+    if not is_final:
+        part_ctx += (
+            f"- Aakhri scene ka narration agle bhag ka suspense/cliffhanger dega: '{part.get('cliffhanger') or 'Dekhiye agle bhag me!'}'\n"
+            f"- Aakhri scene ka 'stamp' STRICTLY 'भाग {part_num + 1} जल्द' ya 'रहस्य जारी' hoga!\n"
+        )
+    else:
+        part_ctx += (
+            f"- Ye is kahani ka FINAL BHAG hai! Aakhri scene me kahani ka antim divya sandesh aur purnata ho.\n"
+            f"- Aakhri scene ka 'stamp' 'अमर सत्य' ya 'कथा सम्पूर्ण' hoga.\n"
+        )
+
+    prompt = (_PROMPT
+              .replace("__N__", rnd.choice(["7", "8", "7"]))
+              .replace("__CONTEXT__", part_ctx)
+              .replace("__STATES__", json.dumps(states, ensure_ascii=False)))
+    
+    err = None
+    for attempt in range(3):
+        try:
+            p = prompt if not err else prompt + f"\n\nCRITICAL: pichhle output me ye galti thi: {err}. Isse theek karo."
+            raw = llm._call(p, max_tokens=8000).strip()
+            if "{" in raw and "}" in raw:
+                raw = raw[raw.index("{"): raw.rindex("}") + 1]
+            plan = clean_plan(llm._salvage_json(raw), seed)
+            
+            # Enforce series branding on scenes and metadata
+            scenes = plan["scenes"]
+            scenes[0]["stamp"] = f"भाग {part_num}"
+            if not is_final:
+                scenes[-1]["stamp"] = f"भाग {part_num + 1} जल्द"
+            else:
+                scenes[-1]["stamp"] = "कथा सम्पूर्ण"
+
+            # YouTube Packaging with Series Badges
+            clean_part_title = re.sub(r"\s*\|\s*MindSpark.*", "", part.get("part_title") or topic_title).strip()
+            plan["youtube"] = {
+                "title": f"🔱 {clean_part_title} | भाग {part_num}/{tot_parts} #Shorts",
+                "description": (
+                    f"🔱 {topic_title} - भाग {part_num} (Episode {part_num} of {tot_parts})\n\n"
+                    f"{part.get('part_summary')}\n\n"
+                    f"{'👉 भाग ' + str(part_num + 1) + ' जल्द ही आ रहा है!' if not is_final else '🙏 कथा सम्पूर्ण।'}\n"
+                    f"#Shorts #HinduMythology #Part{part_num} #IndianHistory"
+                ),
+                "tags": [topic_title, f"भाग {part_num}", "shorts", "mythology", "history", "hindi stories"]
+            }
+            print(f"[PaperFilm] Series Part {part_num}/{tot_parts} plan ready: {len(scenes)} scenes")
+            return plan
+        except Exception as e:
+            err = str(e)
+            print(f"[PaperFilm] series part plan attempt {attempt + 1} failed: {err}")
+    raise RuntimeError(f"Series Part plan failed after 3 attempts: {err}")
+
+
 def make_plan(topic, custom_script=None, seed=None):
     rnd = random.Random(seed)
     states, _ = _load_geo()

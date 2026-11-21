@@ -288,7 +288,9 @@ def run_paperfilm_pipeline(a, voice_cfg, custom_script=None):
     print("=" * 60)
 
     ensure_myth_audio()   # whoosh / thump sfx live in remotion/public/myth-audio
+    seed = int(datetime.datetime.now().timestamp() * 1000) % 1000000
 
+    slot_info = None
     if custom_script:
         title_m = re.search(r"(?:शीर्षक|title|नाम|topic)\s*[:=]\s*(.+)", custom_script, re.IGNORECASE)
         if title_m:
@@ -298,12 +300,17 @@ def run_paperfilm_pipeline(a, voice_cfg, custom_script=None):
             clean_first = re.sub(r"^/(story|create|script)\s*", "", first_line, flags=re.IGNORECASE).strip()
             short_title = " ".join(clean_first.split()[:6]).title() or "भारतीय वीर गाथा"
         topic = {"title": short_title, "summary": custom_script}
+        print(f"📖 Myth Topic (Custom Script): {topic['title']}")
+        plan = paperfilm_plan.make_plan(topic, custom_script=custom_script, seed=seed)
     else:
-        topic = pick_myth_topic(a.book)
-    print(f"📖 Myth Topic: {topic['title']}")
+        # 3-Topic Multi-Part Series Rotation Engine
+        import series_manager
+        topic_obj, part, slot_info = series_manager.get_next_slot(pool_size=3)
+        topic = {"title": topic_obj["topic_title"], "topic": topic_obj["topic_id"], "summary": topic_obj.get("story_synopsis", "")}
+        print(f"📖 Active Series Slot: {topic_obj['topic_title']} | Part {slot_info['current_part']}/{slot_info['total_parts']}")
+        print(f"🎬 Episode Title: {part['part_title']}")
+        plan = paperfilm_plan.make_series_part_plan(topic_obj, part, slot_info, seed=seed)
 
-    seed = int(datetime.datetime.now().timestamp() * 1000) % 1000000
-    plan = paperfilm_plan.make_plan(topic, custom_script=custom_script, seed=seed)
     scenes = plan["scenes"]
 
     unique_ts = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -393,11 +400,20 @@ def run_paperfilm_pipeline(a, voice_cfg, custom_script=None):
     })
     jsave(ROOT / "data" / "myth_history.json", myth_hist)
 
-    caption = (
-        f"🔱 *{y.get('title', topic['title'])}*\n\n"
-        f"🎞️ MindSpark Mythology Shorts (PaperFilm)\n"
-        f"🎲 Seed: {seed} | 9:16 Vertical"
-    )
+    if slot_info:
+        caption = (
+            f"🔱 *{y.get('title', topic['title'])}*\n\n"
+            f"📺 *MINDSPARK 3-TOPIC ROTATION SERIES*\n"
+            f"📖 *Topic:* {topic_obj['topic_title']}\n"
+            f"📌 *Episode:* भाग {slot_info['current_part']} of {slot_info['total_parts']}\n"
+            f"🎞️ PaperFilm Engine | 9:16 Vertical"
+        )
+    else:
+        caption = (
+            f"🔱 *{y.get('title', topic['title'])}*\n\n"
+            f"🎞️ MindSpark Mythology Shorts (PaperFilm)\n"
+            f"🎲 Seed: {seed} | 9:16 Vertical"
+        )
     try:
         vline = tts.voice_summary()
         if vline:
@@ -406,6 +422,12 @@ def run_paperfilm_pipeline(a, voice_cfg, custom_script=None):
         print(f"[Pipeline] voice summary skipped: {e}")
 
     notify.send(final, caption, video_dir=out)
+
+    if slot_info:
+        import series_manager
+        series_manager.mark_slot_completed(topic_obj["topic_id"], slot_info["current_part"], video_dir=out)
+        series_manager.print_active_series_status()
+
     print("DONE:", final)
 
 
