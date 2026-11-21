@@ -2412,5 +2412,37 @@
     "seed": 697265,
     "engine": "paperfilm",
     "video_key": "2026-11-20_172820_pf_parshuram_avatar"
+  },
+  {
+    "topic_id": "champraj_valo_gir",
+    "topic_title": "બહારવટિયો ચાંપરાજ વાળો: ગીરના જંગલોમાં અજેય સિંહની લડાઈ",
+    "date": "2026-11-21",
+    "seed": 393199,
+    "engine": "paperfilm",
+    "video_key": "2026-11-21_092636_pf_champraj_valo_gir"
+  },
+  {
+    "topic_id": "shakti_peeth_sugandha",
+    "topic_title": "सुगंधा (शिकारपुर) शक्तिपीठ: माता सती का नाक जहाँ गिरा",
+    "date": "2026-11-21",
+    "seed": 86956,
+    "engine": "paperfilm",
+    "video_key": "2026-11-21_101130_pf_shakti_peeth_sugandha"
+  },
+  {
+    "topic_id": "topic_233369",
+    "topic_title": "द्वारकाधीश का स्वर्ण रहस्य: समुद्र में",
+    "date": "2026-11-21",
+    "seed": 233369,
+    "engine": "cinematic",
+    "video_key": "2026-11-21_103036_ca_story_233369"
+  },
+  {
+    "topic_id": "17",
+    "topic_title": "सोमनाथ मंदिर का अमर इतिहास: 17",
+    "date": "2026-11-21",
+    "seed": 877477,
+    "engine": "paperfilm",
+    "video_key": "2026-11-21_132801_pf_17"
   }
 ]

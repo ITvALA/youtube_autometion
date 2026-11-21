@@ -1,32 +1,28 @@
 {
-  "dir_name": "2026-11-20_172820_pf_parshuram_avatar",
-  "file_id": "BAACAgUAAxkDAAIC9WsAAYUAAdkDzGoUZ1wzzSjjAAE1wkDhAALZJAACiGIBVJi81g3NgVxKPQQ",
-  "file_unique_id": "AgAD2SQAAohiAVQ",
-  "message_id": 757,
-  "caption": "🎬 *New Reel Ready for Review!*\n\n🔱 *परशुराम का खून खरारा: पिता की आज्ञा 🪓*\n\n🎞️ MindSpark Mythology Shorts (PaperFilm)\n🎲 Seed: 697265 | 9:16 Vertical\n🎙️ Voice: xtts local 9/9 | xtts v2 hf viraj ref v1\n\n👉 Tap *PASS* button to upload immediately to YouTube!",
+  "dir_name": "2026-11-21_132801_pf_17",
+  "file_id": "BAACAgUAAxkDAAIDAmsBUBlOK4FgqiRfXD8v6hEt7Fk7AALNIQACiGIJVEVe7OVlblxePQQ",
+  "file_unique_id": "AgADzSEAAohiCVQ",
+  "message_id": 770,
+  "caption": "\ud83c\udfac *New Reel Ready for Review!*\n\n\ud83d\udd31 *\u0938\u094b\u092e\u0928\u093e\u0925: 17 \u092c\u093e\u0930 \u091c\u0932\u093e, \u092b\u093f\u0930 \u092d\u0940 \u0916\u0921\u093c\u093e \u0930\u0939\u093e \ud83d\uded5*\n\n\ud83c\udf9e\ufe0f MindSpark Mythology Shorts (PaperFilm)\n\ud83c\udfb2 Seed: 877477 | 9:16 Vertical\n\ud83c\udf99\ufe0f Voice: edge-tts 9/9 | fallback: xtts local failed (No module named TTS) | hi-IN-MadhurNeural\n\n\ud83d\udc49 Tap *PASS* button to upload immediately to YouTube!",
   "meta": {
     "mode": "myth",
     "engine": "paperfilm",
-    "topic": "परशुराम: पिता की आज्ञा और फरसे की कथा",
-    "title": "परशुराम का खून खरारा: पिता की आज्ञा 🪓",
-    "description": "ऋषि जमदग्नि की कठोर आज्ञा और परशुराम का निर्णायक कार्रवाई। यह कहानी है वामन के रूप में आए विष्णु के आशीर्वाद और कुरुक्षेत्र के युद्ध की।\n#Parashurama #Mahabharata #Mythology #HindiKahani #MindSpark",
+    "topic": "\u0938\u094b\u092e\u0928\u093e\u0925 \u092e\u0902\u0926\u093f\u0930 \u0915\u093e \u0905\u092e\u0930 \u0907\u0924\u093f\u0939\u093e\u0938: 17",
+    "title": "\u0938\u094b\u092e\u0928\u093e\u0925: 17 \u092c\u093e\u0930 \u091c\u0932\u093e, \u092b\u093f\u0930 \u092d\u0940 \u0916\u0921\u093c\u093e \u0930\u0939\u093e \ud83d\uded5",
+    "description": "\u0938\u094b\u092e\u0928\u093e\u0925 \u092e\u0902\u0926\u093f\u0930 \u0915\u093e \u0935\u094b \u0905\u092e\u0930 \u0907\u0924\u093f\u0939\u093e\u0938 \u091c\u094b 17 \u092c\u093e\u0930 \u0930\u093e\u0916 \u0939\u094b\u0915\u0930 \u092d\u0940 \u092b\u093f\u0930 \u0909\u0920\u093e\u0964\n#Somnath #History #HindiShorts #Temple",
     "tags": [
-      "Parashurama",
-      "Hindi Kahani",
-      "Mahabharata",
-      "Mythology",
-      "Jamadagni",
-      "Vishnu",
-      "Kuruksheetra",
-      "Axe",
+      "Somnath Temple",
+      "Hindi History",
       "Ancient India",
-      "MindSpark"
+      "Temple Destruction",
+      "Rebuilding",
+      "Gujarat History",
+      "Viral Short"
     ],
     "privacy": "public",
-    "seed": 697265,
+    "seed": 877477,
     "scenes_count": 9
   },
-  "timestamp": 1795196160,
-  "status": "pending_review",
-  "run_id": "44783057798"
+  "timestamp": 1795248151,
+  "status": "pending_review"
 }
