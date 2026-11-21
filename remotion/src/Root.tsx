@@ -6,6 +6,7 @@ import {CharacterDemoVertical} from "./components/Character";
 import {PuppetStory, DEMO_SCENES, totalFrames} from "./components/PuppetKit";
 import {PuppetWarStory, PUPPET_WAR_STORY_FRAMES} from "./components/PuppetWarStory";
 import {PaperFilm, totalFramesPF} from "./cinematic/PaperFilm";
+import {CinematicArc, totalFramesCA} from "./cinematic/CinematicArc";
 import type {PFProps} from "./cinematic/types";
 import pfDemo from "../../data/demo_paperfilm.json";
 import {MythShort, EXAMPLE_SCENES, totalFrames as mythTotalFrames, Scene as MythScene} from "./myth/mindspark-myth-engine";
@@ -27,6 +28,13 @@ const mythCalc: CalculateMetadataFunction<{scenes: MythScene[]; seed: number}> =
 
 const pfCalc: CalculateMetadataFunction<PFProps> = ({props}) => ({
   durationInFrames: totalFramesPF(props.scenes, FPS),
+  width: 1080,
+  height: 1920,
+  fps: FPS,
+});
+
+const caCalc: CalculateMetadataFunction<PFProps> = ({props}) => ({
+  durationInFrames: totalFramesCA(props.scenes, FPS),
   width: 1080,
   height: 1920,
   fps: FPS,
@@ -90,6 +98,16 @@ export const Root: React.FC = () => (
       height={1920}
       defaultProps={pfDemo as unknown as PFProps}
       calculateMetadata={pfCalc}
+    />
+    <Composition
+      id="CinematicArc"
+      component={CinematicArc}
+      durationInFrames={totalFramesCA((pfDemo as unknown as PFProps).scenes, FPS)}
+      fps={FPS}
+      width={1080}
+      height={1920}
+      defaultProps={pfDemo as unknown as PFProps}
+      calculateMetadata={caCalc}
     />
   </>
 );

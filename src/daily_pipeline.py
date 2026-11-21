@@ -410,14 +410,141 @@ def run_paperfilm_pipeline(a, voice_cfg, custom_script=None):
     print("DONE:", final)
 
 
+def run_cinematic_pipeline(a, voice_cfg, custom_script=None):
+    """Mythology Short rendered with the CinematicArc engine (remotion/src/cinematic/CinematicArc.tsx)."""
+    print("=" * 60)
+    print("🎬 MINDSPARK CINEMATIC ARC PIPELINE (CinematicArc engine)")
+    print("=" * 60)
+
+    ensure_myth_audio()
+
+    if custom_script:
+        title_m = re.search(r"(?:शीर्षक|title|नाम|topic)\s*[:=]\s*(.+)", custom_script, re.IGNORECASE)
+        if title_m:
+            short_title = title_m.group(1).strip()
+        else:
+            first_line = custom_script.split("\n")[0].strip()
+            clean_first = re.sub(r"^/(story|create|script)\s*", "", first_line, flags=re.IGNORECASE).strip()
+            short_title = " ".join(clean_first.split()[:6]).title() or "भारतीय वीर गाथा"
+        topic = {"title": short_title, "summary": custom_script}
+    else:
+        topic = pick_myth_topic(a.book)
+    print(f"📖 Myth Topic: {topic['title']}")
+
+    seed = int(datetime.datetime.now().timestamp() * 1000) % 1000000
+    plan = paperfilm_plan.make_plan(topic, custom_script=custom_script, seed=seed)
+    scenes = plan["scenes"]
+
+    unique_ts = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    topic_slug = topic.get("topic") or slug(topic.get("title", "")) or f"story_{seed}"
+    key = f"{unique_ts}_ca_{topic_slug}"
+    work = ROOT / "data" / "work" / key
+    out = ROOT / "data" / "output" / key
+    work.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
+
+    print(f"🎙️ Voice via {voice_cfg.get('provider', 'edge-tts')} ...")
+    voice = tts.narrate(scenes, work, voice_cfg)
+    paperfilm_plan.resolve_hits(scenes)
+    total = sum(sc["durationSec"] for sc in scenes)
+    audio.mix(voice, total, work / "audio.mp3")
+
+    props = {"scenes": scenes, "seed": seed, "captions": True, "sfx": True}
+    jsave(work / "ca_props.json", props)
+
+    print("🎬 Rendering CinematicArc via Remotion...")
+    rendered_mp4 = work / "rendered.mp4"
+    npx = shutil.which("npx.cmd") or shutil.which("npx") or "npx.cmd"
+    _run_logged([
+        npx, "remotion", "render", "src/cinematic/entry.tsx", "CinematicArc", str(rendered_mp4),
+        f"--props={(work / 'ca_props.json').resolve().as_posix()}",
+        "--concurrency=2",
+        "--gl=angle"
+    ], cwd=ROOT / "remotion")
+
+    final = out / "final.mp4"
+    dur = total
+    try:
+        dur = float(subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", str(rendered_mp4)],
+            capture_output=True, text=True, check=True).stdout.strip())
+    except Exception:
+        pass
+    has_sfx = bool(subprocess.run(
+        ["ffprobe", "-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0", str(rendered_mp4)],
+        capture_output=True, text=True).stdout.strip())
+    v_kbps = int(max(800, min(5000, (16 * 8 * 1024) / max(dur, 1.0) - 128)))
+    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", str(rendered_mp4), "-i", str(work / "audio.mp3")]
+    if has_sfx:
+        cmd += ["-filter_complex", "[0:a]volume=0.9[sfx];[1:a]volume=1.0[vo];[sfx][vo]amix=inputs=2:duration=longest:normalize=0[a]",
+                "-map", "0:v", "-map", "[a]"]
+    else:
+        cmd += ["-map", "0:v", "-map", "1:a"]
+    cmd += ["-c:v", "libx264", "-preset", "medium", "-b:v", f"{v_kbps}k", "-maxrate", f"{int(v_kbps * 1.3)}k",
+            "-bufsize", f"{v_kbps * 2}k", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+            "-c:a", "aac", "-b:a", "128k", "-shortest", str(final)]
+    subprocess.run(cmd, check=True)
+    print(f"📦 Final CinematicArc video: {final.stat().st_size / 1048576:.1f} MB ({v_kbps} kbps video)")
+
+    w, h = verify_resolution(final)
+    print(f"📏 Output video dimensions: {w}x{h}")
+    if (w, h) != (1080, 1920):
+        error_msg = f"❌ Format violation: Video resolution is {w}x{h}, expected 1080x1920!"
+        print(error_msg)
+        notify.send_msg(error_msg)
+        raise RuntimeError(error_msg)
+
+    y = plan.get("youtube", {})
+    meta = {
+        "mode": "myth",
+        "engine": "cinematic",
+        "topic": topic["title"],
+        "title": y.get("title", f"{topic['title']} | MindSpark"),
+        "description": y.get("description", ""),
+        "tags": y.get("tags", []),
+        "privacy": os.environ.get("YOUTUBE_PRIVACY", "public"),
+        "seed": seed,
+        "scenes_count": len(scenes)
+    }
+    jsave(out / "meta.json", meta)
+    jsave(out / "plan.json", props)
+
+    topic_id = topic.get("topic") or slug(topic.get("title", "")) or f"topic_{seed}"
+    myth_hist = jload(ROOT / "data" / "myth_history.json", [])
+    myth_hist.append({
+        "topic_id": topic_id,
+        "topic_title": topic["title"],
+        "date": str(datetime.date.today()),
+        "seed": seed,
+        "engine": "cinematic",
+        "video_key": key
+    })
+    jsave(ROOT / "data" / "myth_history.json", myth_hist)
+
+    caption = (
+        f"🔱 *{y.get('title', topic['title'])}*\n\n"
+        f"🎬 MindSpark Cinematic Shorts (CinematicArc)\n"
+        f"🎲 Seed: {seed} | 9:16 Vertical"
+    )
+    try:
+        vline = tts.voice_summary()
+        if vline:
+            caption += f"\n🎙️ {vline}"
+    except Exception as e:
+        print(f"[Pipeline] voice summary skipped: {e}")
+
+    notify.send(final, caption, video_dir=out)
+    print("DONE:", final)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--book")
     ap.add_argument("--script", help="Custom user script or arbitrary topic")
     ap.add_argument("--mode", choices=["book", "myth"], default="myth", help="Pipeline mode: 'myth' (default) or 'book'")
     ap.add_argument("--myth", action="store_true", help="Shortcut for --mode myth")
-    ap.add_argument("--engine", choices=["paperfilm", "myth"], default=os.environ.get("MYTH_ENGINE", "paperfilm"),
-                    help="Myth video engine: 'paperfilm' (paper-cut craft engine, default) or 'myth' (puppet engine)")
+    ap.add_argument("--engine", choices=["paperfilm", "myth", "cinematic", "random"], default=os.environ.get("MYTH_ENGINE", "paperfilm"),
+                    help="Myth video engine: 'paperfilm' (paper-cut craft engine, default), 'myth' (puppet engine), 'cinematic' (CinematicArc engine), or 'random'")
     ap.add_argument("--template")
     ap.add_argument("--style", help="Force Vox style ID (v001 ... v212)")
     ap.add_argument("--headless", action="store_true", help="CI mode (kept for clarity)")
@@ -441,7 +568,26 @@ def main():
 
     mode = "myth" if a.myth else a.mode
     if mode == "myth":
-        if a.engine == "paperfilm":
+        chosen_engine = a.engine
+        if chosen_engine == "random":
+            import random
+            available_engines = ["paperfilm", "myth", "cinematic"]
+            chosen_engine = random.choice(available_engines)
+            print(f"🎲 Random engine selected: {chosen_engine.upper()} (from {available_engines})")
+
+        if chosen_engine == "cinematic":
+            try:
+                run_cinematic_pipeline(a, voice_cfg, custom_script=custom_script)
+                return
+            except Exception as e:
+                import traceback
+                tb = traceback.format_exc()
+                print(f"::error::CinematicArc engine failed ({type(e).__name__}: {e})")
+                print(tb)
+                print("⚠️ falling back to PaperFilm engine")
+                chosen_engine = "paperfilm"
+
+        if chosen_engine == "paperfilm":
             try:
                 run_paperfilm_pipeline(a, voice_cfg, custom_script=custom_script)
                 return
