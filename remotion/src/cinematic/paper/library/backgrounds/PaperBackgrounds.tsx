@@ -702,7 +702,8 @@ export const PaperBackground: React.FC<BackgroundProps> = ({
 
   return (
     <svg
-      viewBox={`0 0 ${width} ${height}`}
+      viewBox="0 0 1080 1920"
+      preserveAspectRatio="xMidYMid slice"
       style={{
         position: "absolute",
         top: 0,
@@ -721,7 +722,7 @@ export const PaperBackground: React.FC<BackgroundProps> = ({
       </defs>
 
       {/* Base Sky Layer */}
-      <rect x="0" y="0" width={width} height={height} fill={`url(#${gradId})`} />
+      <rect x="0" y="0" width="1080" height="1920" fill={`url(#${gradId})`} />
 
       {/* Sun / Moon Celestial Body with Concentric Paper Glow Rings */}
       {type !== "cave" && (

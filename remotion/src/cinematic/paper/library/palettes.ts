@@ -91,4 +91,7 @@ export const getTimeOfDayPalette = (tod?: TimeOfDay): TimeOfDayPalette => {
   return PALETTES[tod || "day"] || PALETTES.day;
 };
 
-export const getPalette = getTimeOfDayPalette;
+export const getPalette = (tod?: TimeOfDay): TimeOfDayPalette => {
+  return PALETTES[tod || "day"] || PALETTES.day;
+};
+

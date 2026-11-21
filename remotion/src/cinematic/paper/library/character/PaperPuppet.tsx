@@ -152,19 +152,20 @@ export const PaperPuppet: React.FC<PaperPuppetProps> = ({
       transform={`translate(${x}, ${y + bodyBob}) scale(${finalScale * flipScale}, ${finalScale})`}
       style={{ transformOrigin: "0px 0px" }}
     >
-      {/* Soft Drop Shadow Layer */}
-      <g
-        transform={`translate(8, 12) rotate(${postureTilt})`}
-        opacity={0.4}
-        fill={SHADOW}
-      >
-        <ellipse cx="0" cy={legH + 20} rx="65" ry="16" />
-        <rect x={-torsoW / 2} y={-torsoH} width={torsoW} height={torsoH} rx="8" />
-        <circle cx="0" cy={-torsoH - 45} r="38" />
+      {/* Soft 3D Ground Cast Shadow at feet */}
+      <g transform={`translate(0, ${legH + 10})`}>
+        <ellipse cx="6" cy="14" rx="75" ry="18" fill="rgba(15, 10, 6, 0.45)" />
+        <ellipse cx="6" cy="14" rx="48" ry="10" fill="rgba(10, 6, 4, 0.35)" />
       </g>
 
-      {/* Main Jointed Character Group with Paper Bevel */}
-      <g filter="url(#paper-bevel)" transform={`rotate(${postureTilt})`}>
+      {/* Main Jointed Character Group with 3D Paper Bevel & Relief Lighting */}
+      <g
+        filter="url(#paper-bevel)"
+        transform={`rotate(${postureTilt})`}
+        style={{
+          filter: "drop-shadow(0 16px 22px rgba(20, 12, 6, 0.48)) drop-shadow(0 4px 6px rgba(20, 12, 6, 0.35))",
+        }}
+      >
         {/* LEGS (Back layer) */}
         {/* Left Leg */}
         <g transform={`translate(-18, -10) rotate(${leftLegRot})`}>

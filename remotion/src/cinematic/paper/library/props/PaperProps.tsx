@@ -7,16 +7,16 @@ const INK = "#1d1b1a";
 const GOLD = "#c89b3c";
 
 /* ------------------------------------------------------------- 1. HUT */
-export const PropHut: React.FC<{ seed?: number; palette?: TimeOfDayPalette; lf?: number }> = ({
+export const PropHut: React.FC<{ seed?: number; palette: TimeOfDayPalette; lf?: number }> = ({
   seed = 1,
-  palette = getPalette("day"),
+  palette,
 }) => {
   const s = seed % 3;
   const wallCol = s === 0 ? palette.sand : s === 1 ? palette.terracottaLight : palette.terracotta;
   const roofCol = s === 0 ? "#b88a44" : s === 1 ? "#9c6a32" : "#c99a52";
 
   return (
-    <svg width="220" height="180" viewBox="0 0 220 180" style={{ overflow: "visible" }}>
+    <g>
       {/* Shadow */}
       <g transform={`translate(${palette.shadowOffsetX * 0.7}, ${palette.shadowOffsetY * 0.7})`} fill={palette.shadowColor} opacity={palette.shadowOpacity}>
         <rect x="25" y="80" width="170" height="90" rx="3" />
@@ -35,22 +35,22 @@ export const PropHut: React.FC<{ seed?: number; palette?: TimeOfDayPalette; lf?:
       <polygon points="25,85 110,25 195,85" fill={roofCol} opacity={0.6} />
       {/* Ridge lines */}
       <line x1="110" y1="15" x2="110" y2="85" stroke={CREAM} strokeWidth={2.5} />
-    </svg>
+    </g>
   );
 };
 
 /* ------------------------------------------------------------- 2. TREES */
-export const PropTree: React.FC<{ type: "tree_banyan" | "tree_pine" | "tree_palm"; seed?: number; palette?: TimeOfDayPalette; lf?: number }> = ({
+export const PropTree: React.FC<{ type: "tree_banyan" | "tree_pine" | "tree_palm"; seed?: number; palette: TimeOfDayPalette; lf?: number }> = ({
   type,
   seed = 1,
-  palette = getPalette("day"),
+  palette,
   lf = 0,
 }) => {
   const sway = Math.sin((lf + seed * 10) * 0.08) * 3;
 
   if (type === "tree_pine") {
     return (
-      <svg width="180" height="320" viewBox="0 0 180 320" style={{ overflow: "visible" }}>
+      <g>
         <g transform={`translate(${palette.shadowOffsetX * 0.6}, ${palette.shadowOffsetY * 0.6})`} fill={palette.shadowColor} opacity={palette.shadowOpacity}>
           <rect x="80" y="220" width="20" height="90" rx="2" />
           <polygon points="90,40 160,130 20,130" />
@@ -63,13 +63,13 @@ export const PropTree: React.FC<{ type: "tree_banyan" | "tree_pine" | "tree_palm
         <polygon points="90,160 180,250 0,250" fill={palette.foliageDark} stroke={CREAM} strokeWidth={4} strokeLinejoin="round" />
         <polygon points="90,100 170,190 10,190" fill={palette.foliage} stroke={CREAM} strokeWidth={4} strokeLinejoin="round" />
         <polygon points="90,40 160,130 20,130" fill={palette.foliage} stroke={CREAM} strokeWidth={4} strokeLinejoin="round" />
-      </svg>
+      </g>
     );
   }
 
   if (type === "tree_palm") {
     return (
-      <svg width="220" height="340" viewBox="0 0 220 340" style={{ overflow: "visible" }}>
+      <g>
         {/* Curved Trunk */}
         <path d="M100,320 Q120,200 90,80" fill="none" stroke="#5c3a22" strokeWidth={18} strokeLinecap="round" />
         <path d="M100,320 Q120,200 90,80" fill="none" stroke={CREAM} strokeWidth={24} strokeLinecap="round" style={{ opacity: 0.3 }} />
@@ -87,13 +87,13 @@ export const PropTree: React.FC<{ type: "tree_banyan" | "tree_pine" | "tree_palm
           ))}
           <circle cx="0" cy="0" r="10" fill="#3d2211" stroke={CREAM} strokeWidth={2} />
         </g>
-      </svg>
+      </g>
     );
   }
 
   // Banyan (Default)
   return (
-    <svg width="320" height="340" viewBox="0 0 320 340" style={{ overflow: "visible" }}>
+    <g>
       <g transform={`translate(${palette.shadowOffsetX * 0.7}, ${palette.shadowOffsetY * 0.7})`} fill={palette.shadowColor} opacity={palette.shadowOpacity}>
         <rect x="135" y="160" width="50" height="160" rx="6" />
         <ellipse cx="160" cy="120" rx="140" ry="90" />
@@ -110,20 +110,20 @@ export const PropTree: React.FC<{ type: "tree_banyan" | "tree_pine" | "tree_palm
         <circle cx="225" cy="100" r="60" fill={palette.foliage} stroke={CREAM} strokeWidth={4} />
         <circle cx="160" cy="70" r="65" fill={palette.foliage} stroke={CREAM} strokeWidth={4} />
       </g>
-    </svg>
+    </g>
   );
 };
 
 /* ------------------------------------------------------------- 3. COW (GAUMATA) */
-export const PropCow: React.FC<{ seed?: number; palette?: TimeOfDayPalette; lf?: number }> = ({
-  palette = getPalette("day"),
+export const PropCow: React.FC<{ seed?: number; palette: TimeOfDayPalette; lf?: number }> = ({
+  palette,
   lf = 0,
 }) => {
   const tail = Math.sin(lf * 0.25) * 8;
   const chew = Math.abs(Math.sin(lf * 0.18)) * 3;
 
   return (
-    <svg width="220" height="160" viewBox="0 0 220 160" style={{ overflow: "visible" }}>
+    <g>
       <g transform={`translate(${palette.shadowOffsetX * 0.5}, ${palette.shadowOffsetY * 0.5})`} fill={palette.shadowColor} opacity={palette.shadowOpacity}>
         <ellipse cx="100" cy="90" rx="60" ry="36" />
         <circle cx="170" cy="70" r="24" />
@@ -148,16 +148,16 @@ export const PropCow: React.FC<{ seed?: number; palette?: TimeOfDayPalette; lf?:
       {/* Bell necklace */}
       <path d="M154,76 Q165,92 178,76" fill="none" stroke="#c2410c" strokeWidth={3} />
       <circle cx="166" cy="88" r="4" fill={GOLD} stroke={INK} strokeWidth={1.5} />
-    </svg>
+    </g>
   );
 };
 
 /* ------------------------------------------------------------- 4. BOAT */
-export const PropBoat: React.FC<{ palette?: TimeOfDayPalette; lf?: number }> = ({ palette = getPalette("day"), lf = 0 }) => {
+export const PropBoat: React.FC<{ palette: TimeOfDayPalette; lf?: number }> = ({ palette, lf = 0 }) => {
   const rock = Math.sin(lf * 0.12) * 3;
 
   return (
-    <svg width="240" height="140" viewBox="0 0 240 140" style={{ overflow: "visible" }}>
+    <g>
       <g transform={`rotate(${rock} 120 100)`}>
         {/* Hull */}
         <path d="M20,70 Q120,125 220,70 L195,105 Q120,135 45,105 Z" fill="#663e20" stroke={CREAM} strokeWidth={4} strokeLinejoin="round" />
@@ -169,14 +169,14 @@ export const PropBoat: React.FC<{ palette?: TimeOfDayPalette; lf?: number }> = (
         <line x1="110" y1="84" x2="110" y2="15" stroke="#3d2412" strokeWidth={4} strokeLinecap="round" />
         <polygon points="112,20 185,55 112,65" fill={CREAM} stroke="#a89a82" strokeWidth={2.5} />
       </g>
-    </svg>
+    </g>
   );
 };
 
 /* ------------------------------------------------------------- 5. WELL (KUAN) */
-export const PropWell: React.FC<{ palette?: TimeOfDayPalette }> = ({ palette = getPalette("day") }) => {
+export const PropWell: React.FC<{ palette: TimeOfDayPalette }> = ({ palette }) => {
   return (
-    <svg width="180" height="200" viewBox="0 0 180 200" style={{ overflow: "visible" }}>
+    <g>
       {/* Stone Base Ring */}
       <ellipse cx="90" cy="160" rx="65" ry="24" fill={palette.sand} stroke={CREAM} strokeWidth={4} />
       <ellipse cx="90" cy="154" rx="55" ry="18" fill="#201a14" stroke={CREAM} strokeWidth={3} />
@@ -188,7 +188,7 @@ export const PropWell: React.FC<{ palette?: TimeOfDayPalette }> = ({ palette = g
       <circle cx="90" cy="68" r="10" fill={GOLD} stroke={CREAM} strokeWidth={2} />
       <line x1="90" y1="78" x2="90" y2="120" stroke="#d6c7ab" strokeWidth={2} />
       <polygon points="82,120 98,120 95,140 85,140" fill={palette.terracotta} stroke={CREAM} strokeWidth={2} />
-    </svg>
+    </g>
   );
 };
 
@@ -198,7 +198,7 @@ export const PropDiya: React.FC<{ lf?: number }> = ({ lf = 0 }) => {
   const pulse = 1 + Math.sin(lf * 0.3) * 0.08;
 
   return (
-    <svg width="100" height="90" viewBox="0 0 100 90" style={{ overflow: "visible" }}>
+    <g>
       {/* Earthen Base */}
       <ellipse cx="50" cy="72" rx="36" ry="12" fill="#9c4524" stroke={CREAM} strokeWidth={3} />
       <path d="M14,72 Q50,90 86,72 Q80,56 50,56 Q20,56 14,72 Z" fill="#b3542f" stroke={CREAM} strokeWidth={3} />
@@ -212,7 +212,7 @@ export const PropDiya: React.FC<{ lf?: number }> = ({ lf = 0 }) => {
         strokeWidth={2.5}
       />
       <circle cx="50" cy={38 + flicker} r="5" fill="#fff" />
-    </svg>
+    </g>
   );
 };
 
@@ -221,7 +221,7 @@ export const PropFire: React.FC<{ lf?: number }> = ({ lf = 0 }) => {
   const f2 = Math.cos(lf * 0.35) * 8;
 
   return (
-    <svg width="140" height="150" viewBox="0 0 140 150" style={{ overflow: "visible" }}>
+    <g>
       {/* Logs */}
       <polygon points="20,135 120,115 125,128 25,148" fill="#422512" stroke={CREAM} strokeWidth={2.5} />
       <polygon points="120,135 20,115 15,128 115,148" fill="#543018" stroke={CREAM} strokeWidth={2.5} />
@@ -240,7 +240,7 @@ export const PropFire: React.FC<{ lf?: number }> = ({ lf = 0 }) => {
         strokeWidth={2}
       />
       <ellipse cx="70" cy="100" rx="10" ry="18" fill="#fff" />
-    </svg>
+    </g>
   );
 };
 
@@ -249,7 +249,7 @@ export const PropBanner: React.FC<{ seed?: number; lf?: number }> = ({ lf = 0 })
   const wave = Math.sin(lf * 0.22) * 12;
 
   return (
-    <svg width="120" height="240" viewBox="0 0 120 240" style={{ overflow: "visible" }}>
+    <g>
       {/* Staff */}
       <line x1="20" y1="230" x2="20" y2="20" stroke={INK} strokeWidth={5} strokeLinecap="round" />
       <circle cx="20" cy="15" r="7" fill={GOLD} stroke={CREAM} strokeWidth={2} />
@@ -261,7 +261,7 @@ export const PropBanner: React.FC<{ seed?: number; lf?: number }> = ({ lf = 0 })
         strokeWidth={3.5}
         strokeLinejoin="round"
       />
-    </svg>
+    </g>
   );
 };
 
@@ -270,14 +270,14 @@ export const PropCloud: React.FC<{ lf?: number; speed?: number }> = ({ lf = 0, s
   const drift = (lf * speed) % 1200;
 
   return (
-    <svg width="220" height="110" viewBox="0 0 220 110" style={{ overflow: "visible", transform: `translateX(${drift}px)` }}>
+    <g style={{ transform: `translateX(${drift}px)` }}>
       <g fill={CREAM} stroke="#e0d6c0" strokeWidth={3} opacity={0.88}>
         <circle cx="60" cy="70" r="35" />
         <circle cx="105" cy="50" r="45" />
         <circle cx="155" cy="65" r="38" />
         <rect x="40" y="65" width="135" height="35" rx="10" />
       </g>
-    </svg>
+    </g>
   );
 };
 
@@ -285,14 +285,14 @@ export const PropBird: React.FC<{ lf?: number }> = ({ lf = 0 }) => {
   const flap = Math.sin(lf * 0.35) * 12;
 
   return (
-    <svg width="60" height="40" viewBox="0 0 60 40" style={{ overflow: "visible" }}>
+    <g>
       <path
         d={`M0,20 Q15,${8 + flap} 30,20 Q45,${8 + flap} 60,20 Q45,24 30,22 Q15,24 0,20 Z`}
         fill="#262320"
         stroke={CREAM}
         strokeWidth={2.5}
       />
-    </svg>
+    </g>
   );
 };
 
@@ -301,7 +301,7 @@ export const PropBell: React.FC<{ lf?: number }> = ({ lf = 0 }) => {
   const sway = Math.sin(lf * 0.16) * 8;
 
   return (
-    <svg width="100" height="140" viewBox="0 0 100 140" style={{ overflow: "visible" }}>
+    <g>
       <g transform={`rotate(${sway} 50 10)`}>
         {/* Chain */}
         <line x1="50" y1="0" x2="50" y2="40" stroke="#78592a" strokeWidth={4} strokeDasharray="6 4" />
@@ -311,16 +311,16 @@ export const PropBell: React.FC<{ lf?: number }> = ({ lf = 0 }) => {
         {/* Clapper */}
         <circle cx="50" cy="115" r="7" fill="#523812" stroke={CREAM} strokeWidth={2} />
       </g>
-    </svg>
+    </g>
   );
 };
 
 /* ------------------------------------------------------------- 10. CHARIOT (RATH) */
-export const PropChariot: React.FC<{ palette?: TimeOfDayPalette; lf?: number }> = ({ palette = getPalette("day"), lf = 0 }) => {
+export const PropChariot: React.FC<{ palette: TimeOfDayPalette; lf?: number }> = ({ palette, lf = 0 }) => {
   const wheelRot = (lf * 6) % 360;
 
   return (
-    <svg width="280" height="220" viewBox="0 0 280 220" style={{ overflow: "visible" }}>
+    <g>
       {/* Body / Carriage */}
       <path d="M40,130 L190,130 L180,60 Q120,40 60,70 Z" fill={palette.terracotta} stroke={CREAM} strokeWidth={4.5} strokeLinejoin="round" />
       <rect x="50" y="70" width="120" height="14" rx="3" fill={GOLD} stroke={CREAM} strokeWidth={2.5} />
@@ -343,14 +343,14 @@ export const PropChariot: React.FC<{ palette?: TimeOfDayPalette; lf?: number }> 
         ))}
         <circle cx="0" cy="0" r="10" fill="#2d1b0d" stroke={CREAM} strokeWidth={2.5} />
       </g>
-    </svg>
+    </g>
   );
 };
 
 /* ------------------------------------------------------------- 11. WEAPONS: BOW & MACE */
 export const PropBow: React.FC = () => {
   return (
-    <svg width="80" height="180" viewBox="0 0 80 180" style={{ overflow: "visible" }}>
+    <g>
       {/* Recurve Bow Body */}
       <path d="M30,10 Q65,45 50,90 Q65,135 30,170" fill="none" stroke={GOLD} strokeWidth={6} strokeLinecap="round" />
       <path d="M30,10 Q65,45 50,90 Q65,135 30,170" fill="none" stroke={CREAM} strokeWidth={2} strokeLinecap="round" />
@@ -359,13 +359,13 @@ export const PropBow: React.FC = () => {
       {/* Arrow */}
       <line x1="15" y1="90" x2="70" y2="90" stroke="#33241b" strokeWidth={3} />
       <polygon points="70,90 60,84 60,96" fill={GOLD} stroke={CREAM} strokeWidth={1.5} />
-    </svg>
+    </g>
   );
 };
 
 export const PropMace: React.FC = () => {
   return (
-    <svg width="70" height="200" viewBox="0 0 70 200" style={{ overflow: "visible" }}>
+    <g>
       {/* Handle */}
       <rect x="31" y="55" width="8" height="135" rx="3" fill="#4a2e1b" stroke={CREAM} strokeWidth={2} />
       <circle cx="35" cy="192" r="7" fill={GOLD} stroke={CREAM} strokeWidth={2} />
@@ -373,31 +373,31 @@ export const PropMace: React.FC = () => {
       <circle cx="35" cy="40" r="28" fill={GOLD} stroke={CREAM} strokeWidth={3.5} />
       <ellipse cx="35" cy="40" rx="14" ry="28" fill="#f5c242" stroke={CREAM} strokeWidth={2} />
       <circle cx="35" cy="12" r="6" fill={CREAM} stroke={GOLD} strokeWidth={2} />
-    </svg>
+    </g>
   );
 };
 
 /* ------------------------------------------------------------- 12. CROWN & POT */
 export const PropCrown: React.FC = () => {
   return (
-    <svg width="100" height="70" viewBox="0 0 100 70" style={{ overflow: "visible" }}>
+    <g>
       <path d="M10,60 L90,60 L80,20 L60,35 L50,8 L40,35 L20,20 Z" fill={GOLD} stroke={CREAM} strokeWidth={3.5} strokeLinejoin="round" />
       <circle cx="50" cy="28" r="6" fill="#dc2626" stroke={CREAM} strokeWidth={2} />
       <rect x="15" y="52" width="70" height="8" rx="2" fill="#dc2626" />
-    </svg>
+    </g>
   );
 };
 
-export const PropPot: React.FC<{ palette?: TimeOfDayPalette }> = ({ palette = getPalette("day") }) => {
+export const PropPot: React.FC<{ palette: TimeOfDayPalette }> = ({ palette }) => {
   return (
-    <svg width="90" height="110" viewBox="0 0 90 110" style={{ overflow: "visible" }}>
+    <g>
       {/* Earthen Kalash / Matka */}
       <circle cx="45" cy="65" r="32" fill={palette.terracotta} stroke={CREAM} strokeWidth={3.5} />
       <rect x="30" y="26" width="30" height="12" rx="3" fill={GOLD} stroke={CREAM} strokeWidth={2.5} />
       <ellipse cx="45" cy="26" rx="18" ry="6" fill={palette.sand} stroke={CREAM} strokeWidth={2} />
       {/* Sacred Coconut on Top */}
       <circle cx="45" cy="16" r="12" fill="#523821" stroke={CREAM} strokeWidth={2} />
-    </svg>
+    </g>
   );
 };
 
@@ -459,3 +459,4 @@ export const PropComponent: React.FC<PropComponentProps> = ({
     </g>
   );
 };
+

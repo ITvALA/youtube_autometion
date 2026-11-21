@@ -5,6 +5,7 @@ import {Composition, CalculateMetadataFunction, registerRoot} from "remotion";
 import {PaperFilm, totalFramesPF} from "./PaperFilm";
 import {CinematicArc, totalFramesCA} from "./CinematicArc";
 import {LibraryPreview} from "./paper/library/LibraryPreview";
+import {PaperScene3DDemo} from "./paper/demo/PaperScene3DDemo";
 import type {PFProps} from "./types";
 import demo from "../../../data/demo_paperfilm.json";
 
@@ -17,5 +18,6 @@ registerRoot(() => (
     <Composition id="PaperFilm" component={PaperFilm} durationInFrames={totalFramesPF((demo as unknown as PFProps).scenes, FPS)} fps={FPS} width={1080} height={1920} defaultProps={demo as unknown as PFProps} calculateMetadata={calcPF} />
     <Composition id="CinematicArc" component={CinematicArc} durationInFrames={totalFramesCA((demo as unknown as PFProps).scenes, FPS)} fps={FPS} width={1080} height={1920} defaultProps={demo as unknown as PFProps} calculateMetadata={calcCA} />
     <Composition id="LibraryPreview" component={LibraryPreview} durationInFrames={240} fps={FPS} width={1080} height={1920} />
+    <Composition id="PaperScene3DDemo" component={PaperScene3DDemo} durationInFrames={150} fps={FPS} width={1080} height={1920} />
   </>
 ));

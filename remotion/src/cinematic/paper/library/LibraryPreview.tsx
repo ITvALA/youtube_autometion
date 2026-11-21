@@ -297,7 +297,7 @@ export const LibraryPreview: React.FC = () => {
             width={1000}
             height={1650}
           />
-          <svg viewBox="0 0 1000 1650" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
+          <svg viewBox="0 0 1080 1920" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}>
             <PropComponent type="banner" x={240} y={1180} scale={1.2} frame={f} />
             <PropComponent type="diya" x={500} y={1220} scale={1.0} frame={f} />
             <PropComponent type="fire" x={750} y={1220} scale={1.1} frame={f} />
