@@ -11,6 +11,13 @@ from pathlib import Path
 from common import ROOT
 import llm
 import yt_growth_engine
+try:
+    from hindi_numbers import normalize_hindi_numbers
+except ImportError:
+    try:
+        from src.hindi_numbers import normalize_hindi_numbers
+    except ImportError:
+        def normalize_hindi_numbers(t): return t
 
 KINDS = ["title", "card", "number", "quote", "list", "map"]   # "photo" is not used: no images in the pipeline
 ACCENTS = ["red", "teal", "mustard", "ink"]
@@ -87,7 +94,7 @@ OUTPUT: sirf ek JSON object (koi markdown nahi, koi explanation nahi):
     {
       "kind": "title | card | number | quote | list | map",
       "narration": "Hinglish (Roman letters) me bolne wali line, STRICTLY 8-12 words max. Ye screen par caption banegi.",
-      "tts_text": "WAHI line shuddh Devanagari Hindi me, voice ke liye. Numbers shabdon me likho.",
+      "tts_text": "WAHI line shuddh Devanagari Hindi me, voice ke liye. Numbers aur Saal (years) bilkul shabdon me likho (jaise 1660 ko 'सन सोलह सौ साठ', 1947 ko 'सन उन्नीस सौ सैंतालीस', 300 ko 'तीन सौ', 4000 ko 'चार हज़ार'). Kabhi bhi 'सौ छह सौ' ya toote shabdon me mat likho.",
       "text": "Screen par bada text, Devanagari, max 6 words",
       "sub": "chhoti line (optional), max 6 words",
       "hit_word": "narration ka ek word jis par effect (highlight / stamp) lage - narration se hu-ba-hu copy karo",
@@ -249,6 +256,10 @@ def clean_plan(plan, seed=None):
                 sc[k] = re.sub(r"(?i)(?:देखिए|जानें|जानिए)?\s*भाग\s*(?:\d+|दो|तीन|चार|२|३|४)\s*(?:में)?", "देखिए अगले वीडियो में", sc[k])
                 sc[k] = re.sub(r"(?i)भाग\s*(?:\d+|दो|तीन|चार|२|३|४)", "अगले वीडियो", sc[k])
 
+        # Normalize numbers & historical years in tts_text so voice speaks proper words (e.g. 1660 -> सन सोलह सौ साठ)
+        if sc.get("tts_text"):
+            sc["tts_text"] = normalize_hindi_numbers(sc["tts_text"])
+
     # YouTube Growth & Packaging Engine Audits (21 Hook Formulas & Packaging Linter)
     hook_audit = yt_growth_engine.score_hook(out[0].get("narration") or out[0].get("text", ""))
     print(f"[PaperFilm] Hook audit: score={hook_audit['score']}/100 band={hook_audit['band']} (weakest={hook_audit['weakest']})")
@@ -312,6 +323,11 @@ def make_series_part_plan(topic, part, slot_info, seed=None):
             f"3. Ye is kahani ka FINAL BHAG hai! Aakhri scene me kahani ka antim divya sandesh aur purnata ho.\n"
             f"4. Aakhri scene ka 'stamp' 'कथा सम्पूर्ण' hoga.\n"
         )
+    part_ctx += (
+        f"5. NUMBERS AUR YEARS RULE:\n"
+        f"   - Agar koi saal (year) aaye jaise 1660, 1947 to tts_text me use 'सन सोलह सौ साठ' ya 'सन उन्नीस सौ सैंतालीस' likho! Kabhi bhi 'सौ छह सौ' ya toote shabdon me mat likho!\n"
+        f"   - Sankhya jaise 300 ko 'तीन सौ', 4000 ko 'चार हज़ार' likho.\n"
+    )
 
     prompt = (_PROMPT
               .replace("__N__", rnd.choice(["7", "8", "7"]))

@@ -10,6 +10,14 @@ natural-pause friendly post-processing, loudness normalisation.
 import os, re, json, time, wave, base64, shutil, hashlib, asyncio, subprocess, requests
 from pathlib import Path
 
+try:
+    from hindi_numbers import normalize_hindi_numbers
+except ImportError:
+    try:
+        from src.hindi_numbers import normalize_hindi_numbers
+    except ImportError:
+        def normalize_hindi_numbers(t): return t
+
 ROOT = Path(__file__).resolve().parent.parent
 CACHE_DIR = ROOT / "data" / "tts_cache"
 USAGE_FILE = ROOT / "data" / "tts_usage.json"
@@ -750,6 +758,7 @@ def _cfg_for(prov, cfg):
 
 def synth_speech(text, cfg, out):
     """Walk the provider chain: cfg['providers'] (list) or provider -> fallback_provider."""
+    text = normalize_hindi_numbers(text)
     if cfg.get("providers"):
         names = [str(p).lower() for p in cfg["providers"]]
     else:
@@ -813,6 +822,9 @@ def narrate(scenes, workdir, cfg, pad=0.45):
     for i, s in enumerate(scenes):
         raw, padded = workdir / f"s{i}_raw.mp3", workdir / f"s{i}.mp3"
         voice_text = (s.get("tts_text") or s["narration"]).strip()
+        voice_text = normalize_hindi_numbers(voice_text)
+        if s.get("tts_text"):
+            s["tts_text"] = normalize_hindi_numbers(s["tts_text"])
         scene_cfg = dict(cfg)
         if str(s.get("delivery") or "").strip():          # LLM ka scene-wise "kaise bolna hai" (chhota English phrase)
             scene_cfg["style"] = str(s["delivery"]).strip()[:80]
