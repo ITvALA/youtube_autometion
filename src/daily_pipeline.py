@@ -348,7 +348,7 @@ def run_paperfilm_pipeline(a, voice_cfg, custom_script=None):
     v_kbps = int(max(800, min(5000, (16 * 8 * 1024) / max(dur, 1.0) - 128)))
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", str(rendered_mp4), "-i", str(work / "audio.mp3")]
     if has_sfx:
-        cmd += ["-filter_complex", "[0:a]volume=0.9[sfx];[1:a]volume=1.0[vo];[sfx][vo]amix=inputs=2:duration=longest:normalize=0[a]",
+        cmd += ["-filter_complex", "[0:a]volume=0.6[sfx];[1:a]volume=1.25[vo];[sfx][vo]amix=inputs=2:duration=longest:normalize=0[a]",
                 "-map", "0:v", "-map", "[a]"]
     else:
         cmd += ["-map", "0:v", "-map", "1:a"]
@@ -474,7 +474,7 @@ def run_cinematic_pipeline(a, voice_cfg, custom_script=None):
     v_kbps = int(max(800, min(5000, (16 * 8 * 1024) / max(dur, 1.0) - 128)))
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", str(rendered_mp4), "-i", str(work / "audio.mp3")]
     if has_sfx:
-        cmd += ["-filter_complex", "[0:a]volume=0.9[sfx];[1:a]volume=1.0[vo];[sfx][vo]amix=inputs=2:duration=longest:normalize=0[a]",
+        cmd += ["-filter_complex", "[0:a]volume=0.6[sfx];[1:a]volume=1.25[vo];[sfx][vo]amix=inputs=2:duration=longest:normalize=0[a]",
                 "-map", "0:v", "-map", "[a]"]
     else:
         cmd += ["-map", "0:v", "-map", "1:a"]

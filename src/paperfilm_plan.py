@@ -50,10 +50,10 @@ OUTPUT: sirf ek JSON object (koi markdown nahi, koi explanation nahi):
   "scenes": [
     {
       "kind": "title | card | number | quote | list | map",
-      "narration": "Hinglish (Roman letters) me bolne wali line, 10-18 words. Ye screen par caption banegi.",
+      "narration": "Hinglish (Roman letters) me bolne wali line, STRICTLY 8-12 words max. Ye screen par caption banegi.",
       "tts_text": "WAHI line shuddh Devanagari Hindi me, voice ke liye. Numbers shabdon me likho.",
       "text": "Screen par bada text, Devanagari, max 6 words",
-      "sub": "chhoti line (optional), max 8 words",
+      "sub": "chhoti line (optional), max 6 words",
       "hit_word": "narration ka ek word jis par effect (highlight / stamp) lage - narration se hu-ba-hu copy karo",
       "stamp": "optional lal stamp, 1-3 words Devanagari (sirf 2-3 scenes me)",
       "accent": "red | teal | mustard | ink"
@@ -63,7 +63,7 @@ OUTPUT: sirf ek JSON object (koi markdown nahi, koi explanation nahi):
 
 KIND ke extra fields:
 - number: "number": 1500 (sirf ank, JSON number), "unit": "साल" ya "%" ya "करोड़" (optional).
-- list: "items": ["max 5 words", "max 5 words", "max 5 words"]  (3 ya 4 items).
+- list: "items": ["max 4 words", "max 4 words", "max 4 words"]  (3 items).
 - quote: "text" = kisi paatra ka dialogue, "sub" = kisne bola.
 - map: sirf tab jab kahani Bharat ki kisi asli jagah par ho. Fields:
     "state": __STATES__ me se EXACT ek naam (English),
@@ -79,7 +79,7 @@ RULES:
 2. Aakhri scene me kahani ka antim prabhavshali sandesh/conclusion ho. KABHI BHI 'subscribe kare' ya 'like kare' ya channel promotion mat bolo.
 3. Kahani ke asli naam, jagah aur ghatnayen use karo. Kuch bhi apni taraf se mat gadho. Ek hi kind lagatar 3 baar mat lagao.
 4. Beech ke scenes me kam se kam 1 "quote" ya "number" ho agar kahani me dialogue ya ank ho.
-5. Pura video lagbhag 40-55 second ka ho (narration jyada lamba mat likho).
+5. STRICT TIMELINE RULE: Poora video STRICTLY 38 se 45 second ka hona chahiye (kabhi bhi 45s se upar na jaye). Har scene narration STRICTLY 8 se 12 words ki concise aur fast-paced ho!
 6. JSON compact rakho, trailing comma mat lagao.
 """
 
@@ -183,6 +183,9 @@ def clean_plan(plan, seed=None):
 
     if len(out) < 4:
         raise ValueError("fewer than 4 usable scenes")
+    # Strictly cap at 8 scenes max for 38-45s timeline
+    if len(out) > 8:
+        out = out[:7] + [out[-1]]
     # only one map scene
     seen_map = False
     for sc in out:
@@ -219,7 +222,7 @@ def make_plan(topic, custom_script=None, seed=None):
     rnd = random.Random(seed)
     states, _ = _load_geo()
     prompt = (_PROMPT
-              .replace("__N__", rnd.choice(["8", "9", "8"]))
+              .replace("__N__", rnd.choice(["7", "8", "7"]))
               .replace("__CONTEXT__", _context(topic, custom_script))
               .replace("__STATES__", json.dumps(states, ensure_ascii=False)))
     err = None
