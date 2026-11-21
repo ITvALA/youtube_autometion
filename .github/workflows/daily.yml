@@ -1,0 +1,151 @@
+name: Hourly Studio Reels
+on:
+  schedule:
+    - cron: "17 * * * *"       # off-peak minute avoids GitHub's top-of-hour congestion
+  workflow_dispatch:             # manual trigger button anytime
+    inputs:
+      force:
+        description: "Force run (bypass 45-min guard)"
+        type: boolean
+        default: false
+      book:
+        description: "Custom Topic or Book Name (Leave empty for automatic)"
+        type: string
+        default: ""
+
+concurrency:
+  group: studio-video
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  make-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Guard: skip if a video was created < 45 min ago (scheduled runs only) ──
+      - name: Guard against double runs
+        id: guard
+        run: |
+          if [ "${{ inputs.force }}" = "true" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "⚡ Manual trigger detected. Bypassing 45-min guard."
+          elif [ -f data/pending_video.json ]; then
+            TS=$(python3 -c "import json; print(json.load(open('data/pending_video.json')).get('timestamp',0))")
+            NOW=$(date +%s)
+            DIFF=$(( NOW - TS ))
+            if [ "$DIFF" -lt 2700 ]; then
+              echo "⏭️ Video created ${DIFF}s ago (< 45 min). Skipping."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - if: steps.guard.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+
+      - if: steps.guard.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with: { node-version: "20" }
+
+      - if: steps.guard.outputs.skip != 'true'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - if: steps.guard.outputs.skip != 'true'
+        run: pip install -r requirements.txt
+
+      - if: steps.guard.outputs.skip != 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            remotion/node_modules
+            ~/.cache/remotion
+            remotion/node_modules/.remotion
+          key: remotion-${{ hashFiles('remotion/package.json') }}
+          restore-keys: remotion-
+
+      - if: steps.guard.outputs.skip != 'true'
+        run: npm install --no-audit --no-fund
+        working-directory: remotion
+
+      - if: steps.guard.outputs.skip != 'true'
+        run: npx remotion browser ensure
+        working-directory: remotion
+
+      - name: Make Reel Video
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          LLM_API_STYLE: ${{ secrets.LLM_API_STYLE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: |
+          if [ -n "${{ inputs.book }}" ]; then
+            python src/daily_pipeline.py --headless --book "${{ inputs.book }}"
+          else
+            python src/daily_pipeline.py --headless
+          fi
+
+      # ── NEW: run_id save karo taaki bot artifact se full-quality video utha sake ──
+      - name: Stamp run id into pending_video.json
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          python3 - <<'EOF'
+          import json, os
+          p = "data/pending_video.json"
+          if os.path.exists(p):
+              d = json.load(open(p, encoding="utf-8"))
+              d["run_id"] = os.environ["GITHUB_RUN_ID"]
+              json.dump(d, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+              print("run_id stamped:", d["run_id"])
+          else:
+              print("pending_video.json not found, skipping")
+          EOF
+
+      - if: steps.guard.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: video
+          path: data/output
+          retention-days: 7
+
+      - name: Build Mobile Review Website
+        if: steps.guard.outputs.skip != 'true'
+        run: python src/review_app/build_pages_site.py ${{ github.run_id }}
+
+      - name: Upload Pages Artifact
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        if: steps.guard.outputs.skip != 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Remember theme, template and style history
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/theme_history.json data/template_history.json data/pending_video.json data/style_history.json state/recent-styles.json
+          if git diff --cached --quiet; then
+            echo "No history changes to commit."
+          else
+            git commit -m "theme, template, style and pending video [skip ci]"
+            git pull --rebase --autostash origin main
+            git push origin main
+          fi
