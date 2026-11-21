@@ -34,10 +34,16 @@ Ek kahani ko __N__ chhote scenes me todo. Har scene ek torn paper card jaisa dik
 
 __CONTEXT__
 
+ASLI KATHA NIYAM (REAL STORYTELLING - NO FAKE TRAILER DIALOGUES):
+- KABHI BHI movie teaser ya trailer jaise toote-foote phrases mat likho (jaise "आँखें खोलें", "कदम बढ़ाएँ", "सामंत की हँसी"). Ye trailer nahi, balki ek asli katha hai!
+- Scene 1 me seedha KAHANI KA VISHAY / NAYAK / MANDIR ka naam aur sthan bolo taaki viewer ko pehle 2 second me saaf pata chale ki KAHANI KISKI HAI!
+- Scene 2 se Scene 6 tak katha ko natural chronological kram me sunao: Sthan/Patra parichay -> Sankat/Atyachar -> Divya Chamatkar -> Shiksha.
+- AAKHRI SCENE ME VOICE CALL-TO-ACTION: Voiceover me KABHI BHI "bhaag 2" ya "part 2" mat bolo! Voice hamesha bolegi: "dekhiye agle video mein!" (e.g. "...lekin iske baad kya hua? Dekhiye agle video mein!").
+
 VIRAL HOOK NIYAM (Scene 1 - 21 Hook Formulas):
 - Scene 1 hamesha kind "title" hoga: strictly 0-3 second ka thumb-stopper hook!
-- KABHI BHI boring, informative ya generic shuruat mat karo (jaise "aaj hum baat karenge", "kya aapko pata hai").
-- Seedha Extreme Stakes ("जब 1 लाख की सुल्तानी सेना के सामने..."), Forbidden Mystery ("काशी का वह गुप्त रहस्य जिसे इतिहास ने छुपाया..."), ya Contrarian Flip ("सब कहते हैं... लेकिन सच कुछ और था") se shuru karo!
+- KABHI BHI boring ya generic shuruat mat karo.
+- Seedha Extreme Stakes ("जब 1 लाख की सुल्तानी सेना के सामने..."), Forbidden Mystery ("काशी का वह गुप्त रहस्य जिसे इतिहास ने छुपाया..."), ya Contrarian Flip se shuru karo!
 
 NARRATIVE BRIDGES & STORY SPINE (SEAMLESS SCENE CONTINUITY):
 - KABHI BHI toote hue ya alag-thalag cards mat banao!
@@ -204,6 +210,13 @@ def clean_plan(plan, seed=None):
             if k in sc and isinstance(sc[k], str):
                 sc[k] = re.sub(r"(?i)\s*(?:aisi\s+aur\s+gathaon\s+ke\s+liye\s+)?(?:mindspark|माइंडस्पार्क)\s*(?:ko|को)?\s*(?:subscribe|सब्सक्राइब)\s*(?:karein?|करें)?[.!।]?", "", sc[k]).strip()
                 sc[k] = re.sub(r"(?i)\s*(?:subscribe|सब्सक्राइब)\s*(?:karein?|करें)?[.!।]?", "", sc[k]).strip()
+        # Voiceover should say natural "dekhiye agle video mein" instead of robotic "dekhiye bhaag 2"
+        for k in ["narration", "tts_text"]:
+            if k in sc and isinstance(sc[k], str):
+                sc[k] = re.sub(r"(?i)\b(?:dekhiye|janein?|jaaniye)?\s*(?:bhaag|bhag|part)\s*(?:\d+|do|teen|char|2|3|4)\s*(?:mein|me)?\b", "dekhiye agle video mein", sc[k])
+                sc[k] = re.sub(r"(?i)\b(?:bhaag|bhag|part)\s*(?:\d+|do|teen|char|2|3|4)\b", "agle video", sc[k])
+                sc[k] = re.sub(r"(?i)(?:देखिए|जानें|जानिए)?\s*भाग\s*(?:\d+|दो|तीन|चार|२|३|४)\s*(?:में)?", "देखिए अगले वीडियो में", sc[k])
+                sc[k] = re.sub(r"(?i)भाग\s*(?:\d+|दो|तीन|चार|२|३|४)", "अगले वीडियो", sc[k])
 
     # YouTube Growth & Packaging Engine Audits (21 Hook Formulas & Packaging Linter)
     hook_audit = yt_growth_engine.score_hook(out[0].get("narration") or out[0].get("text", ""))
@@ -231,22 +244,25 @@ def make_series_part_plan(topic, part, slot_info, seed=None):
         f"KAHANI: {topic_title}\n"
         f"YE HAI: BHAG {part_num} (Kul {tot_parts} bhag me se)\n"
         f"PART TITLE: {part.get('part_title')}\n"
-        f"IS BHAG KI KAHANI (sirf isi ko 7-8 scenes me dikhana hai):\n{part.get('part_summary')}\n"
+        f"IS BHAG KI ASLI KATHA (Real sequential story to narrate):\n{part.get('part_summary')}\n"
         f"HOOK LINE: {part.get('hook_line')}\n"
         f"RECAP BRIDGE: {part.get('recap_bridge')}\n"
         f"CLIFFHANGER: {part.get('cliffhanger')}\n\n"
-        f"SERIES SPECIFIC RULES:\n"
-        f"- Scene 1 kind 'title' hoga. Uska 'stamp' STRICTLY 'भाग {part_num}' hoga!\n"
+        f"CRITICAL STORYTELLING RULES:\n"
+        f"1. YE KOI TRAILER NAHI HAI! KABHI BHI disjointed cinematic teaser dialogues mat likho. Asli katha sunao.\n"
+        f"2. Scene 1 kind 'title' hoga: seedha kahani ka mukhya vishay/patra/mandir ka naam Devanagari me bolo.\n"
+        f"3. Scene 1 ka 'stamp' STRICTLY 'भाग {part_num}' hoga.\n"
     )
     if not is_final:
         part_ctx += (
-            f"- Aakhri scene ka narration agle bhag ka suspense/cliffhanger dega: '{part.get('cliffhanger') or 'Dekhiye agle bhag me!'}'\n"
-            f"- Aakhri scene ka 'stamp' STRICTLY 'भाग {part_num + 1} जल्द' ya 'रहस्य जारी' hoga!\n"
+            f"4. Aakhri scene ka narration agle video ka suspense dega: '...Lekin aage kya hua? Dekhiye agle video mein!'\n"
+            f"   (DHYAN DEIN: Spoken voice me 'bhaag 2' nahi bolna, STRICTLY 'dekhiye agle video mein' bolna hai!)\n"
+            f"5. Aakhri scene ka 'stamp' STRICTLY 'अगला भाग' hoga!\n"
         )
     else:
         part_ctx += (
-            f"- Ye is kahani ka FINAL BHAG hai! Aakhri scene me kahani ka antim divya sandesh aur purnata ho.\n"
-            f"- Aakhri scene ka 'stamp' 'अमर सत्य' ya 'कथा सम्पूर्ण' hoga.\n"
+            f"4. Ye is kahani ka FINAL BHAG hai! Aakhri scene me kahani ka antim divya sandesh aur purnata ho.\n"
+            f"5. Aakhri scene ka 'stamp' 'कथा सम्पूर्ण' hoga.\n"
         )
 
     prompt = (_PROMPT
@@ -267,7 +283,7 @@ def make_series_part_plan(topic, part, slot_info, seed=None):
             scenes = plan["scenes"]
             scenes[0]["stamp"] = f"भाग {part_num}"
             if not is_final:
-                scenes[-1]["stamp"] = f"भाग {part_num + 1} जल्द"
+                scenes[-1]["stamp"] = "अगला भाग"
             else:
                 scenes[-1]["stamp"] = "कथा सम्पूर्ण"
 

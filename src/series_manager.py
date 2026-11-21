@@ -23,23 +23,29 @@ from myth_picker import pick_myth_topic
 
 STATE_FILE = ROOT / "data" / "active_series.json"
 
-SERIES_PROMPT = """Tum ek anubhavi Hindi dharmik/mythological aur viral YouTube scriptwriter ho.
-Hamare paas ek kahani ka topic aaya hai. Hume iski EK POORI, VISTAAR-POORVAK (detailed & complete) kahani likhni hai.
-Kyunki YouTube Shorts sirf 35-45 second ka hota hai, isliye poori kahani ek video me nahi aa sakti.
+SERIES_PROMPT = """Tum ek anubhavi Hindi dharmik/mythological katha-vachak aur viral YouTube scriptwriter ho.
+Hamare paas ek kahani ka topic aaya hai. Hume iski EK ASLI, POORI, VISTAAR-POORVAK (detailed & authentic) katha likhni hai.
+Kyunki YouTube Shorts 35-45 second ka hota hai, isliye poori kahani ek video me nahi aa sakti.
 Tumhe is poori kahani ko 2 se 4 sequential PARTS (भाग 1, भाग 2, भाग 3...) me todna hai.
 
 TOPIC:
 Title: {title}
 Summary: {summary}
 
-NIYAM:
-1. Kahani poori, prabhavshali aur romanchak honi chahiye (sabhi asli patra, ghatna, sthan aur chamatkar shamil hon).
-2. Kahani ki lambai ke aadhar par 2, 3 ya 4 PARTS me baanto (zyadatar 2 ya 3 parts).
-3. Har part YouTube Shorts ke liye STRICTLY 35 se 45 second ka material hona chahiye (har part me lagbhag 7-8 concise scenes).
+CRITICAL STORYTELLING NIYAM (KATHA-VACHAN, NOT A MOVIE TRAILER):
+1. YE KOI MOVIE TRAILER YA TEASER NAHI HAI! KABHI BHI disjointed, abstract ya cinematic teaser dialogues mat likho (jaise "आँखें खोलें", "कदम बढ़ाएँ", "सामंत की हँसी").
+2. HAR PART ME ASLI KATHA (Real Story) SUNAO:
+   - Kahani kiski hai? (Pauranik patra, Devi/Devta, Mandir, Nayak ka asli naam saaf bolo)
+   - Ghatna kahan ghati? (Asli jagah, prant ya sthan)
+   - Asal me kya ghatna ghati thi? (Kalyug ka sankat, raja ka atyachar, shrap, ya divya pariksha)
+   - Har ek part me 5-6 concrete ghatnaon ke vaakya hon jo kahani ko sequential kram me aage badhayein!
+3. VOICE ME KABHI BHI "BHAG 2" YA ROBOTIC NUMBER MAT BOLO:
+   - Part 1 ya beech ke parts ke aakhri scene me voice hamesha bolegi: "dekhiye agle video mein!" ya "iski poori sacchai dekhiye agle video mein!"
+   - KABHI BHI voice me "dekhiye bhaag 2" mat bolo!
 4. HAR PART KA DHANCHE (Structure):
-   - Part 1: Dhamakedar thumb-stopping Hook + Kahani ki shuruat + Sankat khada hona + Antim Cliffhanger ("Lekin tabhi kya hua? Dekhiye Bhag 2 me!").
-   - Part 2+: Shuruat me 2 second ka recap connector ("Pichhle bhag me dekha tha...") + Main ghatna/Sangharsh + Agla cliffhanger ya antim vijay.
-   - Final Part: Climax + Antim prabhavshali sandesh/bhagwan ka aashirvaad. (KABHI BHI 'subscribe kare' mat bolo).
+   - Part 1: Dhamakedar Hook (jisme kahani ke nayak/vishay ka naam saaf ho) + Katha ka aarambh + Sankat khada hona + Suspenseful ending: "...Lekin tabhi kya hua? Dekhiye agle video mein!"
+   - Part 2+: Shuruat me 1 line recap connector + Asli sangharsh / katha ka vistaar + Ending: "...Lekin aage kya hua? Dekhiye agle video mein!"
+   - Final Part: Chamatkar + Antim divya purnata aur sandesh.
 
 OUTPUT: STRICTLY sirf ek valid JSON object (koi markdown nahi, koi backticks nahi, koi extra text nahi):
 {{
@@ -50,10 +56,10 @@ OUTPUT: STRICTLY sirf ek valid JSON object (koi markdown nahi, koi backticks nah
     {{
       "part_num": 1,
       "part_title": "Hindi title with emoji (max 50 chars), e.g. द्वारका का वो अंतिम द्वार",
-      "hook_line": "Scene 1 bolne wali dhamakedar hook line (Devanagari)",
+      "hook_line": "Scene 1 bolne wali line jisme nayak/mandir ka naam ho",
       "recap_bridge": "" (Part 1 ke liye empty, Part 2+ ke liye chhota recap connector),
-      "cliffhanger": "Antim scene ka suspense / agle bhag ki utsukta",
-      "part_summary": "Is part ki detailed story lines (100-150 words) jo 7-8 scenes me adapt hongi"
+      "cliffhanger": "Antim scene ka suspense: '...Lekin iske baad jo hua, usne sabko dang kar diya. Dekhiye agle video mein!'",
+      "part_summary": "Is part ki detailed story (100-150 words): Patra, sthan, aur concrete ghatnayen jo 7-8 scenes me clearly sunai jayengi."
     }}
   ]
 }}
