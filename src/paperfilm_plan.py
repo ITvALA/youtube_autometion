@@ -10,6 +10,7 @@ from pathlib import Path
 
 from common import ROOT
 import llm
+import yt_growth_engine
 
 KINDS = ["title", "card", "number", "quote", "list", "map"]   # "photo" is not used: no images in the pipeline
 ACCENTS = ["red", "teal", "mustard", "ink"]
@@ -28,14 +29,24 @@ def _load_geo():
     return states, districts
 
 
-_PROMPT = """Tum ek anubhavi Hindi kahani-kaar ho jo YouTube Shorts ke liye "paper-cut film" style video ka script likhte ho.
-Ek kahani ko __N__ chhote scenes me todo. Har scene ek kagaz ke card jaisa dikhega: bada text, ek stamp ya highlight, aur voiceover.
+_PROMPT = """Tum ek anubhavi Hindi kahani-kaar aur viral YouTube scriptwriter ho jo YouTube Shorts ke liye "paper-cut film" style video ka script likhte ho.
+Ek kahani ko __N__ chhote scenes me todo. Har scene ek torn paper card jaisa dikhega: bada text, ek stamp ya highlight, aur cinematic voiceover.
 
 __CONTEXT__
 
+VIRAL HOOK NIYAM (Scene 1 - 21 Hook Formulas):
+- Scene 1 hamesha kind "title" hoga: strictly 0-3 second ka thumb-stopper hook!
+- KABHI BHI boring, informative ya generic shuruat mat karo (jaise "aaj hum baat karenge", "kya aapko pata hai").
+- Seedha Extreme Stakes ("जब 1 लाख की सुल्तानी सेना के सामने..."), Forbidden Mystery ("काशी का वह गुप्त रहस्य जिसे इतिहास ने छुपाया..."), ya Contrarian Flip ("सब कहते हैं... लेकिन सच कुछ और था") se shuru karo!
+
+NARRATIVE BRIDGES & STORY SPINE (SEAMLESS SCENE CONTINUITY):
+- KABHI BHI toote hue ya alag-thalag cards mat banao!
+- Har agla scene pichhle scene ka natural kram (Cause-and-Effect / Karana aur Parinaam) hona chahiye.
+- Scene narration me natural connectors use karo: 'लेकिन तभी...', 'और फिर...', 'पिता के वचनों की मर्यादा के लिए...', 'तभी अचानक...', 'इसलिए...'
+
 OUTPUT: sirf ek JSON object (koi markdown nahi, koi explanation nahi):
 {
-  "youtube": {"title": "Hindi title with emoji, max 90 chars", "description": "3-4 line Hindi description + hashtags", "tags": ["..."]},
+  "youtube": {"title": "Hindi title with emoji, max 60 chars, concrete proper name/number", "description": "3-4 line Hindi description + hashtags", "tags": ["..."]},
   "scenes": [
     {
       "kind": "title | card | number | quote | list | map",
@@ -190,7 +201,16 @@ def clean_plan(plan, seed=None):
         last["narration"] = last["narration"].rstrip(".! ") + ". MindSpark ko subscribe karein!"
         last["tts_text"] = last["tts_text"].rstrip("।.! ") + "। माइंडस्पार्क को सब्सक्राइब करें!"
 
+    # YouTube Growth & Packaging Engine Audits (21 Hook Formulas & Packaging Linter)
+    hook_audit = yt_growth_engine.score_hook(out[0].get("narration") or out[0].get("text", ""))
+    print(f"[PaperFilm] Hook audit: score={hook_audit['score']}/100 band={hook_audit['band']} (weakest={hook_audit['weakest']})")
+
     y = plan.get("youtube") if isinstance(plan.get("youtube"), dict) else {}
+    if y.get("title"):
+        pkg_audit = yt_growth_engine.lint_packaging(y["title"], out[0].get("text", ""))
+        print(f"[PaperFilm] Packaging audit: score={pkg_audit['score']}/100, issues={len(pkg_audit['issues'])}")
+        if len(y["title"]) > yt_growth_engine.HARD_LIMIT:
+            y["title"] = y["title"][:yt_growth_engine.HARD_LIMIT].rstrip()
     return {"youtube": y, "scenes": out}
 
 
