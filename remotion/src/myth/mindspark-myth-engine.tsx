@@ -1444,21 +1444,13 @@ const SceneView: React.FC<{ scene: Scene; seed: number; dur: number; trans?: Tra
     speaker = Math.min(scene.actors.length - 1, Math.floor((local / win) * scene.actors.length));
   }
 
-  // scene-start transition (different every scene)
-  const tp = Math.min(1, frame / T_LEN);
+  // Seamless Scene-to-Scene Merge: cinematic cross-dissolve with zero jarring wipes or dips
+  const tp = Math.min(1, frame / 10);
   const te = Easing.out(Easing.cubic)(tp);
-  let wrap: React.CSSProperties = {};
-  let flashOpacity = 0;
-  switch (trans) {
-    case 'fade': wrap = { opacity: tp }; break;
-    case 'wipeL': wrap = { clipPath: `inset(0 ${(1 - te) * 100}% 0 0)` }; break;
-    case 'wipeR': wrap = { clipPath: `inset(0 0 0 ${(1 - te) * 100}%)` }; break;
-    case 'iris': wrap = { clipPath: `circle(${te * 85}% at 50% 55%)` }; break;
-    case 'flash': wrap = { opacity: Math.min(1, tp * 3) }; flashOpacity = (1 - tp) * 0.85; break;
-    case 'zoom': wrap = { opacity: Math.min(1, tp * 2.5), transform: `scale(${1.12 - 0.12 * te})` }; break;
-    case 'dip': wrap = { opacity: tp * tp }; break;
-    default: break;
-  }
+  const wrap: React.CSSProperties = {
+    opacity: te,
+  };
+  const flashOpacity = 0;
 
   return (
     <AbsoluteFill style={wrap}>
