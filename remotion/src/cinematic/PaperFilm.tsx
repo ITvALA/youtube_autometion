@@ -132,7 +132,7 @@ const MapRoute: React.FC<{s: PFScene; lf: number; fps: number; text: React.CSSPr
 };
 
 /* ---------------------------------------- full-screen scenes: map / cutout / story stage */
-export const isFull = (s: PFScene) => s.kind === "map" || s.kind === "cutout" || s.kind === "card" || s.kind === "title" || s.kind === "quote" || (s.kind === "photo" && !!s.image);
+export const isFull = (s: PFScene) => !!s.paper_spec || s.kind === "map" || s.kind === "cutout" || s.kind === "card" || s.kind === "title" || s.kind === "quote" || (s.kind === "photo" && !!s.image);
 
 const FullScene: React.FC<{s: PFScene; i: number; lf: number; fps: number; width: number; height: number}> = ({s, i, lf, fps, width, height}) => {
   const accent = s.accent || ACCENT_CYCLE[i % 4];
@@ -168,8 +168,24 @@ const FullScene: React.FC<{s: PFScene; i: number; lf: number; fps: number; width
   if (s.paper_spec) {
     return (
       <AbsoluteFill>
-        <PaperScene spec={s.paper_spec} durationInFrames={Math.max(15, Math.round(s.durationSec * fps))} />
-        {s.stamp && <div style={{position: "absolute", right: 60, top: 290}}><Stamp solid text={s.stamp} start={Math.round((s.words[s.hit ?? 0]?.s ?? 0.3) * fps)} f={lf} fps={fps} /></div>}
+        <PaperScene spec={s.paper_spec} durationInFrames={Math.max(15, Math.round(s.durationSec * fps))} localFrame={lf} />
+        {s.text && (
+          <div style={{position: "absolute", left: 40, right: 40, top: 90, display: "flex", justifyContent: "center", zIndex: 100}}>
+            <div style={{
+              background: CREAM,
+              padding: "10px 32px",
+              borderRadius: 14,
+              boxShadow: "0 10px 24px rgba(40,25,10,.35)",
+              border: "3px solid #e4d8be",
+              textAlign: "center",
+              transform: "rotate(-0.5deg)"
+            }}>
+              <div style={{...t(52, DISPLAY), color: a.main}}>{s.text}</div>
+              {s.sub && <div style={{...t(32, BODY), color: "#544", marginTop: 4}}>{s.sub}</div>}
+            </div>
+          </div>
+        )}
+        {s.stamp && <div style={{position: "absolute", right: 60, top: 290, zIndex: 101}}><Stamp solid text={s.stamp} start={Math.round((s.words[s.hit ?? 0]?.s ?? 0.3) * fps)} f={lf} fps={fps} /></div>}
       </AbsoluteFill>
     );
   }

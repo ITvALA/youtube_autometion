@@ -10,10 +10,12 @@ import { getPalette } from "./palettes";
 interface PaperSceneProps {
   spec: PaperSceneSpec;
   durationInFrames?: number;
+  localFrame?: number;
 }
 
-export const PaperScene: React.FC<PaperSceneProps> = ({ spec, durationInFrames = 90 }) => {
-  const frame = useCurrentFrame();
+export const PaperScene: React.FC<PaperSceneProps> = ({ spec, durationInFrames = 90, localFrame }) => {
+  const currentFrame = useCurrentFrame();
+  const frame = localFrame !== undefined ? localFrame : currentFrame;
   const { fps, width = 1080, height = 1920 } = useVideoConfig();
   const f = stopMotionTwos(frame, true);
   const palette = getPalette(spec.timeOfDay);
@@ -74,7 +76,7 @@ export const PaperScene: React.FC<PaperSceneProps> = ({ spec, durationInFrames =
   const outroFrames = 10;
 
   if (frame < introFrames) {
-    const ip = frame / introFrames;
+    const ip = Math.min(1, Math.max(0, frame / introFrames));
     if (transition === "slide") {
       transX = interpolate(ip, [0, 1], [-width, 0]);
     } else if (transition === "tear" || transition === "page-turn") {
@@ -86,16 +88,16 @@ export const PaperScene: React.FC<PaperSceneProps> = ({ spec, durationInFrames =
       transOpacity = ip;
     }
   } else if (frame > durationInFrames - outroFrames) {
-    const op = (frame - (durationInFrames - outroFrames)) / outroFrames;
+    const op = Math.min(1, Math.max(0, (frame - (durationInFrames - outroFrames)) / outroFrames));
     if (transition === "slide") {
       transX = interpolate(op, [0, 1], [0, width]);
     } else if (transition === "tear" || transition === "page-turn") {
       transRotate = interpolate(op, [0, 1], [0, 12]);
       transX = interpolate(op, [0, 1], [0, 150]);
-      transOpacity = 1 - op;
+      transOpacity = Math.max(0, 1 - op);
     } else if (transition === "fold") {
       transScale = interpolate(op, [0, 1], [1.0, 0.85]);
-      transOpacity = 1 - op;
+      transOpacity = Math.max(0, 1 - op);
     }
   }
 
